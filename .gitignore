@@ -1,0 +1,6 @@
+# 仙途 · 本地忽略规则
+node_modules/
+.DS_Store
+Thumbs.db
+*.log
+.vscode/

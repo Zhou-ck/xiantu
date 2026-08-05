@@ -1,0 +1,121 @@
+<body>
+
+<div id="screen-title">
+  <div class="title-seal">仙</div>
+  <h1 class="title">仙　途</h1>
+  <div class="subtitle">九 界 之 上 · 一 念 仙 凡</div>
+  <div class="title-btns">
+    <button id="btnNew" class="primary">开 始 新 生</button>
+    <button id="btnLoad" style="display:none">继 续 前 缘</button>
+  </div>
+  <div class="title-hint">文字修仙 · 轮回不息 · 一念抉择，因果自偿</div>
+</div>
+
+<div id="screen-create" style="display:none">
+  <div class="create-box">
+    <h2>天机阁 · 命簿开卷</h2>
+    <div class="create-row">
+      <label>道号 / 姓名：</label>
+      <input id="nameInput" placeholder="输入你的名字，或点击右侧随机" maxlength="12">
+      <button id="btnRandName" class="small">随机一名</button>
+    </div>
+    <div class="create-row">
+      <label>身份：</label>
+      <button id="btnGenderF" class="gender-btn" onclick="switchGender('女')">♀ 随机女修</button>
+      <button id="btnGenderM" class="gender-btn" onclick="switchGender('男')">♂ 随机男修</button>
+      <span class="gender-hint">女修与男修各有独立身份、立绘与名字；点选后本页随机内容随之切换。</span>
+    </div>
+    <div id="createAttr" class="attr-grid"></div>
+    <div id="createBg"></div>
+    <div class="create-row" style="justify-content:center;margin-top:22px">
+      <button id="btnReroll" class="danger">重 掷 天 机</button>
+      <button id="btnBegin" class="primary">启 程 入 世</button>
+    </div>
+  </div>
+</div>
+
+<div id="screen-game" style="display:none">
+  <header>
+    <span class="logo">仙途</span>
+    <span class="crumb" id="crumb"></span>
+    <span class="spacer"></span>
+    <button id="btnSide" class="small" title="状态面板"><span class="hicon"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="14" rx="2"/><path d="M9.5 5v14"/></svg></span><span class="hlbl">状态</span></button>
+    <button id="btnTome" class="small" title="仙途录"><span class="hicon"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3.5h13a1 1 0 0 1 1 1v15a1 1 0 0 1-1 1H6a2 2 0 0 1-2-2z"/><path d="M5 17.5h14M9 3.5v14"/></svg></span><span class="hlbl">仙途录</span></button>
+    <button id="btnDaily" class="small" title="每日修行"><span class="hicon"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 10h16M8 3v4M16 3v4"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 17.5h.01M12 17.5h.01"/></svg></span><span class="hlbl">任务</span></button>
+    <button id="btnSave" class="small" title="存档"><span class="hicon"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="4" width="14" height="16" rx="2"/><path d="M9 4v5.5h6V4M9 20v-6h6v6"/></svg></span><span class="hlbl">存档</span></button>
+    <button id="btnHelp" class="small" title="修仙志"><span class="hicon"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3.5h13a1 1 0 0 1 1 1v15a1 1 0 0 1-1 1H6a2 2 0 0 1-2-2z"/><path d="M9 8.5a3 3 0 0 1 6 0c0 2-3 2.6-3 4.5"/><circle cx="12" cy="17" r=".6"/></svg></span><span class="hlbl">修仙志</span></button>
+  </header>
+  <div id="main">
+    <aside id="side"></aside>
+    <section id="story"></section>
+  </div>
+  <div id="actions"></div>
+  <div id="inputrow">
+    <input id="freeInput" placeholder="✦ 自由行动：可输入如「修炼」「探索」「坊市」「突破」……" autocomplete="off">
+    <button id="btnFree">入 戏</button>
+  </div>
+  <div id="scrim"></div>
+</div>
+
+<div id="panel">
+  <div id="panelBox">
+    <div id="panelHead"><span id="panelTitle"></span><button class="small" onclick="closePanel()">收起</button></div>
+    <div id="panelBody"></div>
+  </div>
+</div>
+
+<div id="cultivate">
+  <div id="cultBox">
+    <div id="cultHead"><span id="cultTitle">🧘 闭关修炼</span></div>
+    <div id="cultPartner"></div>
+    <div id="cultBuffs"></div>
+    <div class="cult-progress">
+      <div class="cult-day" id="cultDay">第 0 / 0 日</div>
+      <div class="bar"><i id="cultBar" style="width:0%"></i></div>
+    </div>
+    <div id="cultLog"></div>
+    <div id="cultFoot">
+      <button id="cultMode" class="small" style="display:none">☯️ 双人同修</button>
+      <button id="cultAbort" class="small">提前出关</button>
+    </div>
+  </div>
+</div>
+
+<div id="battle">
+  <div id="battleBox">
+    <div id="battleHead">⚔️ 遭遇战</div>
+    <div class="bside">
+      <div class="bname" id="bEnemyName"></div>
+      <div class="bar bhp"><i id="bEnemyBar" style="width:100%"></i></div>
+      <div class="bhpnum" id="bEnemyHp"></div>
+    </div>
+    <div class="bvs">⚔ 战 ⚔</div>
+    <div class="bside">
+      <div class="bname" id="bPlayerName"></div>
+      <div class="bar bhp mine"><i id="bPlayerBar" style="width:100%"></i></div>
+      <div class="bhpnum" id="bPlayerHp"></div>
+    </div>
+    <div id="battleLog"></div>
+    <div id="battleResult" style="display:none"></div>
+    <div id="battleFoot"><button id="battleContinue" class="primary" style="display:none">继 续</button></div>
+  </div>
+</div>
+
+<div id="ending">
+  <div id="endingBox"></div>
+</div>
+
+<div id="guide">
+  <div id="guideBox">
+    <h3 id="guideTitle"></h3>
+    <div id="guideBody"></div>
+    <div id="guideNav">
+      <button id="guidePrev" class="small" style="display:none">上一步</button>
+      <span id="guideDots"></span>
+      <button id="guideNext" class="primary">下一步</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
