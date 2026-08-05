@@ -44,4 +44,7 @@ assert(vm.runInContext('window.__tw',ctx),'称号墙可打开');
 // 7) 2O NPC 记忆与 2I 天道之劫
 vm.runInContext(`{ S=newState('测',BACKGROUNDS[0]); const n={name:'张三',gender:'男'}; addNpcMemory(n,'恩情','我救过他一命'); window.__mem=n.nmem.length; tianFateBattle(); window.__tf=window._eventModalOpts.length; }`,ctx);
 assert(vm.runInContext('window.__mem===1&&window.__tf>=2',ctx),'NPC记忆表写入 + 天道宿命之战弹出');
+// 8) 邀请码门禁：启用、错误码不放行、正确码解锁
+vm.runInContext(`{ window.__en=gateEnabled(); window.__g0=gateUnlocked(); gateTry(); window.__g1=gateUnlocked(); localStorage.removeItem('xt_unlocked'); const inp=document.getElementById('gateInput'); if(inp)inp.value=INVITE_CODE; gateTry(); window.__g2=gateUnlocked(); }`,ctx);
+assert(vm.runInContext('window.__en===true&&window.__g0===false&&window.__g1===false&&window.__g2===true',ctx),'邀请码门禁：错误码不放行、正确码解锁');
 console.log(fails===0?'ALL PASS':'FAILURES: '+fails);process.exit(fails?1:0);

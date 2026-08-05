@@ -31,6 +31,17 @@ button.danger{color:#e08787;border-color:rgba(158,75,75,.75)}
 button.small{padding:4px 10px;font-size:13px}
 .ic{width:1em;height:1em;vertical-align:-0.12em}
 
+/* ===== 测试邀请码门禁 ===== */
+#gate{position:fixed;inset:0;z-index:90;display:none;align-items:center;justify-content:center;background:radial-gradient(ellipse at 50% 20%,#2c3250 0%,#10131f 70%)}
+.gate-box{width:min(360px,88vw);text-align:center;background:linear-gradient(180deg,#242a40,#171b2b);border:1px solid var(--gold);border-radius:16px;padding:30px 24px;box-shadow:0 0 50px rgba(0,0,0,.6)}
+.gate-seal{width:64px;height:64px;margin:0 auto 14px;border:2px solid var(--gold);border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:32px;box-shadow:0 0 20px rgba(201,162,75,.3)}
+.gate-box h2{color:var(--gold2);font-weight:normal;letter-spacing:3px;margin-bottom:10px}
+.gate-box p{color:#a99a72;font-size:13.5px;line-height:1.8;margin-bottom:14px}
+#gateInput{width:100%;box-sizing:border-box;background:#12141f;border:1px solid #4a4f6b;color:var(--gold2);padding:12px 14px;font-size:17px;text-align:center;border-radius:8px;outline:none;margin-bottom:12px;font-family:inherit}
+#gateInput:focus{border-color:var(--gold)}
+#gateBtn{width:100%;padding:12px;font-size:16px}
+.gate-hint{margin-top:12px;font-size:11.5px;color:#5d5f74}
+
 #screen-title,#screen-create{
   position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:50;
   background:radial-gradient(ellipse at 50% 20%,#2c3250 0%,#151827 60%,#0a0c13 100%);

@@ -6,6 +6,7 @@
 /* ================= 初始化 ================= */
 function init(){
   fxInit();
+  if(typeof gateInit==='function')gateInit();
   applyFont();
   $('btnNew').onclick=()=>{$('screen-title').style.display='none';$('screen-create').style.display='flex';rerollPreview()};
   $('btnLoop').onclick=()=>{refreshLoopBar();loopShop()};
