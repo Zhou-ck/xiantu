@@ -4,3 +4,10 @@ node_modules/
 Thumbs.db
 *.log
 .vscode/
+
+# 开发/修改类文档：仅留在本地，不推送到公开仓库
+接管文档.md
+深化文档.md
+深化文档2.md
+功能总览.md
+部署指南.md
