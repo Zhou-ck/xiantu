@@ -40,7 +40,7 @@ function panelSocial(){
     '<p>修仙不是独行路，一饮一啄，皆是因果。</p>'+
     '<h4>🌍 游历偶遇</h4>'+
     (unknownCount>0?'<p style="color:#6f7a94">江湖辽阔，尚有 <b>'+unknownCount+'</b> 位修士未曾谋面。出门游历，或有机缘相逢。</p>':'<p style="color:#6f7a94">江湖相识已尽数结识。</p>')+
-    '<div class="row"><button class="small primary" onclick="socialWander()">🌍 出门偶遇（一日）</button></div>'+
+    '<div class="row"><button class="small primary" onclick="socialWander()">🌍 出门偶遇（一日）</button><button class="small" onclick="relationWeb()">🕸️ 关系图谱</button></div>'+
     '<h4>💞 道侣</h4>'+partner+'<h4>🧙 师门</h4>'+master+'<h4>🤝 结伴</h4>'+comp+'<h4>🐾 灵兽</h4>'+petSec+'<h4>🧒 道统传承</h4>'+disc+'<h4>👥 相识之人（'+known.length+'）</h4>'+(npcHtml||'<p style="color:#6f7a94">尚无相识之人，先出门游历吧。</p>'));
 }
 /* 出门游历：偶遇新角色或旧识 */
@@ -135,7 +135,8 @@ function masterPanel(){
   if(!m)return '<p style="color:#6f7a94">尚未拜师。宗门长老或江湖高人，皆可为师。</p>';
   return '<div class="item-card">'+artImg(NPC_ART[m.role]||SECT_PERSON_ART[m.role+(m.gender==='女'?'女':'男')],56,56,'avatar')+
     '<div class="nm"><b>'+esc(m.name)+'</b> <span class="tag">'+esc(m.title||m.role)+'</span></div>'+
-    '<div class="ds">'+esc(m.desc)+' · '+stageName(m.stage||0)+'<br>师承：'+(m.art?esc(m.art.name):'——')+'<br>可常「请教」师尊，点拨获益更丰。</div></div>';
+    '<div class="ds">'+esc(m.desc)+' · '+stageName(m.stage||0)+'<br>师承：'+(m.art?esc(m.art.name):'——')+'<br>可常「请教」师尊，点拨获益更丰。</div>'+
+    '<div style="margin-top:8px"><button class="small" onclick="openNpcCard(S.master,\'师尊\')">📇 师尊档案</button></div></div>';
 }
 /* 师尊面板：请安 / 请教 / 传功 / 切磋 / 出师（7） */
 function panelMaster(){
@@ -240,6 +241,7 @@ function npcChat(i){
   const gain=rand(2,6)+favorBonus(S)+(n.sworn?2:0);
   n.favor=clamp(n.favor+gain,0,100);
   n.talks=(n.talks||0)+1;
+  const bl=addBond(n,1);if(bl)log(bl);
   dC().c.talk++;
   const moodLine=n.mood>=70?'对方眼中有光，打开了话匣子。':n.mood>=40?'对方有一搭没一搭地应着。':'对方似有心事，话到嘴边又咽了回去。';
   const pLine=chance(0.3)?npcPersona(n).lines[0]:null;
@@ -259,9 +261,10 @@ function npcAsk(i){
   if(n.foe){log('<p>仇人相见，分外眼红。对方冷笑一声，拂袖而去。</p>');passTime(1);renderAll();return}
   if(n.stage<=bigStage(S.realm)){log('<p class="sys">'+esc(n.name)+'笑道：「你境界已在我之上，倒是我该向你请教了。」</p>');passTime(1);renderAll();return}
   const R=doRoll('int',14);
-  const g=Math.floor((8+n.stage*6)*(0.7+n.favor/150)*(R.hit?1:0.5));
+  const g=Math.floor((8+n.stage*6)*(0.7+n.favor/150)*(1+(n.bond||0)/200)*(R.hit?1:0.5));
   S.cult+=g;
   n.favor=clamp(n.favor-(R.hit?1:2),0,100);
+  const bl=addBond(n,2);if(bl)log(bl);
   log('<p>你向'+esc(n.name)+'请教【'+(n.style==='int'?'修行义理':'功法心得')+'】：'+rollBadge(R.r,R.mod,R.t,R.dc)+'</p>');
   log(R.hit?'<p class="good">对方一席话如拨云见日，你当场悟透（修为 +'+g+'）。</p>':'<p>对方讲了半日，你记下大半（修为 +'+g+'）。</p>');
   if(chance(0.15)){const gw=growWil(0.08,'听君一席话，道心渐明');if(gw)log(gw)}
@@ -283,6 +286,7 @@ function npcGift(i){
     const it=S.items.find(x=>x.type==='consumable'&&/丹/.test(x.name));
     if(it){S.items.splice(S.items.indexOf(it),1);const g=Math.floor(rand(10,16)*mult);n.favor=clamp(n.favor+g,0,100);n.cd.gift=rand(10,20);log('<p>你以一枚<b>'+it.name+'</b>相赠，对方爱不释手（好感 +'+g+'）。</p>'+(half?'<p class="sys">对方近来受礼颇多，笑意淡了几分。</p>':''));passTime(1);renderAll();return}
   }
+  const b1=addBond(n,2);if(b1)log(b1);
   if(S.stones<50){toast('灵石不足');return}
   S.stones-=50;
   const g=Math.floor((rand(5,12)+Math.floor(attrVal(S,'cha')/3))*mult);
@@ -325,12 +329,15 @@ function npcDuel(i){
   battle(e,res=>{
     if(res.win){
       n.favor=clamp(n.favor+10,0,100);
+      const bl=addBond(n,2);if(bl)log(bl);
       log('<p class="good">切磋获胜，'+esc(n.name)+'心服口服（好感+10）。</p>');
       const gd=growAttr('str',0.08,'切磋之中，武艺渐精');if(gd)log(gd);
     }else if(res.draw){
       n.favor=clamp(n.favor+3,0,100);log('<p>双方战平收手，彼此都有所领悟。</p>');
+      const bl=addBond(n,1);if(bl)log(bl);
     }else{
       n.favor=clamp(n.favor+3,0,100);
+      const bl=addBond(n,1);if(bl)log(bl);
       log('<p>切磋落败，你倒在地上喘着粗气，'+(n.favor>=50?'对方连忙扶起你，好言宽慰。':'对方拱手道了声「承让」。')+'</p>');
     }
     renderAll();
@@ -346,11 +353,90 @@ function npcCompanion(i){
   closePanel();
   const R=doRoll('cha',12);
   log('<p>你邀'+esc(n.name)+'结伴同行，彼此照应：'+rollBadge(R.r,R.mod,R.t,R.dc)+'</p>');
-  if(R.hit){S.companion=n;n.favor=clamp(n.favor-2,0,100);log('<p class="good">对方欣然应允：「江湖路远，同行一程也好。」（结伴：战斗攻势 +'+companionAtk()+'，探索受其照应）</p>');passTime(1);renderAll()}
+  if(R.hit){S.companion=n;n.favor=clamp(n.favor-2,0,100);const bl=addBond(n,3);if(bl)log(bl);log('<p class="good">对方欣然应允：「江湖路远，同行一程也好。」（结伴：战斗攻势 +'+companionAtk()+'，探索受其照应）</p>');passTime(1);renderAll()}
   else{log('<p>对方婉言谢绝：「我尚有要事在身。」</p>');passTime(1);renderAll()}
 }
-function companionAtk(){return S.companion?Math.floor(S.companion.stage*2+3):0}
+function companionAtk(){return S.companion?Math.floor(S.companion.stage*2+3)+Math.floor((S.companion.bond||0)/20):0}
 function companionLuck(){return S.companion?Math.floor(S.companion.stage*2+4):0}
+/* ===== 关系图谱：以你为中心的因果星图 + 名录（人物关系网可视化） ===== */
+function relWebLayout(){
+  const p=S;
+  const rings={r1:[],r2:[],r3:[],foe:[]};
+  const add=(kind,idx,label,ring,color,roleTxt,relTxt)=>{rings[ring].push({kind:kind,idx:idx,label:label,color:color,roleTxt:roleTxt||'',relTxt:relTxt||''});};
+  if(p.daoPartner)add('partner',-1,p.daoPartner.name,'r1','#e8c86a',p.daoPartner.role,'道侣');
+  if(p.master)add('master',-1,p.master.name,'r1','#a8d5a8',p.master.title||p.master.role,'师尊');
+  if(p.companion)add('companion',-1,p.companion.name,'r1','#8fb8d8',p.companion.role,'同行');
+  (p.children||[]).forEach((c,i)=>add('child',i,c.name,'r1','#d8a8e8',stageName(c.stage),'子嗣'));
+  (p.disciples||[]).forEach((d,i)=>add('disciple',i,d.name,'r1','#9fc8a8',d.title||d.role||'弟子','弟子'));
+  (p.affairs||[]).forEach((a,i)=>{if(a&&!a.foe)add('affair',i,a.name,'r2','#e8a8b8',a.role,'暧昧')});
+  (p.npcs||[]).forEach((n,i)=>{
+    if(!n.met||n.foe)return;
+    if(n.favor>=60)add('npc',i,n.name,'r2','#c9d8a8',n.role,'知己');
+    else add('npc',i,n.name,'r3','#8f9cb8',n.role,'相识');
+  });
+  (p.npcs||[]).forEach((n,i)=>{if(n.foe)add('npc',i,n.name,'foe','#e08a8a',n.role,'仇敌')});
+  const cx=160,cy=165;
+  const radii={r1:54,r2:100,r3:148,foe:192};
+  const nodes=[];
+  for(const ring of ['r1','r2','r3','foe']){
+    const arr=rings[ring];
+    const n=Math.max(1,arr.length);
+    arr.forEach((nd,i)=>{
+      const a=(i/n)*Math.PI*2-Math.PI/2;
+      nd.x=+(cx+Math.cos(a)*radii[ring]).toFixed(1);
+      nd.y=+(cy+Math.sin(a)*radii[ring]).toFixed(1);
+      nodes.push(nd);
+    });
+  }
+  return nodes;
+}
+function relationWeb(){
+  if(!S){toast('尚未踏入仙途');return}
+  const nodes=relWebLayout();
+  const byName={};
+  for(const nd of nodes)if(nd.kind==='npc')byName[nd.label]=nd;
+  let lines='';
+  for(const nd of nodes)lines+='<line x1="160" y1="165" x2="'+nd.x+'" y2="'+nd.y+'" stroke="'+nd.color+'" stroke-opacity="0.28" stroke-width="1"/>';
+  for(const n of (S.npcs||[])){
+    if(!n.rels)continue;
+    for(const rn in n.rels){
+      const t=n.rels[rn].type,a=byName[n.name],b=byName[rn];
+      if(!a||!b)continue;
+      const c=(t==='同门'||t==='旧识')?'#7fae7f':t==='挚友'?'#9fd8a8':(t==='青梅'||t==='暗恋')?'#e0a0b8':t==='师徒'?'#9fc8e8':'#c06a5a';
+      lines+='<line x1="'+a.x+'" y1="'+a.y+'" x2="'+b.x+'" y2="'+b.y+'" stroke="'+c+'" stroke-opacity="0.5" stroke-width="1.2" stroke-dasharray="3 3"/>';
+    }
+  }
+  const dots=nodes.map(nd=>'<g onclick="relNodeClick(\''+nd.kind+'\','+nd.idx+')" style="cursor:pointer"><circle cx="'+nd.x+'" cy="'+nd.y+'" r="17" fill="transparent"/><circle cx="'+nd.x+'" cy="'+nd.y+'" r="9" fill="#1b1f31" stroke="'+nd.color+'" stroke-width="1.6"/><title>'+esc(nd.label)+' · '+esc(nd.relTxt)+'</title></g>').join('');
+  const center='<g onclick="openCharPanel()" style="cursor:pointer"><circle cx="160" cy="165" r="21" fill="#20263e" stroke="#e8c86a" stroke-width="2"/><text x="160" y="170" text-anchor="middle" font-size="11" fill="#e8c86a">'+esc((S.name||'我').slice(0,2))+'</text></g>';
+  const rows=nodes.map(nd=>{
+    if(nd.kind==='npc'){
+      const n=S.npcs[nd.idx];
+      if(!n)return '';
+      const btns='<button class="small" onclick="openNpcCard(S.npcs['+nd.idx+'],\'\')">📇</button>'+(n.foe?'':'<button class="small" onclick="npcChat('+nd.idx+')">💬</button>');
+      return '<div class="rel-row">'+artImg(NPC_ART[n.role]||ART.lady,36,36,'avatar')+'<div class="rel-info"><b>'+esc(n.name)+'</b> <span class="tag">'+esc(n.role)+'</span><small>'+esc(nd.relTxt)+' · 好感 '+(n.favor||0)+' · 羁绊 '+bondTxt(n)+'</small></div><div class="rel-btns">'+btns+'</div></div>';
+    }
+    if(nd.kind==='partner')return '<div class="rel-row">'+artImg(NPC_ART[S.daoPartner.role]||ART.lady,36,36,'avatar')+'<div class="rel-info"><b>'+esc(S.daoPartner.name)+'</b> <span class="tag">'+esc(S.daoPartner.role)+'</span><small>道侣 · 情缘 '+(S.daoPartner.favor||0)+' · 羁绊 '+bondTxt(S.daoPartner)+'</small></div><div class="rel-btns"><button class="small" onclick="openNpcCard(S.daoPartner,\'道侣\')">📇</button><button class="small" onclick="panelPartner()">💞</button></div></div>';
+    if(nd.kind==='master')return '<div class="rel-row">'+artImg(charArtKey(S.master),36,36,'avatar')+'<div class="rel-info"><b>'+esc(S.master.name)+'</b> <span class="tag">'+esc(S.master.title||S.master.role)+'</span><small>师尊 · 羁绊 '+bondTxt(S.master)+'</small></div><div class="rel-btns"><button class="small" onclick="openNpcCard(S.master,\'师尊\')">📇</button><button class="small" onclick="panelMaster()">🎓</button></div></div>';
+    if(nd.kind==='companion')return '<div class="rel-row">'+artImg(NPC_ART[S.companion.role]||ART.lady,36,36,'avatar')+'<div class="rel-info"><b>'+esc(S.companion.name)+'</b> <span class="tag">'+esc(S.companion.role)+'</span><small>同行 · 羁绊 '+bondTxt(S.companion)+'</small></div><div class="rel-btns"><button class="small" onclick="openNpcCard(S.companion,\'同行\')">📇</button></div></div>';
+    if(nd.kind==='child'){const c=S.children[nd.idx];if(!c)return '';return '<div class="rel-row">'+artImg('assets/portraits/child_'+(c.gender==='女'?'f':'m')+'.jpg',36,36,'avatar')+'<div class="rel-info"><b>'+esc(c.name)+'</b> <span class="tag">'+stageName(c.stage)+'</span><small>子嗣 · 灵根 '+c.root+'</small></div><div class="rel-btns"><button class="small" onclick="openChildCard('+nd.idx+')">📇</button></div></div>';}
+    if(nd.kind==='disciple'){const d=S.disciples[nd.idx];if(!d)return '';return '<div class="rel-row">'+artImg(NPC_ART[d.role]||ART.lady,36,36,'avatar')+'<div class="rel-info"><b>'+esc(d.name)+'</b> <span class="tag">'+esc(d.title||d.role||'弟子')+'</span><small>弟子 · 羁绊 '+bondTxt(d)+'</small></div><div class="rel-btns"><button class="small" onclick="openNpcCard(S.disciples['+nd.idx+'],\'弟子\')">📇</button></div></div>';}
+    if(nd.kind==='affair'){const a=S.affairs[nd.idx];if(!a)return '';return '<div class="rel-row">'+artImg(NPC_ART[a.role]||ART.lady,36,36,'avatar')+'<div class="rel-info"><b>'+esc(a.name)+'</b> <span class="tag">'+esc(a.role)+'</span><small>暧昧 · 好感 '+(a.favor||0)+' · 羁绊 '+bondTxt(a)+'</small></div><div class="rel-btns"><button class="small" onclick="openNpcCard(S.affairs['+nd.idx+'],\'暧昧\')">📇</button><button class="small" onclick="daoAffairChat('+nd.idx+')">💬</button></div></div>';}
+    return '';
+  }).join('');
+  openPanel('🕸️ 关系图谱','<p>以你为中心的因果星图——金为道侣、绿为师门、青为知己、粉为暧昧、红为仇敌；虚线为相识之人彼此之间的羁绊。</p>'+
+    '<div class="rel-svg"><svg viewBox="0 0 320 330" xmlns="http://www.w3.org/2000/svg">'+lines+center+dots+'</svg></div>'+
+    (rows?'<h4 style="margin-top:10px">🧾 名录</h4>'+rows:'<p style="color:#6f7a94">仙途初启，尚无相识之人。</p>'));
+}
+function relNodeClick(kind,idx){
+  if(kind==='partner'){openNpcCard(S.daoPartner,'道侣');return}
+  if(kind==='master'){openNpcCard(S.master,'师尊');return}
+  if(kind==='companion'){openNpcCard(S.companion,'同行');return}
+  if(kind==='child'){openChildCard(idx);return}
+  if(kind==='disciple'){openNpcCard(S.disciples[idx],'弟子');return}
+  if(kind==='affair'){openNpcCard(S.affairs[idx],'暧昧');return}
+  const n=S.npcs[idx];
+  if(n)openNpcCard(n,'');
+}
 function favorStage(f){return f>=85?'两情相悦（可表白）':f>=70?'情愫暗生':f>=50?'莫逆之交':f>=30?'相谈甚欢':'泛泛之交'}
 function affectionLabel(f){return f>=95?'生死与共':f>=85?'情根深种':f>=70?'情投意合':f>=50?'两情相悦':f>=30?'心有所属':'初识情愫'}
 function npcCourt(i){
@@ -502,25 +588,25 @@ function shuraField(){
   const r=qixi?4:rand(1,4);
   const he=s=>s.gender==='女'?'她':'他';
   if(r===1){
-    openEventModal('🌩️ 修罗场 · 狭路相逢','<p>你与<b>'+esc(a.name)+'</b>正并肩而行，迎面却撞见<b>'+esc(b.name)+'</b>。'+he(b)+'的目光在你二人之间来回扫过，空气骤然凝滞。</p>',[
+    openEventModal('🌩️ 修罗场 · 狭路相逢','<div class="char-picks">'+charPickHtml(a)+charPickHtml(b)+'</div><p>你与<b>'+esc(a.name)+'</b>正并肩而行，迎面却撞见<b>'+esc(b.name)+'</b>。'+he(b)+'的目光在你二人之间来回扫过，空气骤然凝滞。</p>',[
       {txt:'😊 大方引见，坦然相对',fn:()=>{favorChange(a,3,'坦然相待');favorChange(b,1,'不卑不亢');log('<p>你从容介绍两人，'+he(b)+'虽仍带三分薄怒，却也被你的坦荡化解了几分。</p>')}},
       {txt:'💬 只顾与'+esc(a.name)+'说话，冷落'+esc(b.name),fn:()=>{favorChange(a,2,'受宠');favorChange(b,-6,'醋意横生');log('<p class="danger">'+he(b)+'的脸色越来越难看，最后冷笑一声拂袖而去。</p>')}},
       {txt:'🏃 借口有事，落荒而逃',fn:()=>{favorChange(a,-4,'被抛下');favorChange(b,-4,'被抛下');log('<p class="danger">你脚底抹油溜之大吉，留下两人面面相觑——你的形象一落千丈。</p>')}},
     ]);
   }else if(r===2){
-    openEventModal('💥 修罗场 · 争风吃醋','<p>坊市茶楼中，<b>'+esc(a.name)+'</b>与<b>'+esc(b.name)+'</b>隔着桌子对峙，一壶灵茶被摔在地上，溅了满地。</p>',[
+    openEventModal('💥 修罗场 · 争风吃醋','<div class="char-picks">'+charPickHtml(a)+charPickHtml(b)+'</div><p>坊市茶楼中，<b>'+esc(a.name)+'</b>与<b>'+esc(b.name)+'</b>隔着桌子对峙，一壶灵茶被摔在地上，溅了满地。</p>',[
       {txt:'🛡️ 护住'+esc(a.name),fn:()=>{favorChange(a,5,'当众维护');favorChange(b,-8,'当众受辱');log('<p class="danger">'+he(b)+'咬牙望着你，眼中有水光一闪而逝。</p>')}},
       {txt:'🛡️ 护住'+esc(b.name),fn:()=>{favorChange(b,5,'当众维护');favorChange(a,-8,'当众受辱');log('<p class="danger">'+he(a)+'垂下眼帘，指尖微微发颤。</p>')}},
       {txt:'☯️ 各打五十大板',fn:()=>{favorChange(a,-3,'和稀泥');favorChange(b,-3,'和稀泥');log('<p>你把两人都数落了一顿，茶钱也赔了。两人虽然消停，却都记了你一笔。</p>')}},
     ]);
   }else if(r===3){
-    openEventModal('🔥 情感抉择 · 水火不容','<p>山道之上，<b>'+esc(a.name)+'</b>与<b>'+esc(b.name)+'</b>同时陷入危局——左有妖兽扑向'+esc(a.name)+'，右有山崩砸向'+esc(b.name)+'。电光石火之间，你只能救一人！</p>',[
+    openEventModal('🔥 情感抉择 · 水火不容','<div class="char-picks">'+charPickHtml(a)+charPickHtml(b)+'</div><p>山道之上，<b>'+esc(a.name)+'</b>与<b>'+esc(b.name)+'</b>同时陷入危局——左有妖兽扑向'+esc(a.name)+'，右有山崩砸向'+esc(b.name)+'。电光石火之间，你只能救一人！</p>',[
       {txt:'⚡ 救下'+esc(a.name),fn:()=>{favorChange(a,8,'生死相救');favorChange(b,-18,'被弃之痛');S.flag.qingjie=(S.flag.qingjie||0)+rand(20,40);log('<p class="danger">你抱住'+esc(a.name)+'滚出险地，再回头时，'+esc(b.name)+'已半埋于乱石之下。良久，'+he(b)+'从石缝中爬出，看你的眼神比血更冷。——你种下了一道<b>情劫</b>（'+S.flag.qingjie+' 日内心性判定 -2）。</p>')}},
       {txt:'⚡ 救下'+esc(b.name),fn:()=>{favorChange(b,8,'生死相救');favorChange(a,-18,'被弃之痛');S.flag.qingjie=(S.flag.qingjie||0)+rand(20,40);log('<p class="danger">你扑向'+esc(b.name)+'的一瞬，'+esc(a.name)+'眼里的光熄灭了。此劫入心，'+S.flag.qingjie+' 日内心性判定 -2。</p>')}},
       {txt:'🌪️ 以身为盾，双双硬抗（凶险）',cls:'danger',fn:()=>{const R=doRoll('wil',20);log('<p>你怒吼一声，撑起护体灵光冲向两人之间：'+rollBadge(R.r,R.mod,R.t,R.dc)+'</p>');if(R.hit){S.hp=Math.max(1,S.hp-Math.floor(S.maxHp*0.25));favorChange(a,6,'以命相护');favorChange(b,6,'以命相护');log('<p class="good">千钧一发之际，你以重伤换回两人平安。三人相顾无言，却都懂了。</p>')}else{S.hp=Math.max(1,S.hp-Math.floor(S.maxHp*0.5));applyInjury('neijing');favorChange(a,-6,'护之不及');favorChange(b,-6,'护之不及');log('<p class="danger">你被余波震飞，两人虽无大碍，却都怨你护得不够周全（气血-50%，经脉受损）。</p>')}}},
     ]);
   }else{
-    openEventModal('🌉 七夕 · 鹊桥相会','<p>七夕之夜，银河横空，鹊鸟衔羽搭桥。<b>'+esc(a.name)+'</b>与<b>'+esc(b.name)+'</b>竟于桥头不期而遇，四目相对，又齐齐看向你。</p>',[
+    openEventModal('🌉 七夕 · 鹊桥相会','<div class="char-picks">'+charPickHtml(a)+charPickHtml(b)+'</div><p>七夕之夜，银河横空，鹊鸟衔羽搭桥。<b>'+esc(a.name)+'</b>与<b>'+esc(b.name)+'</b>竟于桥头不期而遇，四目相对，又齐齐看向你。</p>',[
       {txt:'💞 执起道侣之手，共赏星河',fn:()=>{favorChange(a,8,'七夕定情');favorChange(b,-4,'怅然若失');log('<p>你与'+esc(a.name)+'十指相扣，'+(S.daoPartner===a?'道侣':'对方')+'眉眼含笑，'+(b.favor>0?'只有'+esc(b.name)+'默默转身，把一声叹息留给了鹊桥。':'')+'</p>')}},
       {txt:'🌸 与两人各赠一枝鹊羽',fn:()=>{favorChange(a,3,'雨露均沾');favorChange(b,3,'雨露均沾');log('<p>你折了两枝鹊羽，各递一枝。两人虽都接下了，目光却都藏着心事。</p>')}},
       {txt:'🏃 趁月色遁走',fn:()=>{favorChange(a,-5,'七夕失约');favorChange(b,-5,'七夕失约');log('<p class="danger">你借着月色溜走，留下两人对着鹊桥无语凝噎。</p>')}},

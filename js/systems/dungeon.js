@@ -67,7 +67,34 @@ const DUNGEONS={
     ],
     final:'你缓缓睁眼，仍坐在青石小径旁。手中木牌已碎成齑粉，随风散入尘埃。'
   },
+  ice:{
+    name:'寒渊冰宫',
+    rooms:[
+      {desc:'冰宫入口悬着一座寒冰桥，桥下是深不见底的寒渊，雾气凝霜，寒意刺骨。',
+       opts:[
+         {txt:'御风踏冰而过',dc:14,stat:'agi',succ:'你足尖点冰，如燕掠过寒渊。',fail:'冰桥震颤，你滑落半丈，撞在桥沿（气血受损）。',eff:s=>['hp',-12]},
+         {txt:'以真元暖身，稳步前行',dc:0,succ:'',fail:'',eff:s=>{if(useSpirit(20)){s.mats.jade=(s.mats.jade||0)+1;return ['mat','寒玉 ×1']}return ['hp',-8]}}
+       ]},
+      {desc:'冰宫深处悬着一具玄冰棺，棺中女子眉目如画，怀中抱着一枚流光玉简。',
+       opts:[
+         {txt:'取走玉简（谨慎）',dc:16,stat:'int',succ:'玉简入怀，冰棺悄然合拢。',fail:'棺中女子睁眼，一缕寒息直入识海！',eff:s=>{if(Math.random()<0.55){s.cult+=300;return ['cult','修为 +300']}s.heartDemons++;return ['demon','心魔 +1']}},
+         {txt:'郑重一礼，不取一物',dc:0,succ:'',fail:'',eff:s=>{s.attrs.wil=clamp(s.attrs.wil+1,1,40);return ['wil','心性 +1']}}
+       ]},
+      {desc:'冰宫尽头立着一座万年寒心，寒气凝成实质，沁入骨髓。',
+       opts:[
+         {txt:'引寒心入体淬体（力量判定）',dc:17,stat:'str',succ:'寒心化作暖流，你的体魄为之一变！',fail:'寒气反噬，你冻僵当场。',eff:s=>{if(Math.random()<0.5){s.attrs.str=clamp(s.attrs.str+2,1,40);return ['str','力量 +2']}s.hp=Math.max(1,s.hp-Math.floor(s.maxHp*0.2));return ['hp',-20]}},
+         {txt:'取走寒心，留待炼器',dc:0,succ:'',fail:'',eff:s=>{s.mats.jade=(s.mats.jade||0)+2;s.mats.demonCore=(s.mats.demonCore||0)+1;return ['mat','寒玉 ×2 · 妖丹 ×1']}}
+       ]}
+    ],
+    final:'你退出冰宫，身后寒气如幕缓缓合拢。此行收获，尽付一壶温酒。'
+  },
 };
+/* 秘境册：按类型记录通关（行迹图鉴展示） */
+function recordDungeonDone(kind){
+  if(!S||!kind)return;
+  S.flag.dungeonDone=S.flag.dungeonDone||{};
+  S.flag.dungeonDone[kind]=true;
+}
 function enterDungeon(kind){
   const d=DUNGEONS[kind];
   S.dungeon={kind,depth:0};
@@ -81,6 +108,7 @@ function optIcon(t){
   return '🧭';
 }
 function dungeonRoom(){
+  if(!S.dungeon||!DUNGEONS[S.dungeon.kind])return;
   const d=DUNGEONS[S.dungeon.kind];
   const room=d.rooms[S.dungeon.depth];
   S.dungeon.depth++;
@@ -109,6 +137,7 @@ function dungeonRoom(){
     }else{
       if(S.dungeon.kind==='dream'){S.trinket=null;S.cult+=500;log('<p class="good">梦醒时分，木牌化作齑粉，一段因果就此了结（修为 +500）。</p>')}
       log('<p class="loot">'+d.final+'</p>');
+      recordDungeonDone(S.dungeon.kind);
       S.dungeon=null;
       S.flag.dungeons=(S.flag.dungeons||0)+1;
       const g=Math.floor(150+rl()*25);S.cult+=g;

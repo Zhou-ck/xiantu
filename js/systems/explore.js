@@ -11,12 +11,73 @@ const REGIONS=[
   {id:'cliff',name:'断魂崖',days:8,desc:'悬崖千仞，云雾之下隐约有龙吟声传来。',minRealm:6,common:30,beast:45,herb:25,rare:25,danger:35},
   {id:'abyss',name:'荒古禁地',days:12,desc:'九界禁区，上古大能陨落之地，一步一劫。',minRealm:17,common:15,beast:55,herb:60,rare:45,danger:60},
 ];
+/* ===== 行迹图鉴：探索统计 / 足迹记录 / 里程碑（历练深化） ===== */
+const EXPLORE_MILES=[
+  {n:10,t:'十步一迹',g:()=>{S.stones+=100;return '灵石 +100'}},
+  {n:30,t:'踏遍青山',g:()=>{S.luck=clamp(S.luck+1,1,100);return '气运 +1'}},
+  {n:60,t:'行者无疆',g:()=>{S.stones+=300;S.flag.insights=(S.flag.insights||0)+1;return '灵石 +300 · 悟道 +1'}},
+  {n:100,t:'九州履痕',g:()=>{S.luck=clamp(S.luck+1,1,100);S.stones+=500;S.flag.insights=(S.flag.insights||0)+2;return '气运 +1 · 灵石 +500 · 悟道 +2'}},
+];
+function recordExplore(r,outcome){
+  if(!S||!r)return;
+  S.flag.exploreLog=S.flag.exploreLog||[];
+  S.flag.exploreLog.unshift({r:r.name||r,o:outcome||'calm',d:Math.floor(S.days)});
+  if(S.flag.exploreLog.length>8)S.flag.exploreLog.length=8;
+  S.flag.regions=S.flag.regions||{};
+  S.flag.regions[r.id||r]=(S.flag.regions[r.id||r]||0)+1;
+  S.flag.encTypes=S.flag.encTypes||{};
+  S.flag.encTypes[outcome||'calm']=(S.flag.encTypes[outcome||'calm']||0)+1;
+}
+function checkExploreMiles(){
+  if(!S)return;
+  const n=S.flag.exploreCount||0;
+  S.flag.exploreMiles=S.flag.exploreMiles||[];
+  for(const m of EXPLORE_MILES){
+    if(n>=m.n&&S.flag.exploreMiles.indexOf(m.n)<0){
+      S.flag.exploreMiles.push(m.n);
+      let r='';
+      try{r=m.g()}catch(e){}
+      log('<p class="loot">🏁 行迹里程碑「'+m.t+'」达成（累计探索 '+n+' 次）：'+r+'。</p>');
+    }
+  }
+}
+function exploreTome(){
+  if(!S){toast('尚未踏入仙途');return}
+  const n=S.flag.exploreCount||0;
+  const types=S.flag.encTypes||{};
+  const typeTxt={calm:'安行',herb:'采药',rare:'奇遇',beast:'遭遇战',danger:'凶险',epic:'天降奇缘'};
+  const typeHtml=Object.keys(typeTxt).map(k=>'<div class="bd-row"><span>'+typeTxt[k]+'</span><b>'+(types[k]||0)+' 次</b></div>').join('');
+  const regs=S.flag.regions||{};
+  const regionHtml=REGIONS.map(r=>'<div class="bd-row"><span>'+esc(r.name)+'</span><b>'+(regs[r.id]||0)+' 次</b></div>').join('');
+  const milesHtml=EXPLORE_MILES.map(m=>{
+    const got=(S.flag.exploreMiles||[]).indexOf(m.n)>=0;
+    return '<div class="bd-row'+(got?' ok':'')+'"><span>'+(got?'✅ ':'🔒 ')+'探索 '+m.n+' 次 · '+m.t+'</span></div>';
+  }).join('');
+  const logHtml=(S.flag.exploreLog||[]).slice(0,8).map(l=>'<div class="bd-row"><span>'+esc(l.r)+' · '+(typeTxt[l.o]||l.o)+'</span><b>第 '+Math.floor(l.d/365)+' 年</b></div>').join('');
+  openPanel('📖 行迹图鉴',
+    '<p>读万卷书，行万里路。仙途的每一段足迹，都算数。</p>'+
+    '<div class="bd-box"><div class="bd-head">🧭 履历</div>'+
+    '<div class="bd-row"><span>探索次数</span><b>'+n+' 次</b></div>'+
+    '<div class="bd-row"><span>试炼塔</span><b>第 '+(S.flag.tower||0)+' 层</b></div>'+
+    '<div class="bd-row"><span>秘境</span><b>已探 '+(S.flag.dungeons||0)+' 座 · '+Object.keys(S.flag.dungeonDone||{}).length+'/'+Object.keys(DUNGEONS).length+' 类</b></div>'+
+    '<div class="bd-row"><span>守关试炼</span><b>'+Object.keys(S.flag.bosses||{}).length+'/'+STAGE_NAMES.length+' 境</b></div>'+
+    '<div class="bd-row"><span>悟道</span><b>'+(S.flag.insights||0)+' 次</b></div></div>'+
+    '<div class="bd-box"><div class="bd-head">🌊 妖潮守城</div>'+
+    '<div class="bd-row"><span>守卫战</span><b>胜 '+(S.flag.tideWins||0)+' · 负 '+(S.flag.tideFails||0)+'</b></div>'+
+    '<div class="bd-row"><span>守城战绩</span><b>'+(S.flag.tideWins||0)+' 次全胜</b></div></div>'+
+    '<div class="bd-box"><div class="bd-head">🗺️ 到访之地</div>'+regionHtml+'</div>'+
+    '<div class="bd-box"><div class="bd-head">⚖️ 际遇分布</div>'+typeHtml+'</div>'+
+    '<div class="bd-box"><div class="bd-head">🏁 里程碑</div>'+milesHtml+'</div>'+
+    (logHtml?'<div class="bd-box"><div class="bd-head">🦶 最近足迹</div>'+logHtml+'</div>':'')+
+    '<p style="font-size:11.5px;color:#6f7a94;margin-top:8px">里程碑奖励一次性发放；行迹与际遇记录会随探索持续更新。</p>');
+}
 function panelExplore(){
   const tower=(S.realm>=2?'<div class="item-card"><div class="nm">🧗 试炼塔 <span style="font-size:12px;color:#6f7a94">（已通 '+(S.flag.tower||0)+' 层）</span></div><div class="ds">古修留下的历练之塔，一层一关，越往上越凶险，奖励也越丰厚。每五层有守塔统领。</div><div style="margin-top:8px"><button class="small primary" onclick="doTower()">挑战第 '+((S.flag.tower||0)+1)+' 层</button></div></div>':'');
   const bossStage=bigStage(S.realm);
   const bossBeat=!!(S.flag.bosses&&S.flag.bosses[bossStage]);
   const bossCard='<div class="item-card"><div class="nm">⛩️ 守关试炼 · '+STAGE_NAMES[bossStage]+'</div><div class="ds">'+(bossBeat?'守关已破（可再次挑战刷取机缘，已破关卡无功法遗宝）。':'当前境界的守关大妖，击败可得重赏，金丹以上另有功法遗宝。')+'</div><div style="margin-top:8px"><button class="small primary" onclick="bossBattle('+bossStage+')">'+(bossBeat?'再次挑战':'前往挑战')+'</button></div></div>';
   const html='<p>山野之间，机缘与凶险并存。气运暗藏天机，奇谈传闻与天降奇遇也常隐于山水之间。</p>'+
+    '<div class="row"><button class="small primary" onclick="exploreTome()">📖 行迹图鉴</button></div>'+
     tower+
     bossCard+
     REGIONS.filter(r=>S.realm>=r.minRealm).map(r=>
@@ -105,6 +166,8 @@ function doExplore(rid){
     if(PENDING>0){renderAll();return}
   S.flag.explored=true;
   S.flag.exploreCount=(S.flag.exploreCount||0)+1;
+  recordExplore(r,outcome);
+  checkExploreMiles();
   dC().c.explore++;
   addTrail(1);
     maybeInsight('寻宝途中');
@@ -119,6 +182,8 @@ function doExplore(rid){
   if(enc)log(enc);
   S.flag.explored=true;
   S.flag.exploreCount=(S.flag.exploreCount||0)+1;
+  recordExplore(r,outcome);
+  checkExploreMiles();
   dC().c.explore++;
   addTrail(1);
   maybeInsight('山水之间');
@@ -260,6 +325,183 @@ const CHAINS={
       ]);
     }},
   ]},
+  jianzhong:{n:'青莲剑冢链',desc:'一截断剑，引向无碑剑冢',steps:[
+    {stage:1,txt:'断剑在你行囊中轻轻嗡鸣，剑格处的青莲纹样微微发烫，指向西南——那里，有一座无碑剑冢。',fn:()=>{
+      S.flag.chain.jianzhong=2;
+      openEventModal('🗡️ 剑冢青莲','<p>你循着剑意走了三日，在一处绝壁之下寻到剑冢。断剑自行脱鞘，剑身青光与冢中残存的剑气遥相呼应。</p>',[
+        {txt:'🗡️ 悟剑碑（智慧判定）',cls:'primary',fn:()=>{
+          const R=doRoll('int',16);
+          log('<p>你盘坐剑碑之前，闭目观剑：'+rollBadge(R.r,R.mod,R.t,R.dc)+'</p>');
+          if(R.hit){
+            S.flag.tAttack=(S.flag.tAttack||0)+1;
+            S.flag.jianYi=true;
+            if(S.arts[0]){const mg=gainArtMastery(S.arts[0],120);if(mg)log(mg);}
+            log('<p class="good">碑上剑痕如百川归海，尽数涌入识海——你悟得一线剑意（攻势 +1，功法熟练大涨）。</p>');
+          }else{
+            log('<p class="danger">剑意太深，你观之良久，只觉头晕目眩，不得不移开目光。</p>');
+          }
+          S.flag.chain.jianzhong=3;
+          passTime(2);renderAll();
+        }},
+        {txt:'⚔️ 强闯剑灵（力量判定）',fn:()=>{
+          const R=doRoll('str',15);
+          log('<p>你踏碎一地枯叶，径直走向剑冢中心：'+rollBadge(R.r,R.mod,R.t,R.dc)+'</p>');
+          if(R.hit){
+            const g=rand(150,300);S.stones+=g;S.flag.jianYi=true;
+            log('<p class="loot">冢心一具白骨怀中抱着半卷剑谱与一袋灵石（灵石 +'+g+'）。</p>');
+            if(!S.arts.some(x=>x.name==='太乙剑诀')){S.arts.push(Object.assign({},ARTS.find(x=>x.name==='太乙剑诀')));log('<p class="loot">你参悟剑谱，习得「太乙剑诀」！</p>')}
+            else{const mg=gainArtMastery(S.arts[0],120);if(mg)log(mg);}
+          }else{
+            S.hp=Math.max(1,S.hp-Math.floor(S.maxHp*0.2));
+            log('<p class="danger">冢中剑气暴起，将你击飞三丈（气血 -20%）。</p>');
+          }
+          S.flag.chain.jianzhong=3;
+          passTime(2);renderAll();
+        }},
+        {txt:'🙏 焚香一炷，礼敬剑冢后离去',fn:()=>{
+          addMerit(3);
+          log('<p class="good">你对着剑冢郑重一礼，将断剑放回冢前。剑气敛尽，天地复归沉寂（功德 +3）。</p>');
+          S.flag.chain.jianzhong=-1;
+          passTime(2);renderAll();
+        }},
+      ]);
+    }},
+    {stage:3,txt:'数月之后，你在坊市遇见一名独臂剑修，他腰间剑格上，正纹着一朵与你那截断剑如出一辙的青莲。',fn:()=>{
+      S.flag.chain.jianzhong=3;
+      openEventModal('🕯️ 剑冢回响','<p>独臂剑修看见你，目光一凝，嗓音微哑：「你腰间那柄断剑……是从何处得来？」</p>',[
+        {txt:'🗡️ 取出断剑，递还于他（功德+10）',cls:'primary',fn:()=>{
+          addMerit(10);
+          const g=rand(200,400);S.stones+=g;
+          if(S.flag.jianYi){S.luck=clamp(S.luck+1,1,100);log('<p class="good">他接过断剑，久久不语，末了将一缕剑意渡入你眉心：「此剑认过你，剑意便归你。」（功德+10，灵石+'+g+'，气运+1）</p>');}
+          else{log('<p class="good">他接过断剑，郑重一揖：「此乃先师遗物，多谢道友归还。」（功德+10，灵石+'+g+'）</p>');}
+          S.flag.chain.jianzhong=-1;
+          passTime(1);renderAll();
+        }},
+        {txt:'🤝 坦言来历，结一段善缘',fn:()=>{
+          const R=doRoll('cha',14);
+          log('<p>你如实相告：'+rollBadge(R.r,R.mod,R.t,R.dc)+'</p>');
+          if(R.hit){addMerit(5);S.luck=clamp(S.luck+1,1,100);log('<p class="good">剑修听罢，为你指点了三处剑道秘境（功德+5，气运+1）。</p>');}
+          else{log('<p>剑修点点头，未再多言，转身离去。</p>');}
+          S.flag.chain.jianzhong=-1;
+          passTime(1);renderAll();
+        }},
+      ]);
+    }},
+  ]},
+  lingquan:{n:'灵泉福缘链',desc:'一泓灵泉，一段因果',steps:[
+    {stage:1,txt:'你于深谷中寻得一泓灵泉，泉眼澄澈，隐隐泛着灵光，泉边石壁上刻着四字：「有缘者饮」。',fn:()=>{
+      S.flag.chain.lingquan=2;
+      openEventModal('💧 灵泉福缘','<p>泉水汩汩，灵气氤氲。</p>',[
+        {txt:'💧 引泉入村，泽被乡里（功德+8）',cls:'primary',fn:()=>{addMerit(8);S.flag.lingquan='vill';log('<p class="good">你引来泉流，村中老幼饮之，体健少疾（功德 +8）。</p>');S.flag.chain.lingquan=3;passTime(2);renderAll()}},
+        {txt:'🧿 自饮淬体（灵根+2）',fn:()=>{S.root=clamp(S.root+2,1,100);S.flag.lingquan='self';log('<p class="good">泉入丹田，一股清凉涤荡周身（灵根 +2）。</p>');S.flag.chain.lingquan=3;passTime(2);renderAll()}},
+        {txt:'🪷 封存泉眼，留待后缘（气运+1）',fn:()=>{S.luck=clamp(S.luck+1,1,100);S.flag.lingquan='seal';log('<p class="good">你以灵砂封住泉眼，于石上留了一行字：「留与后来人。」（气运 +1）</p>');S.flag.chain.lingquan=3;passTime(2);renderAll()}},
+      ]);
+    }},
+    {stage:3,txt:'数月后，你重访灵泉所在。',fn:()=>{
+      S.flag.chain.lingquan=3;
+      if(S.flag.lingquan==='vill'){
+        openEventModal('🏮 灵泉回响 · 乡里','<p>村口立起一座泉亭，孩童嬉戏，老者烹茶。乡民见你，纷纷行礼：「恩公的泉，养了我们一村人。」</p>',[
+          {txt:'🙏 受礼，留下一卷导引术',fn:()=>{addMerit(5);S.fame=S.fame||{};S.fame.zheng=(S.fame.zheng||0)+5;log('<p class="good">你留下一卷粗浅导引术，乡民世代传习（功德+5，正道声望+5）。</p>');S.flag.chain.lingquan=-1;passTime(1);renderAll()}},
+          {txt:'🚶 谢过便走，不居其功',fn:()=>{const gw=growWil(0.15,'功成弗居，道心愈明');if(gw)log(gw);S.flag.chain.lingquan=-1;passTime(1);renderAll()}},
+        ]);
+      }else if(S.flag.lingquan==='self'){
+        openEventModal('💧 灵泉回响 · 泉灵','<p>泉边雾气聚成一缕人形：「你饮了我的水，便欠我一桩因果——替我带一句话给山下剑修叶某。」</p>',[
+          {txt:'🤝 应下这桩信使因果',fn:()=>{const g=rand(100,250);S.stones+=g;log('<p class="loot">你依言传话，剑修赠你谢仪（灵石 +'+g+'）。</p>');S.flag.chain.lingquan=-1;passTime(2);renderAll()}},
+          {txt:'🙈 假装没听见，转身离开',fn:()=>{addKarma(3);log('<p class="danger">泉灵幽幽一叹，泉水自此枯竭（业力 +3）。</p>');S.flag.chain.lingquan=-1;passTime(1);renderAll()}},
+        ]);
+      }else{
+        openEventModal('🪷 灵泉回响 · 封存','<p>泉眼依旧封存，石上你的留字旁，又多了一行娟秀小字：「知音在此，泉开之日，再会。」</p>',[
+          {txt:'✨ 解开封存，静候有缘',fn:()=>{S.luck=clamp(S.luck+1,1,100);log('<p class="good">你解开灵砂，泉水复涌（气运 +1）。</p>');S.flag.chain.lingquan=-1;passTime(1);renderAll()}},
+        ]);
+      }
+    }},
+  ]},
+  guren:{n:'故人因果链',desc:'故人重逢，恩怨两清',steps:[
+    {stage:1,txt:'山道上，一名落拓散修拦住你，仔细端详你半晌：「……是你？当年清风渡一别，你我竟在此重逢。」',fn:()=>{
+      S.flag.chain.guren=2;
+      openEventModal('🤝 故人重逢','<p>他说他姓赵，当年与你在清风渡同渡一船。如今他遭人算计，身无分文，想向你借 300 灵石周转。</p>',[
+        {txt:'🤝 慷慨解囊（300灵石）',cls:'primary',fn:()=>{if(S.stones>=300){S.stones-=300;S.flag.guren='help';log('<p class="good">你取出 300 灵石递给他：「拿去，不必急着还。」他眼眶微红，郑重一揖。</p>')}else{log('<p>你翻遍行囊，只凑出不足之数。他摆摆手：「有心了。」</p>');S.flag.guren='poor';}S.flag.chain.guren=3;passTime(2);renderAll()}},
+        {txt:'🙅 婉拒：修行之人，各自担待',fn:()=>{S.flag.guren='refuse';log('<p>他愣了愣，苦笑一声：「是我唐突了。」转身离去，背影萧索。</p>');S.flag.chain.guren=3;passTime(1);renderAll()}},
+        {txt:'🔍 先问清缘由，再作定夺（智慧判定）',fn:()=>{const R=doRoll('int',14);log('<p>你细问根由：'+rollBadge(R.r,R.mod,R.t,R.dc)+'</p>');if(R.hit){log('<p class="good">你听出他言语中的破绽——此人并非故人，而是易容来骗你灵石的贼修！</p>');S.flag.guren='fraud';S.flag.chain.guren=3;passTime(1);renderAll()}else{log('<p>你听不出破绽，将信将疑地借出 300 灵石。</p>');S.stones=Math.max(0,S.stones-300);S.flag.guren='help2';S.flag.chain.guren=3;passTime(2);renderAll()}}},
+      ]);
+    }},
+    {stage:3,txt:'一年后，有人托人给你捎来一只木匣。',fn:()=>{
+      S.flag.chain.guren=3;
+      if(S.flag.guren==='help'||S.flag.guren==='help2'){
+        openEventModal('🎁 故人回响','<p>木匣内是一叠灵石与一封书信：「大恩不言谢。此为三倍奉还，另附一处秘境线索，聊表寸心。」</p>',[
+          {txt:'🎁 收下灵石与线索',fn:()=>{S.stones+=900;log('<p class="loot">灵石 +900，秘境线索已记入因果（探索时更易撞见秘境）。</p>');S.flag.gurenDone=true;S.flag.chain.guren=-1;passTime(1);renderAll()}},
+          {txt:'🙏 只取一半，余者托人送还',fn:()=>{S.stones+=450;addMerit(3);log('<p class="good">你取一半，余者回赠。来日方长，君子之交淡如水（灵石+450，功德+3）。</p>');S.flag.chain.guren=-1;passTime(1);renderAll()}},
+        ]);
+      }else if(S.flag.guren==='refuse'){
+        openEventModal('📜 故人回响 · 旧怨','<p>木匣里只有一张字条：「那日山道一别，我走投无路，已投了魔道。此怨，我记下了。」</p>',[
+          {txt:'🛡️ 留意此人，日后提防',fn:()=>{S.flag.exHate={name:'赵姓散修',role:'故人',stage:bigStage(S.realm),atk:8+bigStage(S.realm)*2,hp:50+bigStage(S.realm)*18,days:120};log('<p class="danger">你记下此仇：日后探索或会遭遇其暗算。</p>');S.flag.chain.guren=-1;passTime(1);renderAll()}},
+        ]);
+      }else if(S.flag.guren==='fraud'){
+        openEventModal('🕵️ 故人回响 · 贼修','<p>数月后，你在一处坊市撞见那贼修，正以同样手法行骗。</p>',[
+          {txt:'⚔️ 当众揭穿',fn:()=>{addMerit(6);S.fame=S.fame||{};S.fame.zheng=(S.fame.zheng||0)+5;log('<p class="good">你当场拆穿骗局，众人喝彩（功德+6，正道声望+5）。</p>');S.flag.chain.guren=-1;passTime(1);renderAll()}},
+          {txt:'🚶 冷眼旁观，不置一词',fn:()=>{addKarma(2);log('<p>你远远看了一眼，转身离去。世间的骗局，终究轮不到你管。</p>');S.flag.chain.guren=-1;passTime(1);renderAll()}},
+        ]);
+      }else if(S.flag.guren==='poor'){
+        openEventModal('💌 故人回响 · 心意','<p>木匣里是一坛浊酒与一封短笺：「那日你翻遍行囊的样子，我记了一辈子。此酒，敬你。」</p>',[
+          {txt:'🍶 满饮此杯',fn:()=>{const gw=growWil(0.12,'故人之谊，温热如酒');if(gw)log(gw);log('<p>酒入喉肠，往事如烟。这红尘里的情义，也是修行。</p>');S.flag.chain.guren=-1;passTime(1);renderAll()}},
+        ]);
+      }else{
+        S.flag.chain.guren=-1;
+      }
+    }},
+  ]},
+  shanshen:{n:'山神香火链',desc:'一炷香火，一段因果',steps:[
+    {stage:1,txt:'荒山破庙中，山神像虽斑驳，双目却似有神。你鬼使神差地点了一炷香。',fn:()=>{
+      S.flag.chain.shanshen=2;
+      openEventModal('⛰️ 山神托梦','<p>当夜，你梦见山神开口：「本座香火将断，愿以三桩恩泽，换你为我立一座新庙。」</p>',[
+        {txt:'🏮 应下，为山神立庙（功德+10）',cls:'primary',fn:()=>{addMerit(10);S.flag.shanshen='temple';log('<p class="good">你于村口立起新庙，香火重燃（功德 +10）。</p>');S.flag.chain.shanshen=3;passTime(3);renderAll()}},
+        {txt:'🤝 讨价还价，先付一桩恩泽',fn:()=>{S.luck=clamp(S.luck+1,1,100);S.flag.shanshen='deal';log('<p class="good">山神叹了一声，仍先予你一线气运（气运 +1）。</p>');S.flag.chain.shanshen=3;passTime(2);renderAll()}},
+        {txt:'🙈 当作怪梦，不予理会',fn:()=>{S.flag.shanshen='ignore';log('<p>你翻了个身，将梦忘在脑后。</p>');S.flag.chain.shanshen=3;passTime(1);renderAll()}},
+      ]);
+    }},
+    {stage:3,txt:'数月后，你路过当初那座荒山。',fn:()=>{
+      S.flag.chain.shanshen=3;
+      if(S.flag.shanshen==='temple'){
+        openEventModal('⛰️ 山神回响 · 香火','<p>新庙香火鼎盛，山神显灵，保一方风调雨顺。乡民见你，纷纷下拜。</p>',[
+          {txt:'🙏 受礼，为庙宇题字',fn:()=>{addMerit(5);S.fame=S.fame||{};S.fame.zheng=(S.fame.zheng||0)+5;log('<p class="good">你题下「有求必应」四字，香火更盛（功德+5，正道声望+5）。</p>');S.flag.chain.shanshen=-1;passTime(1);renderAll()}},
+          {txt:'🚶 深藏功与名，悄然离去',fn:()=>{S.luck=clamp(S.luck+1,1,100);log('<p class="good">你不留姓名而去，山神夜半入梦，向你颔首（气运 +1）。</p>');S.flag.chain.shanshen=-1;passTime(1);renderAll()}},
+        ]);
+      }else if(S.flag.shanshen==='deal'){
+        openEventModal('⛰️ 山神回响 · 约定','<p>山神庙已由他人重修，香火复燃。你欠的那两桩恩泽，山神并未索要，只在你梦中留了一句话：「一诺既许，天地共鉴。」</p>',[
+          {txt:'🙏 补上立庙之诺',fn:()=>{addMerit(8);log('<p class="good">你捐资修缮庙宇，了却承诺（功德+8）。</p>');S.flag.chain.shanshen=-1;passTime(2);renderAll()}},
+          {txt:'🚶 不作回应',fn:()=>{addKarma(3);log('<p class="danger">你未践诺，山神香火虽盛，却与你再无瓜葛（业力+3）。</p>');S.flag.chain.shanshen=-1;passTime(1);renderAll()}},
+        ]);
+      }else{
+        openEventModal('⛰️ 山神回响 · 破庙','<p>破庙依旧，山神像却已轰然倒塌，碎成一地泥块。</p>',[
+          {txt:'🙏 顺手收敛残像',fn:()=>{addMerit(2);log('<p>你将残像收敛掩埋，聊尽一份心意（功德+2）。</p>');S.flag.chain.shanshen=-1;passTime(1);renderAll()}},
+          {txt:'🚶 视而不见，继续赶路',fn:()=>{log('<p>你绕过碎庙，继续赶路。山风过处，似有一声轻叹。</p>');S.flag.chain.shanshen=-1;passTime(1);renderAll()}},
+        ]);
+      }
+    }},
+  ]},
+  jiuzhang:{n:'旧账因果链',desc:'一笔旧账，两清恩怨',steps:[
+    {stage:1,txt:'坊市中，一名老修士拦住你：「当年你在云梦泽欠我三枚聚灵丹，可还记得？」',fn:()=>{
+      S.flag.chain.jiuzhang=2;
+      openEventModal('📜 旧账上门','<p>你仔细回想，确有此事——那是多年前灵潮时借的，本说好日后奉还。</p>',[
+        {txt:'🤝 当场还清（聚灵丹×1 + 200灵石）',cls:'primary',fn:()=>{const it=S.items.find(x=>x.name==='聚灵丹');if(it){S.items.splice(S.items.indexOf(it),1);S.stones=Math.max(0,S.stones-200);S.flag.jiuzhang='pay';log('<p class="good">你如数奉还，老修士抚须而笑：「道友重诺，可交！」</p>')}else{log('<p>你行囊中没有聚灵丹，只得折以 500 灵石相偿。</p>');S.stones=Math.max(0,S.stones-500);S.flag.jiuzhang='pay2';}S.flag.chain.jiuzhang=3;passTime(1);renderAll()}},
+        {txt:'🙅 矢口否认这笔旧账',fn:()=>{S.flag.jiuzhang='deny';log('<p>你淡淡摇头：「道友认错人了。」老修士深深看你一眼，拂袖而去。</p>');S.flag.chain.jiuzhang=3;passTime(1);renderAll()}},
+      ]);
+    }},
+    {stage:3,txt:'一年后，云梦泽畔，你与那老修士再度相逢。',fn:()=>{
+      S.flag.chain.jiuzhang=3;
+      if(S.flag.jiuzhang==='pay'||S.flag.jiuzhang==='pay2'){
+        openEventModal('🤝 旧账回响 · 重诺','<p>老修士远远便笑着招手，邀你同舟，言谈间提起一处未开发的灵矿。</p>',[
+          {txt:'🤝 应邀同往',fn:()=>{const g=rand(300,600);S.stones+=g;log('<p class="loot">你二人共探灵矿，分得灵石 +'+g+'。</p>');S.flag.chain.jiuzhang=-1;passTime(3);renderAll()}},
+          {txt:'🚶 婉拒，各自安好',fn:()=>{const gw=growWil(0.1,'君子之交淡如水');if(gw)log(gw);S.flag.chain.jiuzhang=-1;passTime(1);renderAll()}},
+        ]);
+      }else{
+        openEventModal('📜 旧账回响 · 失信','<p>老修士迎面而来，冷笑：「一年不见，道友可还认得我这张脸？」他身后，站着两名执法殿修士。</p>',[
+          {txt:'🤝 当场补还，低头认错',fn:()=>{S.stones=Math.max(0,S.stones-500);addKarma(3);log('<p class="danger">你当众补还旧账，此事才算揭过（灵石-500，业力+3）。</p>');S.flag.chain.jiuzhang=-1;passTime(2);renderAll()}},
+          {txt:'🛡️ 拒不认账，转身便走',fn:()=>{S.fame=S.fame||{};S.fame.zheng=Math.max(0,(S.fame.zheng||0)-8);addKarma(5);log('<p class="danger">你拂袖而去，身后一片哗然——失信之名自此传开（正道声望-8，业力+5）。</p>');S.flag.chain.jiuzhang=-1;passTime(2);renderAll()}},
+        ]);
+      }
+    }},
+  ]},
 };
 function chainStart(id){
   const c=CHAINS[id];
@@ -311,6 +553,11 @@ const HERB_V=[
   {t:'枯木之下露出一角青石，上面刻着一个「药」字。',eff:()=>{S.mats.sherb=(S.mats.sherb||0)+1;S.mats.jade=(S.mats.jade||0)+1;return '寻得药王遗藏：灵草 ×1、寒玉 ×1'}},
 ];
 const RARE_V=[
+  {t:'你在山涧边拾得一截断剑，剑格处一朵青莲纹样古朴依旧。',eff:()=>{chainStart('jianzhong');return '一段前尘因果就此埋下'}},
+  {t:'你在深谷中寻得一泓灵泉，泉眼澄澈，隐隐泛着灵光。',eff:()=>{chainStart('lingquan');return '灵泉福缘，一段因果就此埋下'}},
+  {t:'山道上，一名落拓散修拦住你，似曾相识。',eff:()=>{chainStart('guren');return '故人重逢，恩怨两清'}},
+  {t:'荒山破庙中，山神像虽斑驳，双目却似有神。',eff:()=>{chainStart('shanshen');return '一炷香火，一段因果'}},
+  {t:'坊市中，一名老修士拦住你：「当年你欠我三枚聚灵丹，可还记得？」',eff:()=>{chainStart('jiuzhang');return '一笔旧账，两清恩怨'}},
   {t:'你在山神庙废墟里拾到半卷残破丹方，墨迹古旧，药香犹存。',eff:()=>{chainStart('danfang');return '揭开丹方传承之缘'}},
   {t:'你在枯骨旁拾得一枚玉简，灵光未散。',eff:()=>{const a=Object.assign({},pick(ARTS));if(!S.arts.some(x=>x.name===a.name)){S.arts.push(a);return '习得功法「'+a.name+'」'}return '可惜其中功法你早已习得'}},
   {t:'你误入一处修士遗府，石室内堆着散落的灵石。',eff:()=>{const g=rand(100,500);S.stones+=g;return '灵石 +'+g}},

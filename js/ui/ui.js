@@ -146,12 +146,11 @@ function renderAll(){
   const req=nextReq!=null?fmtNum(s.cult)+' / '+fmtNum(nextReq):REALMS[s.realm]+'（寿元无尽）';
   const pct=nextReq!=null?clamp(Math.floor(s.cult/nextReq*100),0,100):100;
   const hpPct=clamp(Math.floor(s.hp/s.maxHp*100),0,100);
-  const eff=s.heartDemons>0?'（受心魔压制 -'+Math.min(s.heartDemons,4)+'）':'';
   const sec=s.sect?(s.sect.dark?'<span class="tag dark">魔道</span> ':'<span class="tag green">正道</span> ')+esc(s.sect.name)+' · '+esc(secRank(s)):s.realm>=21?'散修大能':'散修';
   const luckShow=s.realm>=17?s.luck+' <span style="font-size:11px;color:#6f7a94">(元婴可窥天机)</span>':'？？';
   $('crumb').textContent=s.name+' · '+REALMS[s.realm]+' · '+seasonLabel()+' · '+(s.sect?(s.sect.dark?'魔道 · ':'正道 · ')+s.sect.name+' · '+secRank(s):'无门无派');
   $('side').innerHTML=
-    '<div class="sb-title">'+esc(s.name)+'（'+(s.gender||'男')+'）· '+esc(s.bg.name)+'</div>'+
+    '<div class="sb-title" onclick="openCharPanel()" style="cursor:pointer" title="查看角色档案">'+esc(s.name)+'（'+(s.gender||'男')+'）· '+esc(s.bg.name)+'</div>'+
     '<div class="sb-card">'+
     '<div class="sb-row"><span>☯️ 境界</span><b>'+REALMS[s.realm]+'</b></div>'+
     '<div class="sb-row"><span>'+seasonLabel()+' 时令</span><b>'+seasonDesc()+'</b></div>'+
@@ -165,12 +164,12 @@ function renderAll(){
     '<div class="sb-card">'+
     '<div class="sb-sec">'+ico('attr')+' 根骨</div>'+
     '<div class="attr-mini">'+
-    '<div>力量<b>'+attrVal(s,'str')+'</b></div><div>身法<b>'+attrVal(s,'agi')+'</b></div>'+
-    '<div>智慧<b>'+attrVal(s,'int')+'</b></div><div>魅力<b>'+attrVal(s,'cha')+'</b></div>'+
-    '<div>心性<b>'+effWil(s)+'</b>'+eff+'</div><div>灵根<b>'+s.root+'</b></div>'+
+    charAttrsHtml(s)+
     '</div>'+
     '<div class="sb-row" style="margin-top:6px"><span>🧿 灵根属性</span><b style="color:'+elemInfo(s.rootElem).c+'">'+elemInfo(s.rootElem).i+' '+elemInfo(s.rootElem).n+'</b></div>'+
+    '<div class="sb-row"><span>🧿 真元</span><b>'+(s.spirit!==undefined?s.spirit:maxSpirit(s))+' / '+maxSpirit(s)+'</b></div>'+
     (s.injuries&&s.injuries.length?'<div style="margin-top:4px">'+injuryHtml(s)+'</div>':'')+
+    charStatusBadges(s)+
     '</div>'+
     '<div class="sb-card">'+
     '<div class="sb-sec">'+ico('combat')+' 战力构成</div>'+

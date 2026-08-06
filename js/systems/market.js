@@ -161,6 +161,7 @@ function sellItem(j){
 function addItem(it){
   if(S)S.flag._lastAdded=it;
   S.seenI[it.name]=(S.seenI[it.name]||0)+1;
+  if(typeof checkAtlasMiles==='function')checkAtlasMiles();
   if(it.type==='weapon'&&!S.weapon){S.weapon=it;toast('获得法器：'+it.name);return}
   if(it.type==='armor'&&!S.armor){S.armor=it;toast('获得防具：'+it.name);return}
   if(it.type==='trinket'&&!S.trinket){S.trinket=it;toast('获得佩饰：'+it.name);return}

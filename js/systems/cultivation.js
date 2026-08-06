@@ -9,10 +9,26 @@ function panelCult(){
   const sg=signNow();
   const realmTxt=S.realm<9?'炼气如溪流，缓缓汇入丹田，正是打根基之时。':S.realm<17?'道基已筑，金丹在望，灵气如潮，须步步为营。':S.realm<29?'元婴既成，念动而天地应，闭关之效远胜从前。':'合体大乘之资，每一分修为，皆是自天地间争来的造化。';
   const bn=bottleneckInfo(S);
-  const bnHtml=bn.active?'<div class="item-card"><div class="nm">⚓ 瓶颈压制</div><div class="ds">修为已至下一境界 '+(Math.floor(bn.progress*100))+'%，然悟性（'+bn.wis+'/'+bn.wisNeed+'）或历练（'+bn.trail+'/'+bn.trailNeed+'）未足，闭关效率降至 ×0.6。满足二者后瓶颈自解。</div><div class="row"><button class="small" onclick="panelRest()">📖 功法参悟 · 增悟性</button><button class="small" onclick="panelExplore()">🗺️ 探索历练 · 增历练</button></div></div>':(bn.progress>=0.9?'<p style="color:#8fd0a0">⚓ 修为已足，悟性与历练兼备——瓶颈已破，可全力冲关，准备突破。</p>':'');
+  const nxt=S.realm+1;
+  const needCult=nxt<THRESHOLDS.length?Math.max(0,THRESHOLDS[nxt]-S.cult):0;
+  const progPct=nxt<THRESHOLDS.length?clamp(Math.floor(S.cult/THRESHOLDS[nxt]*100),0,100):100;
+  const bnBtns=[];
+  if(bn.active){
+    if(bn.missingWis>0){
+      bnBtns.push('<button class="small" onclick="panelRest()">📖 功法参悟 · 增悟性</button>');
+      if(S.master)bnBtns.push('<button class="small" onclick="panelMaster()">🎓 请教师尊 · 增悟性</button>');
+    }
+    if(bn.missingTrail>0)bnBtns.push('<button class="small" onclick="panelExplore()">🗺️ 探索历练 · 增历练</button>');
+  }
+  const bnHtml=bn.active?'<div class="item-card"><div class="nm">⚓ 瓶颈压制 · '+bnStageText()+'</div><div class="ds">修为已至下一境界 '+(Math.floor(bn.progress*100))+'%，然<b>'+
+    [bn.missingWis>0?'悟性（'+(S.wis||0)+'/'+bn.wisNeed+'）':null,bn.missingTrail>0?'历练（'+(S.trail||0)+'/'+bn.trailNeed+'）':null].filter(Boolean).join('、')+
+    '</b>未足，闭关效率降至 ×0.6。'+bnStageAdvice()+'</div>'+(bnBtns.length?'<div class="row">'+bnBtns.join('')+'</div>':'')+'</div>':(bn.progress>=0.9?'<p style="color:#8fd0a0">⚓ 修为已足，悟性与历练兼备——瓶颈已破，可全力冲关，准备突破。</p>':'');
   openPanel('🧘 闭关修炼','<p>山中无甲子，寒尽不知年。'+realmTxt+'闭关可稳步增长修为，效率受<b>灵根</b>与<b>功法</b>影响'+(S.pillBuff>0?'，聚灵丹之力尚余 '+S.pillBuff+' 日（效率×1.5）':'')+'。</p>'+
+    (nxt<THRESHOLDS.length?'<div class="item-card"><div class="nm">📈 修为进度</div><div class="ds">'+fmtNum(S.cult)+' / '+fmtNum(THRESHOLDS[nxt])+'（'+progPct+'%）· 距「'+REALMS[nxt]+'」还需 '+fmtNum(needCult)+' 修为</div><div class="bar"><i style="width:'+progPct+'%"></i></div></div>':'')+
+    '<div class="item-card"><div class="nm">🧿 真元 '+(S.spirit!==undefined?S.spirit:maxSpirit(S))+' / '+maxSpirit(S)+'</div><div class="ds">法力随休整、静心养神与时光缓缓恢复；可消耗 30 真元淬体换修为，或在炼制选材时「以真元控火」提升判定。</div><div class="row"><button class="small" onclick="spiritQuench()">🧿 真元淬体（30 真元）</button></div></div>'+
     '<p style="font-size:13px;color:#a99a72">闭关将进入<b>修炼窗口</b>：按真实时间缓缓推进，途中或有异动需当场抉择，可随时「提前出关」按进度结算；若有道侣相伴，可在窗口中切换<b>双人同修</b>。</p>'+
     bnHtml+
+    (bn.progress>=0.9?breakPrepHtml(nxt):'')+
     '<h4>☯️ 静修（稳妥）</h4>'+
     '<div class="row">'+
     '<button onclick="doCultivate(7,\'quiet\')">⏳ 7 日</button>'+
@@ -33,24 +49,67 @@ function panelCult(){
     (sg?'<p style="font-size:13px;color:#e8c86a">📜 本季天机签：'+signDesc(sg.k)+'</p>':'')+
     dim+
     cultBreakdown()+
+    '<div class="item-card"><div class="nm">📊 闭关与双修统计</div><div class="ds">闭关总计 '+(S.flag.cultDaysTotal||0)+' 日 · 双修 '+(S.flag.dualCount||0)+' 次 · 双修 '+(S.flag.dualDays||0)+' 日 · 独修 '+(S.flag.soloDays||0)+' 日'+(S.daoPartner?'<br>本次闭关可切换独修/双修（上限 3 次，间隔 ≥10 日，切换耗时 3 日）':'')+'</div></div>'+
+    cultLogMini()+
     '<p style="font-size:13px;color:#6f7a94">当前效率：静修每 10 日约 '+Math.floor((8+S.root/6)*cultMult(S))+' 修为；苦修约 '+Math.floor((8+S.root/6)*cultMult(S)*1.4)+'。连续闭关越久，收益越低——出去走走，机缘与顿悟往往在天地之间。</p>');
 }
-/* 3.2 速率分解：让玩家看懂快与慢 */
-function cultBreakdown(){
+/* 瓶颈文案随境界变化（14） */
+function bnStageText(){
+  const st=bigStage(S.realm);
+  return st<=0?'根基未固':st<=2?'道基初成':st<=4?'元婴已成':st<=6?'合体在望':'大道如渊';
+}
+function bnStageAdvice(){
+  const st=bigStage(S.realm);
+  return st<=0?'炼气如掘井，一味静坐难竟全功——去行万里路，悟性自开。':st<=2?'筑基之后，须以「行」证「悟」：访名师、历险地，破境方有水到渠成之机。':st<=4?'元婴之体已明，所欠者唯道。多参玄理、多历世事，瓶颈自解。':'大道如渊，非静坐可渡。你的每一分阅历，都在为下一场天劫铺路。';
+}
+function cultLogMini(){
+  const logs=(S.flag.cultLog||[]).slice(0,3);
+  if(!logs.length)return '';
+  return '<div class="item-card"><div class="nm">📜 最近闭关</div><div class="ds">'+logs.map(l=>esc(l.realm||'')+' '+l.days+'日'+(l.dual?' ☯️双修':' 🧘独修')+' +'+l.gain).join(' · ')+'</div></div>';
+}
+/* 3.2 速率分解：逐项列出每个乘数来源，让玩家看懂快与慢（相乘即总效率） */
+function cultMultParts(s){
+  s=s||S;
   const parts=[];
-  parts.push('灵根品质 ×'+rootQualityMult(S.root).toFixed(2)+(S.root>=70?'（吐纳 +5%）':''));
-  if(S.arts[0])parts.push('主修《'+S.arts[0].name+'》 ×'+((S.arts[0].mult+((S.arts[0].level||1)-1)*0.05)*artGradeMult(S.arts[0])).toFixed(2)+(S.arts.length>1?'（辅修 ×0.5）':''));
-  if(S.pillBuff>0)parts.push('聚灵丹 ×1.5');
-  if(S.flag.matrix)parts.push('聚灵阵 ×1.15');
-  if(S.flag.caveLv)parts.push('灵脉 Lv.'+S.flag.caveLv+' ×'+(1+S.flag.caveLv*0.08).toFixed(2));
-  if(S.days%12<2)parts.push('子时静修 ×1.1');
-  if(S.flag.dao==='dark')parts.push('魔道问道 ×1.1');
-  if(S.daoPartner)parts.push('道侣 ×1.2');
-  if(S.realm<=2)parts.push('新人 ×1.2');
-  const sg=signNow();if(sg&&sg.cult)parts.push('天机签 ×'+sg.cult.toFixed(2));
+  for(let i=0;i<(s.arts||[]).length;i++){
+    const a=s.arts[i];
+    const role=i===0?1:0.5;
+    const m=(a.mult+((a.level||1)-1)*0.05)*artGradeMult(a)*elemArtMult(s,a)*artMasteryMult(a)*role;
+    parts.push({n:(i===0?'主修':'辅修')+'《'+a.name+'》'+(rootAffinity(s,a.elem)?'（相性）':''),m:m,note:'品阶×'+artGradeMult(a).toFixed(2)+((a.level||1)>1?' · 第'+a.level+'重':'')+(artMasteryLevel(a)?' · 熟练Lv.'+artMasteryLevel(a):'')});
+  }
+  let rm=rootQualityMult(s.root);
+  if(s.root>=70)rm*=1.05;
+  parts.push({n:'灵根品质',m:rm,note:rootTier(s.root)[0]+(s.root>=70?'（吐纳+5%已并入）':'')});
+  if(s.realm<=2)parts.push({n:'✨ 新人加成',m:1.2});
+  if(s.pillBuff>0)parts.push({n:'💊 聚灵丹',m:1.5,note:'余 '+s.pillBuff+' 日'});
+  if(s.daoPartner)parts.push({n:'💞 道侣相伴',m:1.2});
+  if(s.flag.matrix)parts.push({n:'🌀 聚灵阵',m:1.15});
+  const sg=signNow();if(sg&&sg.cult)parts.push({n:'📜 天机签·'+signDesc(sg.k),m:sg.cult});
+  if(s.sect&&s.sect.dark&&(s.bg.traits.some(t=>t.id==='dark')||s.bg.traits.some(t=>t.id==='dark2')))parts.push({n:'🌑 魔道亲和',m:1.1});
+  if(s.prof==='alchemy'&&s.sect&&s.sect.id==='dan')parts.push({n:'⚗️ 丹修入宗',m:1.08});
+  if(s.sect)parts.push({n:'🏯 宗门·'+secRank(s),m:1+sectCultBonus(s)});
+  if(s.flag.dao==='dark')parts.push({n:'🌑 魔道问道',m:1.1});
+  if(s.flag.caveLv)parts.push({n:'⛰️ 灵脉 Lv.'+s.flag.caveLv,m:1+s.flag.caveLv*0.08});
+  if(s.flag.caveRooms&&s.flag.caveRooms.jing)parts.push({n:'🛏️ 静室',m:1.05});
+  if(s.days%12<2)parts.push({n:'🌙 子时静修',m:1.1});
+  const se=Math.floor(s.days/90)%4;
+  if(se===0)parts.push({n:'🌸 春灵潮',m:1.05});
+  if(se===3)parts.push({n:'❄️ 冬寒凝滞',m:0.95});
+  if(s.pet&&s.pet.faint<=0&&(s.pet.talent==='root'||s.pet.talent==='speed'))parts.push({n:'🐾 灵兽相伴',m:1.05});
+  const bn=bottleneckInfo(s);
+  if(bn.active)parts.push({n:'⚓ 瓶颈压制',m:0.6,note:'悟性 '+(s.wis||0)+'/'+bn.wisNeed+' · 历练 '+(s.trail||0)+'/'+bn.trailNeed});
+  return parts;
+}
+function cultBreakdown(){
+  const parts=cultMultParts(S);
+  let product=1;
+  const rows=parts.map(p=>{product*=p.m;return '<div class="bd-row"><span>'+esc(p.n)+'</span><b class="'+(p.m<1?'neg':'pos')+'">×'+p.m.toFixed(2)+'</b></div>'+(p.note?'<div class="bd-note">'+esc(p.note)+'</div>':'')}).join('');
   const bn=bottleneckInfo(S);
-  if(bn.active)parts.push('<b style="color:#e08a8a">⚓ 瓶颈 ×0.6</b>');
-  return '<p style="font-size:12.5px;color:#a99a72;margin:4px 0">效率分解：'+parts.join(' · ')+'</p>';
+  const eff=bn.active?0.6:1;
+  return '<div class="bd-box"><div class="bd-head">效率分解（静修合计 ×'+product.toFixed(2)+'）</div>'+rows+
+    '<div class="bd-row total"><span>静修基准（每 10 日）</span><b>'+(8+S.root/6)+'</b></div>'+
+    '<div class="bd-row total"><span>当前静修速率</span><b>约 '+Math.floor((8+S.root/6)*cultMult(S)*eff)+' / 10日</b></div>'+
+    '<div class="bd-note">苦修 ×1.4、灵潮 ×1.5、托管倍率于闭关时另行计入；以上各项相乘即总效率。</div></div>';
 }
 /* 闭关修炼弹窗：真实时间推进 + 途中异动抉择 + 加成一览 + 道侣双修 */
 const CULT_FLAVOR=[
@@ -139,7 +198,7 @@ function _cultPartnerHtml(p){
 function _cultChips(){
   const chips=[];
   chips.push('灵根 '+rootTier(S.root)[0]);
-  chips.push('功法 ×'+S.arts.reduce((a,x)=>a*(x.mult+((x.level||1)-1)*0.05),1).toFixed(2));
+  chips.push('功法 ×'+S.arts.reduce((a,x)=>a*(x.mult+((x.level||1)-1)*0.05)*artMasteryMult(x),1).toFixed(2));
   const bn=bottleneckInfo(S);
   if(bn.active)chips.push(['⚓ 瓶颈 ×0.6',true]);
   if(S.pillBuff>0)chips.push('聚灵丹 ×1.5');
@@ -370,7 +429,10 @@ function _cultResult(days,mode,solo){
   const bn=bottleneckInfo(S);
   if(bn.active){
     mult*=0.6;
-    bnLog='<p class="sys">⚓ 瓶颈压制：修为已至下一境界 '+(Math.floor(bn.progress*100))+'%，然悟性（'+bn.wis+'/'+bn.wisNeed+'）或历练（'+bn.trail+'/'+bn.trailNeed+'）未足，修炼事倍功半。可去洞府<b>功法参悟</b>增悟性，或<b>探索/试炼塔</b>增历练。</p>';
+    const miss=[];
+    if(bn.missingWis>0)miss.push('悟性缺 '+bn.missingWis);
+    if(bn.missingTrail>0)miss.push('历练缺 '+bn.missingTrail);
+    bnLog='<p class="sys">⚓ 瓶颈压制：修为已至下一境界 '+(Math.floor(bn.progress*100))+'%，'+miss.join('、')+'，修炼事倍功半。可去洞府<b>功法参悟</b>增悟性，或<b>探索/试炼塔</b>增历练。</p>';
   }else if(bn.progress>=0.9){
     bnLog='<p class="good">⚓ 悟性与历练兼备，瓶颈已破——你只觉得灵台通明，冲关之路再无滞碍！</p>';
   }
@@ -416,6 +478,7 @@ function _cultFinish(frac){
     if(!a.bonus)continue;
     for(const k in a.bonus)pre+=(k==='wil'?growWil(0.08,'所修功法《'+a.name+'》潜移默化'):growAttr(k,0.06,'所修功法《'+a.name+'》潜移默化'));
   }
+  for(const a of S.arts){const mg=gainArtMastery(a,days*3);if(mg)pre+=mg;}
   const partner=S.daoPartner;
   if(!_cult.solo&&partner){
     partner.favor=clamp(partner.favor+1,0,100);
@@ -433,6 +496,9 @@ function _cultFinish(frac){
   S.cultStreak=(S.cultStreak||0)+days;
   dC().c.cultDays+=days;
   S.flag.cultDaysTotal=(S.flag.cultDaysTotal||0)+days;
+  S.flag.cultLog=S.flag.cultLog||[];
+  S.flag.cultLog.unshift({at:S.days,days:days,mode:_cult.mode,dual:!_cult.solo,gain:r.gain,realm:REALMS[S.realm],bn:bottleneckInfo(S).active?'瓶颈':''});
+  if(S.flag.cultLog.length>10)S.flag.cultLog.length=10;
   /* 2E 托管策略：修为满 90% 提醒突破 */
   if(_cult.trust&&S.flag.autoRules&&S.flag.autoRules.warn){
     const nxt=S.realm+1;
@@ -566,6 +632,7 @@ function settleMind(){
   if(R.hit){
     addMood(8);
     const g=Math.floor(30+S.root/8);S.cult+=g;
+    const sp=addSpirit(Math.floor(maxSpirit(S)*0.5));
     if(hadDemon){S.heartDemons=Math.max(0,S.heartDemons-1);log('<p class="good">尘念渐消，一道心魔烙印缓缓褪去（心魔-1）。</p>')}
     if((S.demonMarks||[]).length&&chance(0.6)){
       const m=S.demonMarks[rand(0,S.demonMarks.length-1)];
@@ -573,7 +640,7 @@ function settleMind(){
       log('<p class="good">静极生慧，「'+DEMON_TYPES[m.type].n+'」亦随之化去。</p>');
     }
     addWis(1);
-    log('<p class="good">三十日静坐，灵台清明（修为 +'+g+'，悟性 +1）。</p>');
+    log('<p class="good">三十日静坐，灵台清明（修为 +'+g+'，悟性 +1'+(sp>0?'，真元回满 '+sp:'')+'）。</p>');
     const sw=growWil(0.22,'静极养神，道心愈发沉凝');
     if(sw)log(sw);
   }else{
@@ -582,9 +649,19 @@ function settleMind(){
   }
   passTime(30);renderAll();
 }
+/* 真元淬体：消耗 30 真元，化作修为 */
+function spiritQuench(){
+  if(!S)return;
+  if(!useSpirit(30)){toast('真元不足（需 30）');return}
+  const g=Math.floor(40+bigStage(S.realm)*20+Math.floor(S.root/3));
+  S.cult+=g;
+  log('<p class="good">🧿 你运转周身真元，淬炼经脉，修为 +'+g+'。</p>');
+  passTime(1);renderAll();
+}
 function petGain(n){
   const p=S.pet;if(!p)return;
   if(S.flag.caveRooms&&S.flag.caveRooms.shou)n=Math.floor(n*1.25); /* 11 灵兽园 */
+  if(typeof ownSectPetBonus==='function')n=Math.floor(n*ownSectPetBonus()); /* 自建宗门 · 灵兽园 */
   p.exp+=n;
   while(p.exp>=petLevelNeed(p)){
     p.exp-=petLevelNeed(p);p.level++;

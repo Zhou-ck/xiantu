@@ -25,6 +25,12 @@ function freeAct(raw){
     [/(休息|休整|疗伤|睡觉)/,()=>doRest()],
     [/(双修)/,()=>doDualCultivate()],
     [/(行囊|背包|物品|装备|看看.*东西)/,()=>panelInventory()],
+    [/(论道|辩道|辩法)/,()=>panelDaolun()],
+    [/(战技|参悟战)/,()=>panelBattleArts()],
+    [/(真元|淬体)/,()=>panelCult()],
+    [/(图鉴|收藏)/,()=>collectionAtlas()],
+    [/(图谱|关系网)/,()=>relationWeb()],
+    [/(守城|妖潮)/,()=>toast('妖潮守城战随年度妖兽潮触发，全胜战绩记入行迹图鉴')],
     [/(帮|帮助|修仙志|规则|怎么玩)/,()=>openHelp()],
     [/(存档|保存)/,()=>panelSave()],
     [/(灵兽|宠物|喂养|喂食|孵化|兽卵)/,()=>petPanel()],
@@ -40,24 +46,37 @@ function freeAct(raw){
     toast('🤖 AI 推演中…');
     aiAsk('玩家自由行动输入：「'+t+'」').then(txt=>{
       if(!txt){log('<p class="sys">天道昭昭，你这一念（「'+esc(t)+'」）尚未得法。</p>');return}
-      const intentMap=[
-        [/修炼|闭关|打坐|静修|苦修/,()=>doCultivate(parseNum(t)||30)],
-        [/探索|游历|外出/,()=>panelExplore()],
-        [/坊市|买卖/,()=>panelMarket()],
-        [/宗门/,()=>panelSect()],
-        [/人际|聊天|拜访/,()=>panelSocial()],
-        [/副业|炼丹|炼器|制符/,()=>panelCraft()],
-        [/突破/,()=>tryBreak()],
-        [/休整|休息|疗伤/,()=>doRest()],
-        [/双修/,()=>doDualCultivate()],
-      ];
-      for(const [re,fn] of intentMap)if(re.test(txt)){fn();return}
+      if(routeAIIntent(txt,t))return;
       log('<p class="sys">🤖 天道推演：'+esc(txt)+'</p>');
       passTime(1);renderAll();
     });
     return;
   }
   log('<p class="sys">天道昭昭，你这一念（「'+esc(t)+'」）尚未得法。修仙者常见行止：修炼、探索、坊市、宗门、人际、副业、突破、休整。</p>');
+}
+/* AI 意图路由：把 AI 理解的意图文本映射到具体行动（新系统命令同样支持） */
+function routeAIIntent(txt,raw){
+  const intentMap=[
+    [/修炼|闭关|打坐|静修|苦修/,()=>doCultivate(parseNum(raw||txt)||30)],
+    [/探索|游历|外出/,()=>panelExplore()],
+    [/坊市|买卖/,()=>panelMarket()],
+    [/宗门/,()=>panelSect()],
+    [/人际|聊天|拜访/,()=>panelSocial()],
+    [/副业|炼丹|炼器|制符/,()=>panelCraft()],
+    [/突破/,()=>tryBreak()],
+    [/休整|休息|疗伤/,()=>doRest()],
+    [/双修/,()=>doDualCultivate()],
+    [/论道|辩道/,()=>panelDaolun()],
+    [/战技/,()=>panelBattleArts()],
+    [/真元|淬体/,()=>panelCult()],
+    [/图鉴|收藏/,()=>collectionAtlas()],
+    [/图谱|关系网/,()=>relationWeb()],
+    [/守城|妖潮/,()=>toast('妖潮守城战随年度妖兽潮触发，全胜战绩记入行迹图鉴')],
+  ];
+  for(const [re,fn] of intentMap){
+    if(re.test(String(txt||''))){fn();return true}
+  }
+  return false;
 }
 function parseNum(t){
   const m=t.match(/\d+/);

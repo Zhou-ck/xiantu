@@ -82,6 +82,17 @@ const ART_GRADES=['黄阶','玄阶','地阶','天阶','仙阶','神阶'];
 function artGrade(a){return clamp((a&&a.grade)||1,1,6)}
 function artGradeName(a){return ART_GRADES[artGrade(a)-1]}
 function artGradeMult(a){return [1,1.05,1.12,1.22,1.35,1.5][artGrade(a)-1]}
+/* 3.1b 功法熟练度：修炼/战斗积累，每 150 点 1 级（上限 5 级），每级修炼效率 ×1.02 */
+function artMasteryLevel(a){return Math.min(5,Math.floor(((a&&a.mastery)||0)/150))}
+function artMasteryMult(a){return 1+artMasteryLevel(a)*0.02}
+function gainArtMastery(a,n){
+  if(!a)return '';
+  const before=artMasteryLevel(a);
+  a.mastery=Math.min(750,(a.mastery||0)+Math.max(1,Math.floor(n||1)));
+  const after=artMasteryLevel(a);
+  if(after>before)return '<p class="good">你对《'+esc(a.name)+'》的运用愈发纯熟（熟练度 Lv.'+after+'，修炼效率 ×'+artMasteryMult(a).toFixed(2)+'）。</p>';
+  return '';
+}
 /* 8.1 灵根品质修炼乘数：伪灵根 0.6× … 天灵根 1.5× */
 function rootQualityMult(r){
   if(r>=95)return 1.5;
@@ -182,6 +193,11 @@ function tickInjuries(days){
 /* ---------- 好感 / 决裂 / 仇视 ---------- */
 function favorChange(n,delta,reason){
   if(!n)return false;
+  /* 自建宗门 · 会客厅：正向好感 +2/级（不含道侣） */
+  if(delta>0&&n!==S.daoPartner&&typeof ownSectFavorBonus==='function'){
+    const hk=ownSectFavorBonus();
+    if(hk)delta+=hk;
+  }
   n.favor=clamp((n.favor||0)+(delta||0),-10,100);
   propagateRelations(n,delta);
   const who=esc(n.name||'对方');
@@ -244,6 +260,7 @@ function tickHates(days){
     ex.days-=days;
     if(ex.days<=0){log('<p class="sys">前尘恩怨随风散，'+esc(ex.name||'故人')+' 已不再寻你麻烦。</p>');S.flag.exHate=null}
   }
+  const seen={};
   for(const n of (S.npcs||[])){
     if(n.cold>0){
       n.cold-=days;
@@ -254,6 +271,13 @@ function tickHates(days){
       if(n.hate<=0&&n.foe){n.foe=false;n.favor=Math.max(n.favor,15);log('<p class="sys">'+esc(n.name)+' 放下了旧怨，愿再与你往来。</p>')}
     }
     if(n.cd){for(const k in n.cd)n.cd[k]=Math.max(0,(n.cd[k]||0)-days)}
+    if(n.name)seen[n.name]=1;
+  }
+  /* 存档读回后道侣与 NPC 可能分裂为两个对象：单独推进其冷却，避免永久卡死 */
+  if(S.daoPartner&&!seen[S.daoPartner.name]){
+    const p=S.daoPartner;
+    if(p.cd){for(const k in p.cd)p.cd[k]=Math.max(0,(p.cd[k]||0)-days)}
+    if(p.cold>0){p.cold-=days;if(p.cold<=0){p.cold=0;p.favor=clamp(p.favor+2,0,100);log('<p class="sys">'+esc(p.name)+' 神色渐缓：「那日是我冲动了。」——冷战消融，情缘略有回温（好感+2）。</p>')}}
   }
 }
 /* ===== 4.3 心魔烙印类型化 ===== */

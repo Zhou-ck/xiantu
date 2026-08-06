@@ -32,11 +32,17 @@ assert(pend<=4,'长闭关正常返回（PENDING='+pend+'，含年度/节日事�
 function clickAllGroups(limit){
   let step=0;
   while(vm.runInContext('PENDING',ctx)>0&&step++<limit){
-    const groups=[];
-    walk(ids['story'],el=>{if(String(el.className||'').indexOf('choices')>=0&&el.children&&el.children.length)groups.push(el)});
-    const before=vm.runInContext('PENDING',ctx);
-    for(const g of groups){if(g.children[0])g.children[0].onclick()}
-    if(vm.runInContext('PENDING',ctx)===before)break;
+    /* 妖潮守城/遭遇战可能先进入战斗结算：点「继续」后再处理抉择 */
+    if(vm.runInContext('document.getElementById("battleResult").style.display==="block"&&typeof window._battleResolve==="function"',ctx)){
+      vm.runInContext('{ const r=window._battleResolve; window._battleResolve=null; if(r)r(); }',ctx);
+      continue;
+    }
+    /* 事件弹窗（无 PENDING 计数）也一并消化 */
+    const n=vm.runInContext('window._eventModalOpts?window._eventModalOpts.length:0',ctx);
+    if(n>0){vm.runInContext('resolveEventModal(0)',ctx);continue}
+    let clicked=false;
+    walk(ids['story'],el=>{if(String(el.className||'').indexOf('choices')>=0&&el.children&&el.children.length){clicked=true;el.children[0].onclick&&el.children[0].onclick()}});
+    if(!clicked)break;
   }
 }
 clickAllGroups(40);

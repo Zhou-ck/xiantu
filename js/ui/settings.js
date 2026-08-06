@@ -11,6 +11,8 @@ function panelSettings(){
   const aiOn=aiEnabled();
   openPanel('⚙️ 设置',
     '<h4>🎬 特效强度</h4><div class="row">'+btn(fx,'high','高（全开）')+btn(fx,'med','中（默认）')+btn(fx,'low','低（仅文字）')+'</div>'+
+    '<h4>🧊 3D 形象（预留）</h4><div class="row"><button class="small'+(s.model3d?' primary':'')+'" onclick="setOpt(\'model3d\')">3D 角色卡：'+(s.model3d?'开（插槽预览）':'关（默认立绘）')+'</button></div>'+
+    '<p style="font-size:12px;color:#6f7a94">开启后角色卡以 3D 插槽占位渲染，为未来 3D 角色模型引擎预留接入点；默认关闭，完全不影响当前立绘。</p>'+
     '<h4>🤖 微操小游戏</h4>'+
     '<div class="row"><button class="small'+(s.autoTrib?' primary':'')+'" onclick="setOpt(\'autoTrib\')">渡劫微操：'+(s.autoTrib?'自动':'手动')+'</button>'+
     '<button class="small'+(s.autoCraft?' primary':'')+'" onclick="setOpt(\'autoCraft\')">副业微操：'+(s.autoCraft?'自动':'手动')+'</button></div>'+
@@ -28,6 +30,8 @@ function panelSettings(){
     '<div class="row" style="margin-top:8px"><button class="small primary" onclick="aiSaveForm()">💾 保存 AI 配置</button>'+
     '<button class="small" onclick="aiClear();panelSettings()">🗑️ 清除</button></div>'+
     '<p style="font-size:12px;color:#6f7a94">AI 仅润色叙事与自由输入理解，不直接改动任何数值；网络失败自动回退本地规则版。Key 只保存在你的浏览器本地。</p>'+
+    '<h4>📱 App 与更新</h4><p style="font-size:12.5px;color:#6f7a94">当前版本 v'+(typeof GAME_VERSION==='string'?GAME_VERSION:'37')+' · '+(isNativeApp()?'已运行于原生 App 壳':'浏览器 / PWA 模式')+'。安装到主屏后全屏离线游玩，更新随推送自动生效。</p>'+
+    '<div class="row"><button class="small" onclick="checkGameUpdate()">🔄 检查更新</button></div>'+
     '<h4>🙏 素材鸣谢</h4><p style="font-size:12.5px;color:#6f7a94">本作美术素材来自 AI 生成与免费可商用渠道，授权台账见 <b>assets/LICENSES.md</b>。需署名素材将在此统一展示。</p>'+
     '<div class="row"><button class="small" onclick="openCredit()">📜 查看素材台账</button></div>');
 }
@@ -39,6 +43,7 @@ function setOpt(k){
   else if(k==='autoCraft')S.set.autoCraft=!S.set.autoCraft;
   else if(k==='audio')S.set.audio=S.set.audio===false?true:false;
   else if(k==='shake')S.set.shake=S.set.shake===false?true:false;
+  else if(k==='model3d')S.set.model3d=!S.set.model3d;
   save();panelSettings();
 }
 function aiSaveForm(){

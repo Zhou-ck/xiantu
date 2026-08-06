@@ -46,7 +46,7 @@ function panelSect(){
     '<h4>门中身份</h4><p>职位：<b>'+rank+'</b>（'+nextTxt+'）</p>'+
     '<p>贡献点：<b>'+S.contrib+'</b>（达标定阶，兑换不扣） · 贡献值：<b>'+S.contribVal+'</b>（仅用于兑换）</p>'+
     (next&&!isProb?'<div class="row"><button class="small primary" onclick="promoteSect()">⚡ 冲击下一阶</button></div>':'')+
-    '<h4>👥 宗门人物</h4>'+peopleHtml+
+    '<h4>👥 宗门人物 <button class="small" onclick="sectEvent()">🏮 门中事宜</button></h4>'+peopleHtml+
     '<h4>📜 宗门任务</h4>'+thtml+
     '<h4>🏪 宗门宝库（贡献值兑换）</h4>'+shopHtml+
     '<h4>⛩️ 宗门设施</h4><div class="row">'+
@@ -94,18 +94,40 @@ function initOwnSect(){
   addMerit(5);S.fame=S.fame||{};S.fame.san=(S.fame.san||0)+20;
   passTime(5);renderAll();
 }
+/* ===== 自建宗门 · 建筑定义与真实加成（宗门深化） ===== */
+const OWN_BUILD_DEFS={
+  lingtian:{n:'灵田',i:'🌾',d:'灵田收获 +1 份/级',cost:k=>80+k*120,mat:k=>k>=2?{sherb:k}:null},
+  danfang:{n:'丹房',i:'⚗️',d:'炼丹判定 +1/级',cost:k=>150+k*150,mat:null},
+  qi:{n:'器坊',i:'🔨',d:'炼器判定 +1/级',cost:k=>150+k*150,mat:null},
+  fuge:{n:'符阁',i:'🪄',d:'制符判定 +1/级',cost:k=>150+k*150,mat:null},
+  zhentai:{n:'阵台',i:'🧿',d:'布阵判定 +1/级',cost:k=>150+k*150,mat:null},
+  cangjing:{n:'藏经阁',i:'📖',d:'修炼效率 +2%/级',cost:k=>200+k*200,mat:k=>k>=2?{jade:1}:null},
+  wuchang:{n:'演武场',i:'⚔️',d:'战斗伤害 +2%/级',cost:k=>200+k*200,mat:k=>k>=2?{iron:1}:null},
+  shou:{n:'灵兽园',i:'🐾',d:'灵兽成长 +20%/级',cost:k=>120+k*120,mat:null},
+  huike:{n:'会客厅',i:'🏮',d:'人际好感 +2/级',cost:k=>100+k*100,mat:null},
+};
+function ownBuildLv(k){return (S&&S.flag&&S.flag.ownBuild)?(S.flag.ownBuild[k]||0):0}
+function ownSectActive(){return !!(S&&S.flag&&S.flag.ownSect)}
+function ensureOwnBuild(){
+  if(S&&S.flag&&S.flag.ownBuild){
+    for(const k of Object.keys(OWN_BUILD_DEFS))if(S.flag.ownBuild[k]===undefined)S.flag.ownBuild[k]=0;
+  }
+}
+function ownSectCultMult(){return ownSectActive()?1+ownBuildLv('cangjing')*0.02:1}
+function ownSectCraftBonus(prof){
+  if(!ownSectActive())return 0;
+  const map={alchemy:'danfang',forge:'qi',talisman:'fuge',array:'zhentai'};
+  return ownBuildLv(map[prof]||'');
+}
+function ownSectCombatMult(){return ownSectActive()?1+ownBuildLv('wuchang')*0.02:1}
+function ownSectHarvestBonus(){return ownSectActive()?ownBuildLv('lingtian'):0}
+function ownSectPetBonus(){return ownSectActive()?1+ownBuildLv('shou')*0.2:1}
+function ownSectFavorBonus(){return ownSectActive()?ownBuildLv('huike'):0}
 function ownSectHtml(){
   const b=S.flag.ownBuild||{};
-  const defs={
-    lingtian:{n:'灵田',i:'🌾',d:'灵田丰收 +1 份/级',cost:k=>80+k*120,mat:k=>k>=2?{sherb:k}:null},
-    danfang:{n:'丹房',i:'⚗️',d:'炼丹成功率 +4%/级',cost:k=>150+k*150,mat:null},
-    qi:{n:'器坊',i:'🔨',d:'炼器成功率 +4%/级',cost:k=>150+k*150,mat:null},
-    cangjing:{n:'藏经阁',i:'📖',d:'弟子修行 +5%/级',cost:k=>200+k*200,mat:k=>k>=2?{jade:1}:null},
-    shou:{n:'灵兽园',i:'🐾',d:'灵兽成长 +20%/级',cost:k=>120+k*120,mat:null},
-    huike:{n:'会客厅',i:'🏮',d:'江湖好感 +2/级',cost:k=>100+k*100,mat:null},
-  };
-  const cards=Object.keys(defs).map(k=>{
-    const d=defs[k];const lv=b[k]||0;
+  ensureOwnBuild();
+  const cards=Object.keys(OWN_BUILD_DEFS).map(k=>{
+    const d=OWN_BUILD_DEFS[k];const lv=b[k]||0;
     const cost=d.cost(lv);
     const can=S.stones>=cost&&(!d.mat||Object.keys(d.mat).every(m=>(S.mats[m]||0)>=(d.mat[m]||1)));
     return '<div class="item-card"><div class="nm">'+d.i+' '+d.n+' <span class="tag">Lv.'+lv+'</span></div><div class="ds">'+d.d+' · 升级需 '+cost+' 灵石'+(d.mat?Object.keys(d.mat).map(m=>' + '+MAT_NAMES[m]+'×'+d.mat[m]).join(''):'')+'</div><div style="margin-top:6px"><button class="small" '+(can?'onclick="ownBuildUp(\''+k+'\')"':'style="opacity:.5" disabled')+'>升级</button></div></div>';
@@ -119,11 +141,17 @@ function ownSectHtml(){
 }
 function ownBuildUp(k){
   const b=S.flag.ownBuild||{};
+  ensureOwnBuild();
   const lv=b[k]||0;
-  const cost=[80,150,200,200,250][lv]||300;
+  const d=OWN_BUILD_DEFS[k];
+  if(!d)return;
+  const cost=d.cost(lv);
+  const need=d.mat&&d.mat(lv);
   if(S.stones<cost){toast('灵石不足');return}
+  if(need){for(const m in need)if((S.mats[m]||0)<need[m]){toast(MAT_NAMES[m]+'不足');return}}
   S.stones-=cost;b[k]=lv+1;
-  log('<p class="good">你为「'+S.sect.name+'」扩建了宗门建筑（建筑等级提升）。</p>');
+  if(need)for(const m in need)S.mats[m]-=need[m];
+  log('<p class="good">你为「'+S.sect.name+'」扩建了「'+d.i+' '+d.n+'」至 Lv.'+(lv+1)+'（'+d.d.replace(/\/级/,'')+'）。</p>');
   passTime(3);renderAll();
 }
 function ownDiplo(){
@@ -214,6 +242,7 @@ function doTask(i){
   else if(t.kind==='craft'){ok=S.prof==='alchemy';text=ok?'你于丹房连炼三日，丹药出炉。':'你不通丹术，只能打下手烧火。'}
   if(ok){S.contrib+=t.point;S.contribVal+=t.val;S.stones+=t.stones;log('<p class="good">'+text+' 贡献点 +'+t.point+'，贡献值 +'+t.val+(t.stones>0?'，灵石 +'+t.stones:'')+'。</p>')}
   else{const p=Math.floor(t.point*0.4),v=Math.floor(t.val*0.4);S.contrib+=p;S.contribVal+=v;log('<p class="sys">'+text+' 勉强交差，贡献点 +'+p+'，贡献值 +'+v+'。</p>')}
+  S.tasks.splice(i,1);if(!S.tasks.length)S.tasks=genTasks();
   dC().c.sectTask++;S.flag.sectTasks=(S.flag.sectTasks||0)+1;
   maybeInsight('宗门奔波');
   if(!passTime(t.cost)){renderAll();return}
@@ -222,6 +251,8 @@ function doTask(i){
 function taskReward(t,ok){
   if(ok){S.contrib+=t.point;S.contribVal+=t.val;S.stones+=t.stones;log('<p class="good">任务完成：贡献点 +'+t.point+'，贡献值 +'+t.val+(t.stones>0?'，灵石 +'+t.stones:'')+'。</p>')}
   else{const p=Math.floor(t.point*0.4),v=Math.floor(t.val*0.4);S.contrib+=p;S.contribVal+=v;log('<p class="sys">任务勉强交差，贡献点 +'+p+'，贡献值 +'+v+'。</p>')}
+  const idx=S.tasks.indexOf(t);if(idx>=0)S.tasks.splice(idx,1);
+  if(!S.tasks.length)S.tasks=genTasks();
   dC().c.sectTask++;S.flag.sectTasks=(S.flag.sectTasks||0)+1;
   maybeInsight('宗门奔波');
   if(!passTime(t.cost)){renderAll();return}
@@ -352,6 +383,30 @@ function sectGift(i){
   log('<p>你备下 80 灵石为礼，'+(g>=8?'对方眼中一亮，破例多与你说了会话。':'对方道谢收下。')+'（'+esc(p.name)+' 好感 +'+g+'）</p>');
   passTime(1);renderAll();
 }
+/* ===== 门中事宜：同门事件池（宗门人物互动深化） ===== */
+function sectEvent(){
+  if(!S.sect){toast('尚未拜入宗门');return}
+  if((S.flag.sectEventCd||0)>0){toast('门中诸事安好，'+(S.flag.sectEventCd)+' 日后再说');return}
+  closePanel();
+  S.flag.sectEventCd=rand(15,30);
+  const pool=[
+    {t:'后山演武场上，两名同门切磋到一半起了真火，其中一人已拔剑出鞘。',o:[
+      {txt:'🛡️ 上前劝和（魅力判定）',fn:()=>{const R=doRoll('cha',14);log('<p>你横身挡在两人之间：'+rollBadge(R.r,R.mod,R.t,R.dc)+'</p>');if(R.hit){addMerit(1);const p=pick(S.sectNpcs||[]);if(p){p.favor=clamp(p.favor+4,0,100);const bb=addBond(p,2);if(bb)log(bb);}log('<p class="good">你三言两语化解干戈，众人对你愈发敬重（功德+1，同门好感+4）。</p>')}else{log('<p class="danger">两人打得兴起，你被误伤了一下（气血-5%）。</p>');S.hp=Math.max(1,S.hp-Math.floor(S.maxHp*0.05));}}},
+      {txt:'⚔️ 以武压场（力量判定）',fn:()=>{const R=doRoll('str',15);log('<p>你纵身跃入场中：'+rollBadge(R.r,R.mod,R.t,R.dc)+'</p>');if(R.hit){S.fame=S.fame||{};S.fame.zheng=(S.fame.zheng||0)+3;log('<p class="good">你一招分开两人，技惊四座（正道声望+3）。</p>')}else{log('<p>你出手太重，反被两人联手逼退，面子上有些挂不住。</p>');}}},
+      {txt:'👀 站在一旁看热闹',fn:()=>{log('<p>你抱臂旁观，只当一场好戏。事后两人各自悻悻散去。</p>');}},
+    ]},
+    {t:'一名外门弟子采药时误入妖兽领地，此刻正被围在山坳里。',o:[
+      {txt:'🦸 仗义出手相救',fn:()=>{log('<p>你闻讯御风赶往山坳……</p>');startCombat({name:'山中妖兽',atk:4+rl(),def:1+rl(),hp:25+rl()*8},res=>{if(res.win){addMerit(3);log('<p class="good">你救出同门，对方千恩万谢（功德+3）。</p>')}else{log('<p class="danger">妖兽凶猛，你拼死才把同门背出来，自己也挂了彩。</p>');}});}},
+      {txt:'📜 通报长老，请宗门定夺',fn:()=>{addMerit(1);const g=rand(20,50);S.contribVal+=g;log('<p class="good">长老派执法队救人，嘉你处事稳重（贡献值+'+g+'，功德+1）。</p>');}},
+    ]},
+    {t:'入夜，门中几名弟子围炉夜话，正论到「道为何物」。',o:[
+      {txt:'🧘 坐下参与论道（智慧判定）',fn:()=>{const R=doRoll('int',14);log('<p>你于炉边落座：'+rollBadge(R.r,R.mod,R.t,R.dc)+'</p>');if(R.hit){addWis(1);const g=Math.floor(60+rl()*10);S.cult+=g;log('<p class="good">你一言点醒众人，自己也悟得一线天机（悟性+1，修为+'+g+'）。</p>')}else{log('<p>你听得入神，插不上话，却也记下几句。</p>');}}},
+      {txt:'🍶 温一壶酒与大家同饮',fn:()=>{for(const p of (S.sectNpcs||[]))p.mood=clamp((p.mood||60)+5,0,100);log('<p class="good">酒过三巡，众人话匣子大开，门中情谊更暖（同门心情+5）。</p>');}},
+    ]},
+  ];
+  const ev=pick(pool);
+  openEventModal('🏮 门中事宜','<p>'+ev.t+'</p>',ev.o.map(o=>({txt:o.txt,fn:()=>{o.fn();S.flag.sectEvents=(S.flag.sectEvents||0)+1;passTime(1);renderAll()}})));
+}
 function sectMaster(i){
   const p=S.sectNpcs[i];
   if(S.master){toast('已有师尊');return}
@@ -403,8 +458,9 @@ function sectLibrary(){
   passTime(2);renderAll();
 }
 function sectBless(){
+  if((S.flag.blessCd||0)>0){toast('香火有定，'+(S.flag.blessCd)+' 日后可再来祈福');return}
   if(S.stones<200){toast('灵石不足');return}
-  S.stones-=200;
+  S.stones-=200;S.flag.blessCd=7;
   closePanel();
   const r=rand(1,100);
   let out='';
@@ -423,6 +479,10 @@ function sectSalary(){
   const base=[0,80,150,300,600,1200][idx]||0;
   const val=[0,20,40,80,160,300][idx]||0;
   if(base<=0){log('<p class="sys">外门弟子须以劳役换俸，暂无月俸可领。</p>');return}
+  const last=S.flag.salaryLast||0;
+  const due=30-(S.days-last);
+  if(last>0&&due>0){log('<p class="sys">月俸按月供给——距下次发放还需 <b>'+due+'</b> 日。</p>');renderAll();return}
+  S.flag.salaryLast=S.days;
   S.stones+=base;S.contribVal+=val;
   log('<p class="good">你领取月俸：灵石 +'+base+'，贡献值 +'+val+'。门中资源，按月供给。</p>');
   passTime(1);renderAll();

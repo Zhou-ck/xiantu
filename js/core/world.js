@@ -198,7 +198,6 @@ const SECT_RANKS=[
   {n:'长老',minStage:4,point:5000},
   {n:'宗主',minStage:6,point:15000},
 ];
-function rankIdx(s){if(!s.sect)return -1;let idx=0;for(let i=0;i<SECT_RANKS.length;i++){const r=SECT_RANKS[i];if(s.contrib>=r.point&&bigStage(s.realm)>=r.minStage)idx=i;}return idx}
 /* 显式晋升：贡献点与境界达标后，手动冲击下一阶领取职位与晋升礼；贡献点只用于定阶，不扣除、不因购物下降 */
 function rankIdx(s){if(!s.sect)return -1;return clamp(s.rank||0,0,SECT_RANKS.length-1)}
 function secRank(s){if(!s.sect)return '';return SECT_RANKS[rankIdx(s)].n}

@@ -11,6 +11,7 @@ const DAILY_QUESTS=[
   {id:'d_talk',icon:'💬',name:'广结善缘',desc:'与人交谈 2 次',target:2,key:'talk',rewardText:'灵石×20 · 功德+1',reward:{stones:20,merit:1}},
   {id:'d_sect',icon:'🏯',name:'宗门效力',desc:'完成宗门任务 1 次',target:1,key:'sectTask',rewardText:'贡献点×4 · 灵石×15',reward:{contribP:4,stones:15}},
   {id:'d_craft',icon:'🔨',name:'以艺养道',desc:'炼制物品 1 次',target:1,key:'craft',rewardText:'灵石×25 · 铁矿石×1',reward:{stones:25,mats:['iron',1]}},
+  {id:'d_daolun',icon:'📖',name:'以论证道',desc:'与人论道 1 次',target:1,key:'daolun',rewardText:'灵石×20',reward:{stones:20}},
 ];
 const WEEKLY_QUESTS=[
   {id:'w_realm',icon:'⚡',name:'境界精进',desc:'突破 1 个小境',target:1,key:'realm',rewardText:'灵石×120（随境界上浮）',reward:{stones:120}},
@@ -22,7 +23,7 @@ const ITEM_REWARDS={
   '聚灵丹':{name:'聚灵丹',type:'consumable',quality:1,count:1,desc:'30 日内修炼效率 ×1.5。',use:'pill',sell:120},
   '清心丹':{name:'清心丹',type:'consumable',quality:2,count:1,desc:'涤心宁神，消除全部心魔烙印。',use:'clear',sell:200},
 };
-function zeroCounts(){return {cultDays:0,explore:0,kill:0,sectTask:0,craft:0,talk:0}}
+function zeroCounts(){return {cultDays:0,explore:0,kill:0,sectTask:0,craft:0,talk:0,daolun:0}}
 function dateStr(d){return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()}
 function weekStr(d){
   const t=new Date(d);t.setHours(0,0,0,0);

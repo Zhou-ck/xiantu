@@ -23,6 +23,131 @@ function artSkill(a){
   if(!sk&&a.mult>=1.15)return ART_SKILLS.none;
   return sk;
 }
+/* ===== 7.4 战技参悟：以战悟道，战意点化永久战斗之技（战斗深化） ===== */
+const TECH_UPGRADES=[
+  {id:'agg',n:'破军诀',i:'🗡️',max:3,cost:1,desc:'以战养战，攻势 +5%/级',eff:lv=>'伤害 +'+(lv*5)+'%'},
+  {id:'agi',n:'游龙身法',i:'🌀',max:3,cost:1,desc:'身法如游龙，敌方更难命中 +1/级',eff:lv=>'敌方命中难度 +'+lv},
+  {id:'def',n:'玄龟御体',i:'🛡️',max:3,cost:1,desc:'御体如岳，受创 -5%/级',eff:lv=>'受创 -'+(lv*5)+'%'},
+  {id:'skl',n:'百战通神',i:'⚡',max:2,cost:2,desc:'参悟功法技能奥义，2 级后每 2 回合即可施展',eff:lv=>lv>=2?'技能每 2 回合施展':'技能间隔缩短'},
+];
+function techUps(){return (S&&S.flag&&S.flag.tech&&S.flag.tech.ups)||{}}
+function techPts(){return (S&&S.flag&&S.flag.tech&&S.flag.tech.pts)||0}
+function techLevel(id){return techUps()[id]||0}
+function skillCd(){return techLevel('skl')>=2?2:3}
+function addTechPts(n){
+  S.flag.tech=S.flag.tech||{pts:0,ups:{}};
+  S.flag.tech.pts=(S.flag.tech.pts||0)+Math.max(0,Math.floor(n||0));
+  return S.flag.tech.pts;
+}
+function learnTech(id){
+  if(!S||!S.flag)S.flag=S.flag||{};
+  S.flag.tech=S.flag.tech||{pts:0,ups:{}};
+  const t=TECH_UPGRADES.find(x=>x.id===id);
+  if(!t)return;
+  const lv=techLevel(id);
+  if(lv>=t.max){toast('此技已至圆满');return}
+  const c=Math.max(1,t.cost*(lv+1));
+  if(S.flag.tech.pts<c){toast('战意不足，需 '+c+' 点');return}
+  S.flag.tech.pts-=c;
+  S.flag.tech.ups[id]=lv+1;
+  log('<p class="loot">⚔️ 你于战中顿悟「'+t.n+'」至第 '+(lv+1)+' 层（'+(t.eff?t.eff(lv+1):'')+'）。</p>');
+  panelBattleArts();
+}
+function panelBattleArts(){
+  if(!S){toast('尚未踏入仙途');return}
+  S.flag.tech=S.flag.tech||{pts:0,ups:{}};
+  const rows=TECH_UPGRADES.map(t=>{
+    const lv=techLevel(t.id);
+    const c=Math.max(1,t.cost*(lv+1));
+    const done=lv>=t.max;
+    return '<div class="item-card"><div class="nm">'+t.i+' '+t.n+' <span class="tag">Lv.'+lv+'/'+t.max+'</span></div><div class="ds">'+t.desc+'<br>当前效果：'+(t.eff?t.eff(lv):'')+'</div>'+
+      (done?'<p style="color:#8fd0a0;font-size:12px;margin-top:4px">已圆满</p>':'<div style="margin-top:6px"><button class="small primary" onclick="learnTech(\''+t.id+'\')">参悟（'+c+' 战意）</button></div>')+'</div>';
+  }).join('');
+  openPanel('⚔️ 战技参悟','<p>战意 <b>'+(S.flag.tech.pts||0)+'</b> 点：胜战可得战意，点化后永久生效，与境界成长叠加。</p>'+
+    '<p style="font-size:12px;color:#6f7a94">破军诀强攻、游龙身法避危、玄龟御体减伤、百战通神缩短功法技能间隔——皆为以战悟道的积累。</p>'+rows);
+}
+/* ===== 论道台：与道友辩道证心（道韵共鸣 / 论道点入道） ===== */
+function daolunStats(){return {wins:S.flag.daolunWins||0,losses:S.flag.daolunLosses||0,score:S.flag.daolunScore||0}}
+function daolunResonance(n){
+  if(!n)return false;
+  const a=elemOf(S),b=n.rootElem||'fire';
+  if(a===b)return true;
+  if(a==='fuse'&&S.rootFuse&&S.rootFuse.indexOf(b)>=0)return true;
+  return !!(typeof ELEM_SHENG!=='undefined'&&(ELEM_SHENG[a]===b||ELEM_SHENG[b]===a));
+}
+function panelDaolun(){
+  if(!S){toast('尚未踏入仙途');return}
+  const st=daolunStats();
+  const npcs=(S.npcs||[]).filter(n=>n.met&&!n.foe);
+  const rows=npcs.map((n,i)=>{
+    const cd=(n.cd&&n.cd.daolun)||0;
+    const reson=daolunResonance(n);
+    return '<div class="item-card"><div class="nm">'+artImg(NPC_ART[n.role]||ART.lady,36,36,'avatar')+'<b>'+esc(n.name)+'</b> <span class="tag">'+esc(n.role)+'</span>'+(reson?' <span class="tag" style="color:#8fd0a0">道韵共鸣</span>':'')+'</div><div class="ds">'+stageName(n.stage)+' · 好感 '+(n.favor||0)+(cd>0?'<br>论道过后，需 '+cd+' 日再叙':'')+'</div><div style="margin-top:6px"><button class="small" onclick="daolunWith('+i+')">'+(cd>0?'⏳ 冷却中':'📖 论道')+'</button></div></div>';
+  }).join('');
+  const master=S.master?('<div class="item-card"><div class="nm">🎓 师尊 <b>'+esc(S.master.name)+'</b></div><div class="ds">与师尊论道，获益更丰</div><div style="margin-top:6px"><button class="small primary" onclick="daolunWith(-1)">📖 论道</button></div></div>'):'';
+  openPanel('📖 论道台','<p>道可道，非常道。与道友辩道，既证己道，亦长见闻。</p>'+
+    '<div class="bd-box"><div class="bd-head">🏅 论道战绩</div>'+
+    '<div class="bd-row"><span>胜负</span><b>'+st.wins+' 胜 · '+st.losses+' 负</b></div>'+
+    '<div class="bd-row"><span>论道点</span><b>'+st.score+'</b></div></div>'+
+    (st.score>=3?'<div class="row"><button class="small primary" onclick="daolunEnlighten()">✨ 以论入道（3 论道点 · 悟道+1）</button></div>':'')+
+    (master?'<h4>🎓 与师尊论道</h4>'+master:'')+
+    '<h4>🤝 与道友论道</h4>'+(rows||'<p style="color:#6f7a94">尚无相识之人可论道，先出门游历吧。</p>')+
+    '<p style="font-size:11.5px;color:#6f7a94;margin-top:8px">论道三题（义理/道心/处世），胜二场即胜。灵根相生或同属者<b style="color:#8fd0a0">道韵共鸣</b>：论道点双得、收益更丰。</p>');
+}
+function daolunWith(i){
+  const n=i<0?S.master:S.npcs[i];
+  if(!n){toast('无人可论');return}
+  if(n.foe){log('<p>仇人相见，论什么道？</p>');return}
+  closePanel();
+  const cd=n.cd=n.cd||{};
+  if((cd.daolun||0)>0){log('<p class="sys">'+esc(n.name)+'摆手：「刚论过不久，容我回味几日。」</p>');passTime(1);renderAll();return}
+  cd.daolun=rand(10,18);
+  const reson=daolunResonance(n);
+  const dc=14+(n.stage||0);
+  const topics={int:'义理',wil:'道心',cha:'处世'};
+  let wins=0;
+  for(const k of ['int','wil','cha']){
+    const R=doRoll(k,dc+(reson?2:0));
+    log('<p>你与'+esc(n.name)+'论至【'+topics[k]+'】：'+rollBadge(R.r,R.mod,R.t,R.dc)+'</p>');
+    if(R.hit)wins++;
+  }
+  log('<p class="sys">三题论罢，你'+(wins>=2?'略胜一筹':'稍逊风骚')+'（'+wins+'/3）。</p>');
+  if(wins>=2)daolunWin(n,reson);
+  else daolunLose(n,reson);
+  dC().c.daolun=(dC().c.daolun||0)+1;
+  passTime(1);renderAll();
+}
+function daolunWin(n,reson){
+  S.flag.daolunWins=(S.flag.daolunWins||0)+1;
+  const g=Math.floor((30+(n.stage||0)*15)*(reson?1.5:1));
+  S.cult+=g;
+  n.favor=clamp((n.favor||0)+2,0,100);
+  if(reson){
+    S.flag.daolunScore=(S.flag.daolunScore||0)+2;
+    log('<p class="good">道韵共鸣：你与'+esc(n.name)+'的灵根五行相生，此番论道如高山流水，格外酣畅（论道点 +2，修为 +'+g+'，好感+2）。</p>');
+  }else{
+    S.flag.daolunScore=(S.flag.daolunScore||0)+1;
+    log('<p class="good">你于论道中折服对方：'+esc(n.name)+'叹服不已（论道点 +1，修为 +'+g+'，好感+2）。</p>');
+  }
+  const gw=growWil(0.12,'辩道明心，道心愈坚');if(gw)log(gw);
+}
+function daolunLose(n,reson){
+  S.flag.daolunLosses=(S.flag.daolunLosses||0)+1;
+  const g=Math.floor((15+(n.stage||0)*8)*(reson?1.2:1));
+  S.cult+=g;
+  n.favor=clamp((n.favor||0)+1,0,100);
+  log('<p>你与'+esc(n.name)+'各执一词，终究棋差一着。虽败，亦有所得（修为 +'+g+'，好感+1）。</p>');
+  const gw=growWil(0.1,'闻道有先后，心性渐明');if(gw)log(gw);
+}
+function daolunEnlighten(){
+  if((S.flag.daolunScore||0)<3){toast('论道点不足');return}
+  S.flag.daolunScore-=3;
+  S.flag.insights=(S.flag.insights||0)+1;
+  const g=Math.floor(80+rl()*10);
+  S.cult+=g;
+  log('<p class="loot">✨ 你将三场论道所得凝为一念——灵台一点清明乍现，悟道 +1（修为 +'+g+'）。</p>');
+  panelDaolun();
+}
 /* ===== 7.2 敌人风格：每种敌人带战斗风格与「妖技」 ===== */
 const ENEMY_STYLES={
   rapid:{n:'抢攻',i:'⚡',desc:'攻势凌厉，先手如风',bonus:4,act:'妖技 · 疾影突袭：对方攻势暴涨！'},
@@ -50,10 +175,12 @@ function battle(enemy,onEnd,spar){
   return new Promise(resolve=>{
     closePanel();
     S.seenE[enemy.name]=(S.seenE[enemy.name]||0)+1;
+    if(typeof checkAtlasMiles==='function')checkAtlasMiles();
     const tac=TACTICS[S.battleTactic||'steady'];
     const skill=artSkill(S.arts&&S.arts[0]);
     const es=ENEMY_STYLES[enemy.style]||ENEMY_STYLES[pick(['rapid','guard','poison','burst'])];
     const flow=flowCombatBonus(S,es);
+    const techAgg=techLevel('agg'),techAgi=techLevel('agi'),techDef=techLevel('def');
     let pDmg=petAlive()?2+S.pet.bonus*2:0;
     let cDmg=S.companion?2+S.companion.stage*2:0;
     let eh=enemy.hp,ph=S.hp;
@@ -68,9 +195,13 @@ function battle(enemy,onEnd,spar){
       scene('遭遇战 · '+esc(enemy.name));
       if(win){
         S.kills++;S.wins++;S.hp=Math.max(1,ph);
+        const tp=enemy.boss?2:1;
+        addTechPts(tp);
+        loot.push('战意 +'+tp);
         dC().c.kill++;
         addTrail(1);
         weaponGainMastery(S);
+        if(S.arts&&S.arts[0]){const mg=gainArtMastery(S.arts[0],10);if(mg)log(mg);}
         if(S.flag.pendingMerit){addMerit(S.flag.pendingMerit);loot.push('功德 +'+S.flag.pendingMerit);S.flag.pendingMerit=0}
         if(enemy.name==='荒坟厉鬼'){addMerit(2);loot.push('功德 +2')}
         if(enemy.name==='血魔宗伏杀者'){addMerit(3);loot.push('功德 +3')}
@@ -144,7 +275,8 @@ function battle(enemy,onEnd,spar){
       if(burn>0&&eh>0){const bd=Math.max(1,Math.floor(enemy.hp*0.06));eh=Math.max(0,eh-bd);st.dmgDealt+=bd;html.push('<p class="bl">🔥 灼烧蔓延，<b>'+esc(enemy.name)+'</b> 受创 <span class="bhit">-'+bd+'</span>。</p>')}
       if(poison>0){const pd=Math.max(1,Math.floor(S.maxHp*0.05));ph=Math.max(1,ph-pd);st.dmgTaken+=pd;html.push('<p class="bhit">☠️ 毒素侵蚀，你受创 -'+pd+'（剩余 '+poison+' 回合）。</p>');poison--}
       if(ph<=0){renderBars();pushLog(html.join(''));finish(false,false);return}
-      const useSkill=!!skill&&rnd%3===0;
+      const skCd=skillCd();
+      const useSkill=!!skill&&(rnd%skCd===0);
       /* 2C 流派：剑修连击/破防加成 */
       const flowMulti=(flow.multi&&chance(flow.multi))?1:0;
       const pa=d20()+atkBonus(S)+companionAtk()+(signNow()&&signNow().atk?signNow().atk:0)+(useSkill?3:0)+(flow.atk||0)+(flow.vsGuard||0)+(flowMulti?3:0);
@@ -161,6 +293,8 @@ function battle(enemy,onEnd,spar){
       if(flow.curse&&chance(flow.curse)){ea=0;html.push('<p class="bdodge">👻 咒术如影随形，敌方动作一滞，攻势落空！</p>')}
       if(pa>=enemy.def+8){
         let dmg=Math.max(2,Math.floor((rand(4,9)+attrVal(S,'str')+weaponAtk(S))*tac.dmg))+pDmg+cDmg;
+        if(techAgg)dmg=Math.floor(dmg*(1+0.05*techAgg));
+        if(typeof ownSectCombatMult==='function'){const om=ownSectCombatMult();if(om!==1)dmg=Math.floor(dmg*om);} /* 自建宗门 · 演武场 */
         if(flow.skill)dmg=Math.floor(dmg*flow.skill);
         if(flowMulti){dmg=Math.floor(dmg*1.5);html.push('<p class="bl">🗡️ 剑势连击，如影随形！</p>')}
         if(op)dmg=Math.floor(dmg*1.5);
@@ -212,8 +346,9 @@ function battle(enemy,onEnd,spar){
         frozen=false;
         html.push('<p class="bdodge">❄️ 玄冰缚身，对方动弹不得，错失一回合！</p>');
       }else{
-        if(ea>=8+armorDef(S)+dodgeBonus(S)){
+        if(ea>=8+armorDef(S)+dodgeBonus(S)+techAgi){
           let d=Math.max(1,Math.floor((rand(3,8)+Math.floor(enemy.atk/3)-armorDef(S))*tac.take));
+          if(techDef)d=Math.max(1,Math.floor(d*(1-0.05*techDef)));
           if(op)d=Math.max(1,Math.floor(d*0.5));
           if(flow.hpMul){d=Math.max(1,Math.floor(d*0.85*(flow.vsBurst||1)));html.push('<p class="bl">💪 肉身硬抗，伤害削减！</p>')}
           if(flow.reflect){const rd=Math.max(1,Math.floor(d*flow.reflect));eh=Math.max(0,eh-rd);st.dmgDealt+=rd;html.push('<p class="bl">🛡️ 反震之力，敌方受创 -'+rd+'。</p>')}
@@ -244,7 +379,7 @@ function battle(enemy,onEnd,spar){
     $('battleHead').textContent='⚔️ '+enemy.name+' · 战术：'+tac.i+' '+tac.n;
     if(es)pushLog('<p class="bl">对方是<b>'+es.n+'</b>之敌（'+es.desc+'）。</p>');
     if(skill)pushLog('<p class="bl">你主修功法<strong>《'+esc(S.arts[0].name)+'》</strong>的<b>'+skill.n+'</b>每 3 回合自动施展（'+skill.desc+'）。</p>');
-    if(enemy.elem)pushLog('<p class="bl">对方气息属 '+elemInfo(enemy.elem).i+' '+elemInfo(enemy.elem).n+(ELEMS[enemy.elem].beats?'（克'+ELEMS[ELEMS[enemy.elem].beats].n+'）':'')+'。</p>');
+    if(enemy.elem)pushLog('<p class="bl">对方气息属 '+elemInfo(enemy.elem).i+' '+elemInfo(enemy.elem).n+(ELEMS[enemy.elem]&&ELEMS[enemy.elem].beats?'（克'+ELEMS[ELEMS[enemy.elem].beats].n+'）':'')+'。</p>');
     if(S.weapon&&S.weapon.elem)pushLog('<p class="bl">你手中 '+esc(S.weapon.name)+' 属 '+elemInfo(S.weapon.elem).n+'。'+(rootAffinity(S,S.weapon.elem)?' 与你的灵根相合，攻势更利。':'')+'</p>');
     if(pDmg>0)pushLog('<p class="bl">灵兽 <b>'+esc(S.pet.name)+'</b> 在旁伺机而动。</p>');
     if(cDmg>0)pushLog('<p class="bl">同行之人 <b>'+esc(S.companion.name)+'</b> 在旁策应。</p>');

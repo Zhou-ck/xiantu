@@ -15,6 +15,7 @@ function daoAff(p,f,a,line){
   if(!p)return;
   if(f)p.favor=clamp((p.favor||0)+f,0,100);
   if(a)p.affinity=clamp((p.affinity||0)+a,0,200);
+  if(typeof addBond==='function'){const bb=addBond(p,1);if(bb)log(bb);}
   if(line)log('<p>'+line+'</p>');
 }
 /* 心动记忆：道侣会记住与你共同经历的片段（最多 8 条） */
@@ -73,6 +74,7 @@ function partnerPanel(){
     '<button class="small" onclick="daoDaily()">🌟 相处</button>',
     '<button class="small" onclick="daoGift()">🎁 赠礼</button>',
     '<button class="small primary" onclick="doDualCultivate()">☯️ 双修</button>',
+    '<button class="small" onclick="openNpcCard(S.daoPartner,\'道侣\')">📇 档案</button>',
     '<button class="small" onclick="daoPropose()">'+(p.married?'👰 大典':pov('💍 提亲','💍 求娶'))+'</button>',
     (p.married&&!(S.flag.childPreg&&S.flag.childPreg.left>0)?'<button class="small" onclick="askChild()">👶 共商子嗣</button>':'')+
     ((S.flag.childPreg&&S.flag.childPreg.left>0)?'<button class="small primary" onclick="childCheck()">🤰 胎息检查（'+(Math.ceil((S.flag.childPreg.left||90)/30))+' 月）</button>':''),
@@ -749,7 +751,7 @@ function childrenHtml(){
     const avatar=artImg('assets/portraits/child_'+(c.gender==='女'?'f':'m')+'.jpg',40,40,'avatar')||childAvatar(c.gender,c.stage);
     return '<div class="item-card"><div class="nm child-card">'+avatar+'<b>'+esc(c.name)+'</b> <span class="tag">'+(c.gender==='女'?'♀':'♂')+'</span> <span class="tag">'+stageName(c.stage)+'</span></div>'+
       '<div class="ds">灵根 '+c.root+'（'+elemInfo(c.rootElem).n+'） · 成长 '+Math.floor(c.progress||0)+'/'+need+(c.parent?' · 血脉：'+esc(c.parent)+'×'+esc(c.mom):'')+(c.growthBonus?' · 胎息充裕 +10%':'')+'</div>'+
-      '<div style="margin-top:6px"><button class="small" onclick="childAct('+i+',\'art\')">📖 传功</button> <button class="small" onclick="childAct('+i+',\'train\')">🗡️ 历练</button> <button class="small" onclick="childAct('+i+',\'grow\')">🌱 长大</button></div></div>';
+      '<div style="margin-top:6px"><button class="small" onclick="childAct('+i+',\'art\')">📖 传功</button> <button class="small" onclick="childAct('+i+',\'train\')">🗡️ 历练</button> <button class="small" onclick="childAct('+i+',\'grow\')">🌱 长大</button> <button class="small" onclick="openChildCard('+i+')">📇 档案</button></div></div>';
   }).join('');
 }
 

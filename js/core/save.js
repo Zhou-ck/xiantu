@@ -109,6 +109,12 @@ function load(){
     if(s.mood===undefined)s.mood=60;
     if(s.wis===undefined)s.wis=0;
     if(s.trail===undefined)s.trail=0;
+    if(s.insight===undefined)s.insight=0;
+    if(s.spirit===undefined)s.spirit=maxSpirit(s);
+    if(s.flag.cultLog===undefined)s.flag.cultLog=[];
+    if(s.flag.craftLog===undefined)s.flag.craftLog={};
+    if(s.flag.tech===undefined)s.flag.tech={pts:0,ups:{}};
+    if(s.arts)for(const a of s.arts)if(a&&a.mastery===undefined)a.mastery=0;
     if(!s.set)s.set={fx:'med',autoTrib:false,autoCraft:false,audio:true,shake:true};
     if(s.gender===undefined)s.gender='男';
     if(s.contribVal===undefined)s.contribVal=0;
@@ -118,6 +124,7 @@ function load(){
       if(!p.name)p.name=uniqueName(p.gender||'男');
       if(!p.title)p.title=p.role||'宗门弟子';
       if(p.gender===undefined)p.gender='男';
+      if(p.bond===undefined)p.bond=0;
       if(!p.artKey)p.artKey=SECT_PERSON_ART[p.role+(p.gender==='女'?'女':'男')]||SECT_PERSON_ART['传功弟子'+(p.gender==='女'?'女':'男')]||'';
     }
     if(s.companion===undefined)s.companion=null;
@@ -138,6 +145,7 @@ function load(){
       if(n.gifts===undefined)n.gifts=0;
       if(n.mood===undefined)n.mood=60;
       if(n.met===undefined)n.met=true;
+      if(n.bond===undefined)n.bond=0;
       if(!n.cd)n.cd={talk:0,duel:0,gift:0};
     }
     if(s.daoPartner){
@@ -145,13 +153,17 @@ function load(){
       if(s.daoPartner.affinity===undefined)s.daoPartner.affinity=60;
       if(s.daoPartner.stage===undefined)s.daoPartner.stage=s.daoPartner.realm||0;
       if(s.daoPartner.cd===undefined)s.daoPartner.cd={};
+      if(s.daoPartner.bond===undefined)s.daoPartner.bond=0;
       if(s.daoPartner.memories===undefined)s.daoPartner.memories=[];
       /* 存档读回后同一角色可能分裂成两个对象：把与道侣同名的暧昧对象移除（防修罗场「同一个人」） */
       if(s.affairs&&s.daoPartner.name){
         s.affairs=s.affairs.filter(a=>!(a&&a.name===s.daoPartner.name));
       }
     }
-    if(s.master&&s.master.gender===undefined)s.master.gender='男';
+    if(s.master){
+      if(s.master.gender===undefined)s.master.gender='男';
+      if(s.master.bond===undefined)s.master.bond=0;
+    }
     /* 旧档境界迁移：v1 大境界 → 新 42 档体系（大境前期） */
     if((s.version||1)<2&&s.realm>8){
       const m={9:9,10:13,11:17,12:21,13:25,14:29,15:33,16:37,17:41};

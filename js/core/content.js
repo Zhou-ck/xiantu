@@ -87,6 +87,12 @@ const TITLES=[
   {id:'merit500',name:'功德无量',desc:'功德达 500，气运 +2',check:s=>s.merit>=500,effect:s=>{s.luck=clamp(s.luck+2,1,100)}},
   {id:'win100',name:'百战不殆',desc:'获胜 100 场，力量 +1',check:s=>s.wins>=100,effect:s=>{s.attrs.str=clamp(s.attrs.str+1,1,40)}},
   {id:'year100',name:'寿比南山',desc:'这一世活过百年，心性 +1',check:s=>s.years>=100,effect:s=>{s.attrs.wil=clamp(s.attrs.wil+1,1,40)}},
+  {id:'tech5',name:'战技宗师',desc:'战技点化累计 5 级，攻势 +1',check:s=>(Object.values((s.flag&&s.flag.tech&&s.flag.tech.ups)||{}).reduce((a,b)=>a+b,0))>=5,effect:s=>{s.flag.tAttack=(s.flag.tAttack||0)+1}},
+  {id:'daolun10',name:'论道无双',desc:'论道胜 10 场，心性 +1',check:s=>(s.flag.daolunWins||0)>=10,effect:s=>{s.attrs.wil=clamp(s.attrs.wil+1,1,40)}},
+  {id:'tide5',name:'守城英杰',desc:'妖潮全胜 5 次，气运 +1',check:s=>(s.flag.tideWins||0)>=5,effect:s=>{s.luck=clamp(s.luck+1,1,100)}},
+  {id:'atlas40',name:'收藏大家',desc:'图鉴收集（物品+敌人）达 40，魅力 +1',check:s=>Object.keys(s.seenI||{}).length+Object.keys(s.seenE||{}).length>=40,effect:s=>{s.attrs.cha=clamp(s.attrs.cha+1,1,40)}},
+  {id:'ownSect',name:'开宗立派',desc:'自建宗门，魅力 +1',check:s=>!!(s.flag&&s.flag.ownSect),effect:s=>{s.attrs.cha=clamp(s.attrs.cha+1,1,40)}},
+  {id:'spirit100',name:'真元凝练',desc:'真元上限达 100，智慧 +1',check:s=>maxSpirit(s)>=100,effect:s=>{s.attrs.int=clamp(s.attrs.int+1,1,40)}},
 ];
 function checkTitles(){
   if(!S)return;
@@ -187,6 +193,7 @@ function festivalEvent(id){
   if(!S.flag.festDone)S.flag.festDone={};
   const y=S.flag.lastYear||Math.floor(S.years);
   S.flag.festDone[y+'-'+id]=true;
+  if(typeof recordWorldEvent==='function')recordWorldEvent(({chunjie:'春节年关，凡间张灯结彩',qixi:'七夕鹊桥，情缘暗动',zhongyuan:'中元鬼门开，阴风过境',zhongqiu:'中秋月宫异象，天地同辉'})[id]||('岁时'+id));
   if(id==='chunjie')festivalChunjie();
   else if(id==='qixi')festivalQixi();
   else if(id==='zhongyuan')festivalZhongyuan();

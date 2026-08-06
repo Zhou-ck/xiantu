@@ -85,6 +85,7 @@ function tryBreak(){
     }
     const target=nxt-1;
     const contBig=nxt<THRESHOLDS.length&&isBigBreak(nxt);
+    S.flag.preBreak={attrs:Object.assign({},S.attrs),life:LIFESPANS[Math.max(0,S.realm)]};
     breakOpen('小境界突破',names.join(' → '));
     breakRun([
       {t:'<span class="bt-scene">◈ 蓄势引气</span><br>你盘膝引气，真元在丹田中鼓荡，周身灵气缓缓汇聚。',b:12},
@@ -99,6 +100,7 @@ function tryBreak(){
       addWis(1);
       for(const la of layerGains)S.attrs[la]=clamp(S.attrs[la]+1,1,40);
       S.maxHp=calcMaxHp(S);S.hp=Math.max(S.hp,Math.floor(S.maxHp*0.6));
+      logRealmDiff(target);
       scene('突破 · '+names.join(' → '));
       log('<p>体内真气如江河决堤，窍穴逐一洞开。你长身而起，只觉耳目一新，天地灵气更为亲近。</p><p class="good">境界提升：'+names.join(' → ')+'</p><p class="sys">突破耗去修为 '+consumed+'，余 '+S.cult+' 结转至新境界（悟性 +1）。</p>');
       if(layerGains.length)log('<p class="good">境界攀升，根基渐固（'+layerGains.map(k=>ATTR_NAMES[k]+' +1').join('、')+'）。</p>');
@@ -223,7 +225,8 @@ function doBigBreakCore(nxt,dc,kMod,bonus){
     }
     S.flag.tribMiniDone=true;
   }
-  const R=doRoll('wil',dc,kMod+moodMod()+(S.flag.daoInsight||0));
+  const insB=Math.min(10,(S.insight||0));
+  const R=doRoll('wil',dc,kMod+moodMod()+(S.flag.daoInsight||0)+insB);
   R.t+=(bonus||0);
   R.hit=R.t>=dc;R.crit=R.t>=30;R.fumble=R.t<=5;
   const trib=S.flag.tribType||'thunder';S.flag.tribType=null;
@@ -242,8 +245,9 @@ function doBigBreakCore(nxt,dc,kMod,bonus){
       if(pre.thunderFails.some(x=>x.fail)&&chance(0.25))pre.heartFail=true;
     }
     if(nxt===41){for(let i=1;i<=3;i++){const r2=d20()+effWil(S)+kMod;pre.xinmoFails.push({r2,fail:r2<22});}}
+    S.flag.preBreak={attrs:Object.assign({},S.attrs),life:LIFESPANS[Math.max(0,nxt-1)]};
     breakOpen('大境界突破',REALMS[nxt]);
-    const steps=[{t:'<span class="bt-scene">◈ 蓄势引气</span><br>灵气如潮，道门在前。你深吸一口气，以毕生道心凝于一念。'+(kMod?'<br><span class="bt-roll">功德与业力交织，天意微有偏倚 '+kMod+'</span>':''),b:10}];
+    const steps=[{t:'<span class="bt-scene">◈ 蓄势引气</span><br>灵气如潮，道门在前。你深吸一口气，以毕生道心凝于一念。'+(kMod?'<br><span class="bt-roll">功德与业力交织，天意微有偏倚 '+kMod+'</span>':'')+(insB>0?'<br><span class="bt-roll">💡 渡劫感悟加持：判定 +'+insB+'</span>':''),b:10}];
     steps.push({t:'<span class="bt-scene">◈ 道心冲关</span><br>心性判定：'+rollBadge(R.r,R.mod,R.t,R.dc),b:45,d:950});
     if(nxt>=13){
       const tribTxt={thunder:'乌云四合，万雷齐鸣，雷劫降临！',xinmo:'劫云深处，心魔幻影化作百丈魔躯，压顶而来！',yehuo:'业火自虚空燃起，灼烤因果业力，天地色变！',feng:'九天罡风倒卷，割裂虚空，吹得万木连根而起！'}[trib];
@@ -275,7 +279,6 @@ function doBigBreakCore(nxt,dc,kMod,bonus){
     const lossPct=nxt<13?10:(nxt>=21?25:rand(10,30));
     const loss=Math.floor(S.cult*lossPct/100);
     const failHd=chance(0.3);
-    if(nxt>=21){S.flag.daoInsight=(S.flag.daoInsight||0)+1;log('<p class="sys">道基感悟 +1：虽败，你对天地之道的体悟反而更深（下次突破判定 +1，可叠加）。</p>')}
     breakOpen('大境界突破',REALMS[nxt]);
     breakRun([
       {t:'<span class="bt-scene">◈ 蓄势引气</span><br>灵气如潮，道门在前，你凝神以待。',b:15},
@@ -284,6 +287,16 @@ function doBigBreakCore(nxt,dc,kMod,bonus){
     ],()=>applyBreakFail(loss,R,failHd));
   }
   S.flag.tribMiniDone=false;S.flag.tribMiniBonus=0;
+}
+/* 境界质变对比：突破前后属性 / 寿元变化一览 */
+function logRealmDiff(nxt){
+  const pre=S.flag.preBreak;S.flag.preBreak=null;
+  if(!pre)return;
+  const diffs=[];
+  for(const k of ['str','agi','int','cha','wil'])if((S.attrs[k]||0)!==(pre.attrs[k]||0))diffs.push(ATTR_NAMES[k]+' '+(pre.attrs[k]||0)+'→'+S.attrs[k]);
+  const lifeNew=LIFESPANS[Math.max(0,nxt)];
+  if(pre.life!==undefined&&lifeNew!==pre.life)diffs.push('寿元 '+(isFinite(pre.life)?pre.life:'∞')+'→'+(isFinite(lifeNew)?lifeNew:'∞'));
+  if(diffs.length)log('<p class="sys">📊 境界质变：'+diffs.join(' · ')+'</p>');
 }
 /* 2M 渡劫小游戏：三波雷云，闪避或硬撼，表现分档影响天雷判定 */
 function tribMiniGame(onDone){
@@ -316,10 +329,12 @@ function tribMiniGame(onDone){
 function applyBreakSuccess(nxt,R,kMod,pre){
   S.flag.tribSave=null;
   if(S.flag.daoInsight>0){S.flag.daoInsight--;log('<p class="good">道基感悟化为突破之力（判定加成已消耗）。</p>')}
+  if((S.insight||0)>0){S.insight=0;log('<p class="good">渡劫感悟尽数化为突破之力，烙印消散（判定加成已消耗）。</p>')}
   rewardPush([{name:'晋入 '+REALMS[nxt],src:'突破',rare:true}]);
   for(const x of pre.thunderFails)if(x.fail)S.hp=Math.max(1,S.hp-Math.floor(S.maxHp*0.25));
   if(pre.heartFail)addDemonMark('fear',60);
   S.realm=nxt;S.maxHp=calcMaxHp(S);S.hp=Math.max(S.hp,Math.floor(S.maxHp*0.6));
+  S.flag.bigBreaks=(S.flag.bigBreaks||0)+1;
   /* 17 突破后修为重算：扣除本次大境界门槛，余量结转 */
   S.cult=Math.max(0,S.cult-THRESHOLDS[nxt]);
   addWis(1);
@@ -347,6 +362,7 @@ function applyBreakSuccess(nxt,R,kMod,pre){
     }
     log('<p class="good">'+txt+'</p>');
   }
+  logRealmDiff(nxt);
   if(S.bg.traits.some(t=>t.id==='blood')){S.luck=clamp(S.luck+1,1,100);log('<p class="good">家族血脉隐隐苏醒，气运 +1。</p>')}
   if(nxt===21&&!S.flag.daoDone){daoChoice()}
   S.flag.lifeWarn=false;
@@ -384,10 +400,14 @@ function applyBreakSuccess(nxt,R,kMod,pre){
 /* 突破失败结算 */
 function applyBreakFail(loss,R,failHd){
   S.cult=Math.max(0,S.cult-loss);
+  /* 渡劫感悟：失败保留部分修为（其余转为对天道的体悟），下次突破判定加成、破境时消耗 */
+  const insGain=Math.max(1,Math.floor(loss/80));
+  S.insight=Math.min(20,(S.insight||0)+insGain);
   if(failHd)addDemonMark('obsess',60);
   addMood(-10);
   log('<p class="danger">'+pickDemonNarr(pick(['fear','doubt','ignorance']))+'</p>');
-  log('<p class="danger">道门震颤，反噬临身！修为倒退 '+loss+'，十年苦功付之东流（心境 -10）。</p>');
+  log('<p class="danger">道门震颤，反噬临身！修为倒退 '+loss+'，十年苦功付之东流（心境 -10）——所幸此败并非全无所得，那一瞬的天道余韵已烙入识海，化为渡劫感悟。</p>');
+  log('<p class="sys">💡 渡劫感悟 +'+insGain+'：累计 '+S.insight+'（下次突破判定 +'+Math.min(10,S.insight)+'，破境时消耗）。</p>');
   if(S.temp.break<=0)log('<p class="sys">提示：若备有<b>破境丹</b>，可于突破前服用，心性判定临时 +3。</p>');
   const hasRewind=S.items.some(i=>i.use==='rewind');
   const canPay=S.stones>=2000;

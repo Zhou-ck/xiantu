@@ -37,6 +37,34 @@ const NPC_POOL=[
 /* 角色关系网：相识之人之间也有同门、旧识、宿敌、暗恋、挚友等羁绊 */
 const REL_TYPES=['同门','旧识','青梅','宿敌','暗恋','挚友','恩怨','师徒'];
 function relLabel(t){return t==='同门'?'同门旧谊':t==='旧识'?'故交旧识':t==='青梅'?'青梅竹马':t==='宿敌'?'宿怨':t==='暗恋'?'暗藏情愫':t==='挚友'?'莫逆之交':t==='恩怨'?'前尘恩怨':'授业之谊'}
+/* ===== 羁绊系统：交互累积 bond，等级影响增益（人际深化 Phase 2b） ===== */
+const BOND_LEVELS=[
+  {min:0,n:'点头之交',desc:'萍水相逢，缘分尚浅'},
+  {min:10,n:'相识',desc:'已能推心置腹地闲谈'},
+  {min:30,n:'相知',desc:'彼此性情了然于心'},
+  {min:60,n:'莫逆',desc:'有事相托，绝不推辞'},
+  {min:100,n:'生死之交',desc:'可托生死，此志不移'},
+];
+function bondInfo(n){
+  const b=(n&&n.bond)||0;
+  let idx=0;
+  for(let i=0;i<BOND_LEVELS.length;i++)if(b>=BOND_LEVELS[i].min)idx=i;
+  const cur=BOND_LEVELS[idx];
+  const next=BOND_LEVELS[idx+1]||null;
+  return {bond:b,idx:idx,name:cur.n,desc:cur.desc,next:next?next.min:null};
+}
+function addBond(n,amt){
+  if(!n||n.foe||!S)return '';
+  const before=bondInfo(n).idx;
+  n.bond=Math.min(120,(n.bond||0)+Math.max(0,Math.floor(amt||1)));
+  const after=bondInfo(n).idx;
+  if(after>before)return '<p class="good">🤝 你与<b>'+esc(n.name)+'</b>的羁绊加深，晋为「'+bondInfo(n).name+'」！</p>';
+  return '';
+}
+function bondTxt(n){
+  const bi=bondInfo(n);
+  return bi.name+(bi.next?('（'+(bi.bond||0)+'/'+bi.next+'）'):('（'+(bi.bond||0)+'）'));
+}
 function buildRelations(list){
   for(let i=0;i<list.length;i++){
     const n=list[i];
@@ -70,7 +98,7 @@ function genNPCs(s){
       persona:p.persona,taste:p.taste,chat:p.chat,
       favor:rand(10,45),realm:realm,stage:realm,atk:5+realm*2,hp:25+realm*15,
       teacher:chance(0.25),art:pick(ARTS),mood:rand(50,80),
-      talks:0,gifts:0,growth:0,rootElem:pickRootElem(),
+      talks:0,gifts:0,growth:0,rootElem:pickRootElem(),bond:rand(0,5),
     });
   }
   if(s.bg&&s.bg.traits.some(t=>t.id==='exile')){

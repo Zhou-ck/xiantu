@@ -36,11 +36,116 @@ function openHelp(){
     '<h4>🎏 节日</h4><p>按游戏内年份，每年会有<b>春节</b>（年关集市）、<b>七夕</b>（情缘之夜，情缘互动加成 10 日）、<b>中元</b>（鬼门开，超度积德或涉险探幽）、<b>中秋</b>（月宫异象，拜月悟道）。各随缘法，去留由你。</p>'+
     '<h4>🧒 道统传承</h4><p><b>化神期</b>后可在「人际」中收徒（最多三人），传功、指点、历练皆可养徒。身陨之时，若门下有人，可<b>转生为弟子</b>——功法与半数功德业力随道统传续，香火不灭。</p>'+
     '<h4>⚔️ 战术与称号</h4><p>战斗前可选抢攻/稳健/龟守/搏命四种战术；达成成就可获得称号（如初露锋芒、秘境行者、富甲一方），称号附带永久增益。</p>'+
+    '<h4>⚔️ 战技参悟</h4><p>胜战可得<b>战意</b>（守关 BOSS 更多），在「修炼 → 战技参悟」点化永久战斗之技：破军诀强攻、游龙身法避危、玄龟御体减伤、百战通神缩短功法技能间隔。战技与境界成长叠加，以战悟道，越战越强。</p>'+
+    '<h4>📖 论道台</h4><p>「修炼 → 论道台」可与相识道友或师尊三题辩道（义理/道心/处世），胜两题即胜。灵根相生或同属者<b>道韵共鸣</b>：判定 +2、论道点双得、收益更丰。论道点可「以论入道」兑换悟道。</p>'+
+    '<h4>🧿 真元</h4><p>真元是修行法力，随休整、静心养神与时光恢复。消耗 30 真元可「真元淬体」换修为，或在副业选材时「以真元控火」提升炼制判定。</p>'+
+    '<h4>📖 收藏图鉴</h4><p>仙途录「收藏图鉴」记录你获得过的物品、遭遇过的敌人与本门配方；收集达到里程碑（物品/敌人/配方数量）可领灵石、气运与悟道奖励。</p>'+
+    '<h4>🌊 妖潮守卫战</h4><p>年度妖兽潮现为三波守城战：先布置（拒马符阵/鼓舞村民），再逐波迎战妖狼群、妖豹群与妖潮首领，可随时见好就收；全胜扬名立万，溃败亦有代价，战绩记入行迹图鉴。</p>'+
+    '<h4>🏗️ 自建宗门</h4><p>开宗立派后可营造九种宗门建筑：灵田增收获、丹房/器坊/符阁/阵台增对应副业判定、藏经阁提修炼、演武场提战斗、灵兽园助灵兽成长、会客厅涨人际好感——建筑加成真实生效。</p>'+
     '<h4>⚒️ 副业交互</h4><p>炼丹、炼器、制符、布阵皆有「选材 → 微操」两段式：选材可<b>加料提纯</b>（品质 +2 档，需对应稀有材料）或<b>以妖丹引灵</b>（判定 +3）；微操各具特色——丹看火候、器看锻打、符看连笔、阵看引灵，凭本事赚品质。不喜微操可在「设置 → 副业微操」切为自动，照常结算。</p>'+
     '<h4>凶险</h4><p>探索中暗藏死亡选项，心魔积累会压制心性。寿元耗尽即身陨。身陨后可转世重生，保留一线灵光。</p>'+
     '<h4>多结局</h4><p>飞升成仙、堕入魔道、宗门之主、散修大能、身陨道消……关键抉择将引向不同终局。每年亦会有妖潮、论道、秘境等大事发生。</p>'+
     '<h4>💾 存档</h4><p>共 3 个存档位，点头部「存档」可存入或读取；游戏过程中的操作会自动存入当前存档位。</p>'+
     '<p style="font-size:12.5px;color:#6f7a94">提示：点「行囊」查看并使用物品；「人际」可照料灵兽；头部「仙途录」可查看称号、图鉴与生平；手机端点「状态」展开属性面板。</p>');
+}
+/* ===== 收藏图鉴：物品/敌人/配方 收集册 + 里程碑（仙途录深化） ===== */
+const ATLAS_MILES=[
+  {k:'item',n:15,t:'博物初成',g:()=>{S.stones+=200;return '灵石 +200'}},
+  {k:'item',n:30,t:'藏珍渐丰',g:()=>{S.luck=clamp(S.luck+1,1,100);return '气运 +1'}},
+  {k:'item',n:45,t:'万宝入藏',g:()=>{S.flag.insights=(S.flag.insights||0)+1;S.stones+=500;return '悟道 +1 · 灵石 +500'}},
+  {k:'enemy',n:10,t:'初窥妖邪',g:()=>{S.flag.insights=(S.flag.insights||0)+1;return '悟道 +1'}},
+  {k:'enemy',n:20,t:'百战知敌',g:()=>{S.luck=clamp(S.luck+1,1,100);return '气运 +1'}},
+  {k:'enemy',n:30,t:'见惯妖邪',g:()=>{S.luck=clamp(S.luck+1,1,100);S.stones+=300;return '气运 +1 · 灵石 +300'}},
+  {k:'recipe',n:3,t:'小试牛刀',g:()=>{S.stones+=200;return '灵石 +200'}},
+  {k:'recipe',n:5,t:'炉火纯青',g:()=>{S.luck=clamp(S.luck+1,1,100);return '气运 +1'}},
+  {k:'recipe',n:7,t:'一业通神',g:()=>{S.flag.insights=(S.flag.insights||0)+1;S.stones+=300;return '悟道 +1 · 灵石 +300'}},
+];
+function atlasItemQuality(name){
+  const m=(typeof MARKET_ITEMS!=='undefined')?MARKET_ITEMS.find(x=>x.name===name):null;
+  if(m&&m.quality!=null)return m.quality;
+  if(typeof RECIPES!=='undefined')for(const prof in RECIPES){const r=RECIPES[prof].find(x=>x.name===name);if(r)return r.q;}
+  return null;
+}
+function atlasRecipeCount(){
+  const prof=S&&S.prof?S.prof:'alchemy';
+  return (RECIPES[prof]||[]).filter(r=>recipeKnown(r)).length;
+}
+function atlasCounts(){
+  return {items:Object.keys(S.seenI||{}).length,enemies:Object.keys(S.seenE||{}).length,recipes:atlasRecipeCount()};
+}
+function checkAtlasMiles(){
+  if(!S)return;
+  const c=atlasCounts();
+  S.flag.atlasMiles=S.flag.atlasMiles||[];
+  const names={item:'物品',enemy:'敌人',recipe:'配方'};
+  for(const m of ATLAS_MILES){
+    const val=m.k==='item'?c.items:m.k==='enemy'?c.enemies:c.recipes;
+    const key=m.k+':'+m.n;
+    if(val>=m.n&&S.flag.atlasMiles.indexOf(key)<0){
+      S.flag.atlasMiles.push(key);
+      let r='';try{r=m.g()}catch(e){}
+      log('<p class="loot">📖 收集里程碑「'+m.t+'」达成（'+names[m.k]+' '+val+'）：'+r+'。</p>');
+    }
+  }
+}
+function collectionAtlas(){
+  if(!S){toast('尚未踏入仙途');return}
+  const c=atlasCounts();
+  const itemRows=Object.keys(S.seenI||{}).sort().map(nm=>{
+    const q=atlasItemQuality(nm);
+    return '<div class="tome-cell">'+(q!=null?'<span class="q'+q+'">'+QNAMES[q]+'</span>':'')+'<b>'+esc(nm)+'</b><span>×'+(S.seenI[nm])+'</span></div>';
+  }).join('');
+  const enemyRows=Object.keys(S.seenE||{}).sort().map(nm=>'<div class="tome-cell"><b>'+esc(nm)+'</b><span>击退 ×'+(S.seenE[nm])+'</span></div>').join('');
+  const prof=RECIPES[S.prof||'alchemy']||[];
+  const mastered=atlasRecipeCount();
+  const recipeRows=prof.map(r=>'<div class="tome-cell'+(recipeKnown(r)?'':' locked')+'">'+(recipeKnown(r)?'✅':'🔒')+'<b>'+esc(r.name)+'</b><span>'+(r.lv||1)+'阶</span></div>').join('');
+  const milesHtml=ATLAS_MILES.map(m=>{
+    const val=m.k==='item'?c.items:m.k==='enemy'?c.enemies:c.recipes;
+    const got=(S.flag.atlasMiles||[]).indexOf(m.k+':'+m.n)>=0;
+    return '<div class="bd-row'+(got?' ok':'')+'"><span>'+(got?'✅ ':'🔒 ')+m.t+'（'+{item:'物品',enemy:'敌人',recipe:'配方'}[m.k]+' '+m.n+'）</span></div>';
+  }).join('');
+  openPanel('📖 收藏图鉴',
+    '<p>天地万物，皆可入藏。收集图鉴，亦是一条证道之路。</p>'+
+    '<div class="bd-box"><div class="bd-head">🧭 收集进度</div>'+
+    '<div class="bd-row"><span>🎒 物品</span><b>'+c.items+' 种</b></div>'+
+    '<div class="bd-row"><span>👹 敌人</span><b>'+c.enemies+' 类</b></div>'+
+    '<div class="bd-row"><span>📜 配方（'+PROF_NAMES[S.prof||'alchemy']+'）</span><b>'+mastered+'/'+prof.length+'</b></div></div>'+
+    (S.prof?'<h4>📜 配方册</h4><div class="tome-grid">'+(recipeRows||'无')+'</div>':'')+
+    '<h4>🎒 物品册（已获 '+c.items+' 种）</h4><div class="tome-grid">'+(itemRows||'<p style="color:#6f7a94">尚未获得任何物品。</p>')+'</div>'+
+    '<h4>👹 敌人册（已见 '+c.enemies+' 类）</h4><div class="tome-grid">'+(enemyRows||'<p style="color:#6f7a94">尚未遭遇任何敌人。</p>')+'</div>'+
+    '<h4>🏁 收集里程碑</h4>'+milesHtml);
+}
+/* ===== 生涯统计墙：十八系统计数总览 ===== */
+function careerWall(){
+  if(!S)return;
+  const sec=(a,b)=>'<div class="bd-row"><span>'+a+'</span><b>'+b+'</b></div>';
+  const npcTalks=(S.npcs||[]).reduce((a,n)=>a+(n.talks||0),0);
+  const maxBond=(S.npcs||[]).reduce((a,n)=>Math.max(a,(n.bond||0)),0);
+  const craftTotal=Object.values(S.flag.craftLog||{}).reduce((a,x)=>a+(x.count||0),0);
+  const techSum=Object.values((S.flag.tech&&S.flag.tech.ups)||{}).reduce((a,b)=>a+b,0);
+  openPanel('📊 生涯统计','<p>数十年仙途，皆在这一卷之中。</p>'+
+    '<div class="bd-box"><div class="bd-head">🧘 修炼</div>'+sec('闭关总日数',(S.flag.cultDaysTotal||0)+' 日')+sec('悟道',(S.flag.insights||0)+' 次')+sec('大境界突破',(S.flag.bigBreaks||0)+' 次')+sec('瓶颈破关',(S.flag.bottleneckBreaks||0)+' 次')+sec('渡劫感悟',(S.insight||0)+' 点')+'</div>'+
+    '<div class="bd-box"><div class="bd-head">🧭 历练</div>'+sec('探索',(S.flag.exploreCount||0)+' 次')+sec('秘境',(S.flag.dungeons||0)+' 座 · '+Object.keys(S.flag.dungeonDone||{}).length+' 类')+sec('试炼塔',(S.flag.tower||0)+' 层')+sec('妖潮守城',(S.flag.tideWins||0)+' 胜 · '+(S.flag.tideFails||0)+' 负')+'</div>'+
+    '<div class="bd-box"><div class="bd-head">⚔️ 战斗</div>'+sec('击杀',(S.kills||0)+' 名')+sec('胜利',(S.wins||0)+' 场')+sec('战意',((S.flag.tech&&S.flag.tech.pts)||0)+' 点')+sec('战技',techSum+' 级')+'</div>'+
+    '<div class="bd-box"><div class="bd-head">🤝 人际</div>'+sec('道侣',(S.flag.partnerCount||0)+' 位')+sec('双修',(S.flag.dualCount||0)+' 次 · '+(S.flag.dualDays||0)+' 日')+sec('交谈',npcTalks+' 次')+sec('羁绊最深',maxBond+' 点')+sec('论道',(S.flag.daolunWins||0)+' 胜 · '+(S.flag.daolunLosses||0)+' 负')+'</div>'+
+    '<div class="bd-box"><div class="bd-head">🏯 宗门</div>'+sec('门中事宜',(S.flag.sectEvents||0)+' 件')+sec('宗门任务',(S.flag.sectTasks||0)+' 次')+'</div>'+
+    '<div class="bd-box"><div class="bd-head">⚒️ 副业</div>'+sec('当前副业',S.prof?(PROF_NAMES[S.prof]+' '+S.profLevel+' 阶'):'未习得')+sec('炼制成功',craftTotal+' 件')+sec('装备强化',(S.flag.enhanceCount||0)+' 次')+'</div>'+
+    '<div class="bd-box"><div class="bd-head">📖 收藏</div>'+sec('物品',Object.keys(S.seenI||{}).length+' 种')+sec('敌人',Object.keys(S.seenE||{}).length+' 类')+sec('称号',(S.titles||[]).length+' 个')+sec('已证结局',(S.endings||[]).length+' 个')+sec('轮回',(S.rebirths||0)+' 世')+'</div>'+
+    '<div class="bd-box"><div class="bd-head">⚖️ 善恶</div>'+sec('功德',(S.merit||0)+' 点')+sec('业力',(S.karma||0)+' 点')+sec('善恶值',netMerit())+'</div>');
+}
+/* ===== 天下大势：时代 / 声望格局 / 世界纪事 ===== */
+function worldPanel(){
+  if(!S)return;
+  const sec=(a,b)=>'<div class="bd-row"><span>'+a+'</span><b>'+b+'</b></div>';
+  const fm=S.fame||{};
+  const eraDone=Object.keys(S.flag.eraDone||{}).length;
+  const log=(S.flag.worldLog||[]).map(l=>'<div class="bd-row"><span>'+esc(l.t)+'</span><b>第 '+l.y+' 年</b></div>').join('');
+  openPanel('🌍 天下大势',
+    '<p>天地为局，众生为棋。你既是棋手，也是棋子。</p>'+
+    '<div class="bd-box"><div class="bd-head">🕰️ 时代</div>'+sec('年代',Math.floor(S.years)+' 年')+sec('时代主线',eraDone+' / '+(typeof ERAS!=='undefined'?ERAS.length:5)+' 已推进')+'</div>'+
+    '<div class="bd-box"><div class="bd-head">⚖️ 声望格局</div>'+sec('正道声望',fm.zheng||0)+sec('魔道声望',fm.mo||0)+sec('散修声望',fm.san||0)+sec('宗门',S.sect?esc(S.sect.name):'无门无派')+'</div>'+
+    '<div class="bd-box"><div class="bd-head">🌊 妖潮守城</div>'+sec('战绩',(S.flag.tideWins||0)+' 胜 · '+(S.flag.tideFails||0)+' 负')+'</div>'+
+    '<div class="bd-box"><div class="bd-head">📜 天下大事纪</div>'+(log||'<p style="color:#6f7a94">尚无天下大事可载。</p>')+'</div>');
 }
 /* 16.4 可访问性：字体缩放（记忆于本地） */
 function applyFont(){
@@ -64,10 +169,10 @@ function openTome(){
   const mem=s.memories.length?'<h4>前世记忆</h4><p>'+s.memories.map(esc).join('；')+'</p>':'';
   const titles=s.titles.length?'<h4>🏅 称号</h4><p>'+s.titles.map(id=>{const t=TITLES.find(x=>x.id===id);return t?t.name:''}).filter(Boolean).join('、')+'</p>':'<h4>🏅 称号</h4><p style="color:#6f7a94">尚未获得称号</p>';
   const petHtml=s.pet?'<h4>🐾 灵兽</h4><p>'+esc(s.pet.species+'「'+s.pet.name+'」')+' · '+s.pet.level+'级 · '+s.pet.form+'阶 · '+PET_TALENT_DESC[s.pet.talent]+'</p>':'';
-  const atlas='<h4>📖 图鉴</h4><p>见过的敌人 '+Object.keys(s.seenE||{}).length+' 类 · 获得的物品 '+Object.keys(s.seenI||{}).length+' 种</p>';
+  const atlas='<h4>📖 图鉴 · 生涯 · 天下</h4><div class="row"><button class="small primary" onclick="collectionAtlas()">📖 收藏图鉴（物品 '+Object.keys(s.seenI||{}).length+' · 敌人 '+Object.keys(s.seenE||{}).length+'）</button><button class="small" onclick="careerWall()">📊 生涯</button><button class="small" onclick="worldPanel()">🌍 天下</button></div>';
   const sectHtml=s.sect?'<h4>🏯 宗门</h4>'+artImg(SECT_ART[s.sect.id],0,0,'sect-banner')+'<p>'+esc(s.sect.name)+' · '+esc(secRank(s))+'</p>':'';
   const ppl=s.npcs.map((n,i)=>'<div class="tome-cell" onclick="npcProfile('+i+')">'+artImg(NPC_ART[n.role],64,64,'tome')+esc(n.name)+'<br><span>'+esc(n.role)+'</span></div>').join('');
-  const pplHtml=ppl?'<h4>👥 人物志</h4><div class="tome-grid">'+ppl+'</div>':'';
+  const pplHtml=ppl?'<h4>👥 人物志 <button class="small" onclick="relationWeb()">🕸️ 关系图谱</button></h4><div class="tome-grid">'+ppl+'</div>':'';
   const marks=[['dreamDone','上古残梦 · 因果了却'],['foeAmbush','仇家现身'],['matrix','聚灵阵'],['maze','迷踪阵'],['teleport','传送阵']].filter(([k])=>s.flag[k]).map(([,n])=>n);
   const flagHtml=(marks.length?'<h4>因果印记</h4><p>'+marks.map(esc).join('、')+'</p>':'')+(typeof foreshadowHtml==='function'?foreshadowHtml():'');
   const recHtml='<h4>🏆 本机纪录</h4>'+recordsHtml();
@@ -104,12 +209,7 @@ function personaTomeHtml(){
 function npcProfile(i){
   const n=S.npcs[i];
   if(!n)return;
-  const np=npcPersona(n);
-  const heart=(n.favor||0)>=70?('<p class="sys">🧩 心结：'+esc(npcHeart(n))+'</p>'):'<p class="sys" style="color:#6f7a94">🧩 心结深藏——好感 ≥70 后，她/他或许愿意说给你听。</p>';
-  openEventModal('📜 人物档案 · '+esc(n.name),'<p>'+artImg(NPC_ART[n.role]||ART.lady,96,96,'avatar')+'<b>'+esc(n.name)+'</b>（'+esc(n.role)+' '+(n.gender==='女'?'♀':'♂')+'）</p>'+
-    '<p>'+esc(n.desc||'')+'</p>'+
-    '<p class="sys">性格：<b>'+esc(np.name)+'</b>（'+np.tags.map(esc).join('·')+'）<br>口头禅：「'+esc(personaLine(np))+'」<br>喜好：'+(n.taste?esc(n.taste):'未知')+' · 境界：'+stageName(n.stage||0)+' · 好感：'+(n.favor||0)+'</p>'+
-    (n.rels&&Object.keys(n.rels).length?relTags(n):'')+heart,[
+  openEventModal('📜 人物档案 · '+esc(n.name),characterCardHtml(n,{npc:true}),[
     {txt:'💬 找'+he(n)+'聊聊',fn:()=>npcChat(i)},
     {txt:'🚶 就此别过',fn:()=>{renderAll()}},
   ]);
@@ -149,6 +249,7 @@ const GUIDE_STEPS=[
   {title:'修炼与突破',body:'<p>点下方「闭关修炼」会弹出<b>修炼窗口</b>：修炼按真实时间缓缓推进，进度条实时可见，途中或有异动需要当场抉择，也可「提前出关」按进度结算；若有道侣，可切换<b>双人同修</b>。效率受<b>灵根</b>与<b>功法</b>影响。修为达标后点「突破」晋阶——炼气期每层 100 修为，筑基起需过心性判定与天劫，并满足<b>天地门槛</b>（突破面板会提示缺什么、去哪里补）。</p><div class="tip">连续闭关 60 日后收益递减，多出去走走。突破失败会倒退 10%-30% 修为并可能留下心魔烙印；心魔可服清心丹、静心养神或心魔历练涤除，不必担心被卡死。</div>'},
   {title:'探索与机缘',body:'<p>「外出探索」可能采到灵草、遭遇妖兽、偶得机缘，也可能撞上凶险。<b>部分选项暗藏致死风险</b>，请谨慎抉择。</p><div class="tip">气运虽不可见，却暗中影响机缘。持特殊信物（如无字木牌）且境界足够时，会触发隐藏副本。</div>'},
   {title:'人间百态',body:'<p>坊市可买卖丹药法器；拜入宗门可接任务、晋升、参加大比；与人相交可结道侣、拜师尊；四大副业可炼丹炼器、制符布阵。</p><div class="tip">点「行囊」使用物品：丹药点「使用」、法器防具点「装备」、符箓战斗中自动可选。底部输入栏支持自由行动，例如「修炼100天」「探索」「静心」。寿元耗尽或战死即身陨，可转世重生。</div>'},
+  {title:'修行辅助',body:'<p>随着境界提升，更多修行之道会逐一开启：<b>真元</b>（休整恢复，可淬体换修为）、<b>战技参悟</b>（胜战积战意、点化战斗之技）、<b>论道台</b>（与道友辩道，道韵共鸣更益）、<b>收藏图鉴</b>（集物遇敌领里程碑奖励）。</p><div class="tip">新系统都会在对应页签出现，随时可在「修仙志」查阅说明。</div>'},
 ];
 let GUIDE_IDX=0;
 function showGuide(start){

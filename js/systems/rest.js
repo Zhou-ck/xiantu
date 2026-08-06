@@ -116,8 +116,9 @@ function doRest(){
   closePanel();
   const heal=Math.floor(S.maxHp*0.35);
   S.hp=Math.min(S.maxHp,S.hp+heal);
+  const sp=addSpirit(Math.floor(maxSpirit(S)*0.3));
   scene('休整');
-  log('<p>你寻了一处山洞，燃起篝火，调息打坐，气血恢复 '+heal+'。</p>');
+  log('<p>你寻了一处山洞，燃起篝火，调息打坐，气血恢复 '+heal+(sp>0?'，真元回满 '+sp:'')+'。</p>');
   passTime(1);renderAll();
 }
 function restHeal(days){
@@ -376,8 +377,10 @@ function harvestCrop(){
   const c=f.crop;
   let loot='';
   const bonus=(S.flag.caveRooms&&S.flag.caveRooms.tian)?1:0; /* 11 灵田扩建 */
-  if(c==='herb'){const n=rand(3,5)+bonus;S.mats.herb=(S.mats.herb||0)+n;loot='草药 ×'+n}
-  else if(c==='sherb'){const n=rand(2,3)+bonus;S.mats.sherb=(S.mats.sherb||0)+n;loot='灵草 ×'+n;if(chance(0.3)){S.mats.demonCore=(S.mats.demonCore||0)+1;loot+='、妖丹 ×1'}}
+  const ownL=(typeof ownSectHarvestBonus==='function')?ownSectHarvestBonus():0; /* 自建宗门 · 灵田 */
+  const total=bonus+ownL;
+  if(c==='herb'){const n=rand(3,5)+total;S.mats.herb=(S.mats.herb||0)+n;loot='草药 ×'+n}
+  else if(c==='sherb'){const n=rand(2,3)+total;S.mats.sherb=(S.mats.sherb||0)+n;loot='灵草 ×'+n;if(chance(0.3)){S.mats.demonCore=(S.mats.demonCore||0)+1;loot+='、妖丹 ×1'}}
   else{addItem({name:'朱果',type:'consumable',quality:3,count:1,desc:'灵田所育朱果，服之修为大进（修为 +300~600）。',use:'fruit',sell:500});loot='朱果 ×1'}
   S.flag.farm={crop:null};
   scene('灵田收获');

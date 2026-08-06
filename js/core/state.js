@@ -22,7 +22,7 @@ function newState(name,bg,gender){
     seenE:{},seenI:{},wins:0,heartTrains:0,
     heartDemons:0,kills:0,deaths:0,rebirths:0,memories:[],
     demonMarks:[],
-    wis:0,trail:0,
+    wis:0,trail:0,insight:0,
     set:{fx:'med',autoTrib:false,autoCraft:false,audio:true,shake:true},
     age:16,years:0,days:0,pillBuff:0,temp:{break:0},mood:60,
     cultStreak:0,lifeBonus:0,
@@ -43,6 +43,7 @@ function newState(name,bg,gender){
   if(it.type==='weapon')s.weapon=it;else if(it.type==='armor')s.armor=it;
   else if(it.type==='trinket')s.trinket=it;else s.items.push(it);
   s.maxHp=calcMaxHp(s);s.hp=s.maxHp;
+  s.spirit=maxSpirit(s);
   s.npcs=genNPCs(s);
   /* 家族兴衰链：世家嫡女出身即埋下因果 */
   if(bg.id==='family'){
@@ -55,6 +56,22 @@ function newState(name,bg,gender){
 function calcMaxHp(s){return Math.max(1,40+s.attrs.str*3+Math.floor(powR(s.realm)*15)-injuryHpPenalty(s))}
 function attrVal(s,k){return s.attrs[k]+bonusAttr(s,k)+injuryAttrPenalty(s,k)}
 function bonusAttr(s,k){let b=0;for(const a of s.arts)b+=(a.bonus&&a.bonus[k])||0;return b}
+/* ===== 真元系统：法力资源，随休整/静养/时光恢复，淬体与控火消耗 ===== */
+function maxSpirit(s){
+  s=s||S;
+  return Math.max(30,30+bigStage(s.realm||0)*10+Math.floor(((s.attrs&&s.attrs.int)||0)*2));
+}
+function addSpirit(n){
+  if(!S)return 0;
+  S.spirit=clamp((S.spirit||0)+Math.max(0,Math.floor(n||0)),0,maxSpirit(S));
+  return S.spirit;
+}
+function useSpirit(n){
+  if(!S)return false;
+  if((S.spirit||0)<n)return false;
+  S.spirit-=n;
+  return true;
+}
 /* 属性成长：使用即成长。属性越高，成长概率越低（边际递减，上限 40） */
 function growChance(v,base){return base*clamp(1.2-(v||0)/25,0.25,1)}
 function growAttr(k,base,src){
@@ -97,7 +114,7 @@ function cultMult(s){
   for(let i=0;i<s.arts.length;i++){
     const a=s.arts[i];
     const role=i===0?1:0.5;
-    m*=(a.mult+((a.level||1)-1)*0.05)*artGradeMult(a)*elemArtMult(s,a)*role;
+    m*=(a.mult+((a.level||1)-1)*0.05)*artGradeMult(a)*elemArtMult(s,a)*artMasteryMult(a)*role;
   }
   m*=rootQualityMult(s.root);
   if(s.root>=70)m*=1.05; /* 8.3 吐纳加速 */
@@ -110,6 +127,7 @@ function cultMult(s){
   if(s.sect&&s.sect.dark&&(s.bg.traits.some(t=>t.id==='dark')||s.bg.traits.some(t=>t.id==='dark2')))m*=1.1;
   if(s.prof==='alchemy'&&s.sect&&s.sect.id==='dan')m*=1.08;
   if(s.sect)m*=1+sectCultBonus(s);
+  if(typeof ownSectCultMult==='function')m*=ownSectCultMult(); /* 自建宗门 · 藏经阁 */
   if(s.flag.dao==='dark')m*=1.1; /* 魔道问道：魔功更盛 */
   if(s.flag.caveLv)m*=1+(s.flag.caveLv||0)*0.08; /* 3.2 洞府灵脉等级 */
   if(s.flag.caveRooms&&s.flag.caveRooms.jing)m*=1.05; /* 11 静室 */
@@ -130,11 +148,13 @@ function addWis(n){
   if(!S)return;
   S.wis=(S.wis||0)+Math.max(1,Math.floor(n||1));
   dC().c.wis=(dC().c.wis||0)+Math.max(1,Math.floor(n||1));
+  maybeBottleneckBreak();
 }
 function addTrail(n){
   if(!S)return;
   S.trail=(S.trail||0)+Math.max(1,Math.floor(n||1));
   dC().c.trail=(dC().c.trail||0)+Math.max(1,Math.floor(n||1));
+  maybeBottleneckBreak();
 }
 /* 瓶颈判定：修为到达下一境界 90% 时进入瓶颈，需悟性+历练双达标方可全力冲关 */
 function bottleneckInfo(s){
@@ -143,16 +163,34 @@ function bottleneckInfo(s){
   if(!s||nxt>=THRESHOLDS.length)return {active:false};
   const thr=THRESHOLDS[nxt];
   const progress=(s.cult||0)/thr;
-  if(progress<0.9)return {active:false,progress:progress,thr:thr};
+  if(progress<0.9)return {active:false,progress:progress,thr:thr,nxt:nxt};
   const wisNeed=8+Math.floor(nxt/2);
   const trailNeed=4+Math.floor(nxt/2);
-  const active=((s.wis||0)<wisNeed)||((s.trail||0)<trailNeed);
-  return {active:active,progress:progress,thr:thr,wis:(s.wis||0),trail:(s.trail||0),wisNeed:wisNeed,trailNeed:trailNeed};
+  const wis=s.wis||0,trail=s.trail||0;
+  const missingWis=Math.max(0,wisNeed-wis);
+  const missingTrail=Math.max(0,trailNeed-trail);
+  const active=missingWis>0||missingTrail>0;
+  return {active:active,progress:progress,thr:thr,nxt:nxt,wis:wis,trail:trail,wisNeed:wisNeed,trailNeed:trailNeed,missingWis:missingWis,missingTrail:missingTrail};
 }
 /* 瓶颈对修炼效率的压制：触发时 ×0.6 */
 function bottleneckMult(s){
   const b=bottleneckInfo(s);
   return b.active?0.6:1;
+}
+/* 瓶颈解除演出：悟性/历练最后一项达标时触发一次（文案随境界变化） */
+function maybeBottleneckBreak(){
+  if(!S)return;
+  const b=bottleneckInfo(S);
+  if(b.active){S.flag.bnActive=true;return}
+  if(S.flag.bnActive&&b.progress>=0.9){
+    S.flag.bnActive=false;
+    S.flag.bottleneckBreaks=(S.flag.bottleneckBreaks||0)+1;
+    const st=bigStage(S.realm);
+    const txt=st<=0?'你只觉灵台通明，久积的滞碍如春冰消融——根基已固，可全力冲关了！':st<=2?'瓶颈应声而破，道基之上浮起温润灵光，冲关之路再无滞碍！':'大道之锁寸寸崩解，识海中似有仙音回响——此境圆满，可问天劫！';
+    log('<p class="good">⚓ 悟性与历练兼备，瓶颈已破——'+txt+'</p>');
+  }else if(S.flag.bnActive){
+    S.flag.bnActive=false;
+  }
 }
 function lifespanStr(s){const l=LIFESPANS[s.realm]+(s.lifeBonus||0);return isFinite(l)?l+' 岁':'∞'}
 /* 连续闭关收益递减：满 60 日后每 30 日 -10%，最低 40% */
@@ -170,6 +208,8 @@ function streakDiminMult(streak,days){
 function passTime(days){
   if(arguments[1]!==true)S.cultStreak=0;
   S.days+=days;S.age+=days/365;S.years=S.days/365;
+  if(S.spirit===undefined)S.spirit=maxSpirit(S);
+  S.spirit=clamp(S.spirit+Math.floor(days*2),0,maxSpirit(S)); /* 真元随光阴缓缓恢复 */
   if(S.pillBuff>0)S.pillBuff=Math.max(0,S.pillBuff-days);
   if(S.flag.clearCd>0)S.flag.clearCd=Math.max(0,S.flag.clearCd-days);
   if(S.flag.hardshipCd>0)S.flag.hardshipCd=Math.max(0,S.flag.hardshipCd-days);
@@ -178,6 +218,8 @@ function passTime(days){
   if(S.flag.qingjie>0)S.flag.qingjie=Math.max(0,S.flag.qingjie-days);
   if(S.bigCd>0)S.bigCd=Math.max(0,S.bigCd-days);
   if(S.flag.trialCd>0)S.flag.trialCd=Math.max(0,S.flag.trialCd-days);
+  if(S.flag.sectEventCd>0)S.flag.sectEventCd=Math.max(0,S.flag.sectEventCd-days);
+  if(S.flag.blessCd>0)S.flag.blessCd=Math.max(0,S.flag.blessCd-days);
   if(S.pet&&S.pet.faint>0)S.pet.faint=Math.max(0,S.pet.faint-days);
   if(S.flag.farm&&S.flag.farm.crop&&S.flag.farm.planted+S.flag.farm.days<=S.days&&!S.flag.farm.notified){
     S.flag.farm.notified=true;
@@ -304,6 +346,70 @@ function heavenlyErosion(){
       renderAll();}}
   ]);
 }
+/* ===== 妖潮守卫战：三波次守城（周期性大事件深化） ===== */
+function beastTideEvent(){
+  closePanel();
+  scene('妖潮守卫战');
+  log('<p>今年秋，山林间妖兽暴动，如潮水般涌向山下村落。你立于村口断墙之上，身后是瑟瑟发抖的乡民。</p>');
+  log('<p class="sys">妖潮守卫战：共三波妖兽来袭，每波击退后可择机收兵；全胜可扬名立万，溃败亦有代价。</p>');
+  logChoices([
+    {txt:'🛡️ 设下拒马符阵（智慧判定 · 全战收益 +20%）',cls:'primary',fn:()=>{const R=doRoll('int',15);log('<p>你连夜布下拒马与符阵：'+rollBadge(R.r,R.mod,R.t,R.dc)+'</p>');if(R.hit){log('<p class="good">符阵灵光流转，村口固若金汤（全战收益 +20%）。</p>');tideWave(1,1)}else{log('<p>阵纹半途崩解，你只得依仗血肉之躯。</p>');tideWave(1,0)}}},
+    {txt:'🔥 鼓舞村民，共守家园（魅力判定 · 全战收益 +20%）',fn:()=>{const R=doRoll('cha',15);log('<p>你立于高处振臂一呼：'+rollBadge(R.r,R.mod,R.t,R.dc)+'</p>');if(R.hit){log('<p class="good">乡民热血沸腾，青壮纷纷执起锄头（全战收益 +20%）。</p>');tideWave(1,1)}else{log('<p>众人面面相觑，士气平平。</p>');tideWave(1,0)}}},
+    {txt:'⚔️ 不做布置，正面迎敌',fn:()=>{log('<p>你紧了紧手中兵刃，静候妖潮。</p>');tideWave(1,0)}},
+  ]);
+}
+function tideEnemy(n){
+  const r=rl();
+  const names=['妖狼群','妖豹群','妖潮首领'];
+  const atk=[4,6,8],def=[1,2,3],hp=[25,35,50];
+  const i=clamp(n-1,0,2);
+  return {name:names[i],atk:atk[i]+Math.floor(r/2),def:def[i]+Math.floor(r/4),hp:hp[i]+r*6,elem:pick(['wood','water','fire']),style:n>=3?'boss':'burst'};
+}
+function tideWaveReward(n,prepOk){
+  const mult=prepOk?1.2:1;
+  const stones=Math.floor((30+n*25+rl()*8)*mult);
+  const cult=Math.floor((20+n*30+rl()*5)*mult);
+  S.stones+=stones;S.cult+=cult;addMerit(2);
+  log('<p class="loot">第 '+n+' 波击退：灵石 +'+stones+'，修为 +'+cult+'，功德 +2。</p>');
+  return {stones:stones,cult:cult};
+}
+function tideVictory(){
+  S.flag.tideWins=(S.flag.tideWins||0)+1;
+  S.fame=S.fame||{};S.fame.zheng=(S.fame.zheng||0)+10;
+  addMerit(6);
+  const g=rand(120,300);S.stones+=g;
+  log('<p class="good">三波妖潮尽数击退！村落保住了，你的名字随村民的传颂传遍方圆百里（功德+6，正道声望+10，灵石+'+g+'）。</p>');
+  if((S.flag.tideWins||0)%3===0){S.luck=clamp(S.luck+1,1,100);log('<p class="loot">🌊 守城之志感动天地，气运 +1。</p>')}
+  passTime(2);renderAll();
+}
+function tideEnd(complete){
+  if(complete){
+    const g=rand(60,150);S.stones+=g;
+    log('<p class="sys">你见好就收，带着斩获撤离。村落虽有损失，但主力尚存（灵石 +'+g+'）。</p>');
+  }else{
+    S.flag.tideFails=(S.flag.tideFails||0)+1;
+    S.fame=S.fame||{};S.fame.zheng=Math.max(0,(S.fame.zheng||0)-5);
+    addKarma(2);
+    log('<p class="danger">妖潮冲破了防线，你浴血突围，村落损失惨重（正道声望-5，业力+2）。来年再战，定要雪耻。</p>');
+  }
+  passTime(2);renderAll();
+}
+function tideWave(n,prepOk){
+  if(n>3){tideVictory();return}
+  const e=tideEnemy(n);
+  log('<p class="sys">妖潮第 '+n+' 波：'+esc(e.name)+' 压境而来！</p>');
+  startCombat(e,res=>{
+    if(res.win){
+      tideWaveReward(n,prepOk);
+      logChoices([
+        {txt:'⚔️ 迎战第 '+(n+1)+' 波',cls:'primary',fn:()=>tideWave(n+1,prepOk)},
+        {txt:'🏃 见好就收，撤离战线',fn:()=>tideEnd(true)},
+      ]);
+    }else{
+      tideEnd(false);
+    }
+  },true);
+}
 function yearlyEvent(){
   if(S.realm>=9&&chance(0.16)){
     scene('延寿奇遇');
@@ -318,15 +424,13 @@ function yearlyEvent(){
   }
   const t=rand(1,100);
   if(t<=14){
-    scene('妖兽潮');
     S.flag.marketShock=Math.floor(S.years); /* 10.1 妖兽潮：本年疗伤类物价上涨 */
-    log('<p>今年秋，山林间妖兽暴动，冲入附近村落。宗门与散修齐出，你也在其中。</p>');
-    logChoices([
-      {txt:'⚔️ 参战除妖（功德+5）',cls:'primary',fn:()=>{S.flag.pendingMerit=5;startCombat({name:'妖潮首领',atk:6+rl()*2,def:2+rl(),hp:35+rl()*14})}},
-      {txt:'🙈 避入深山，明哲保身',fn:()=>{addKarma(5);log('<p class="danger">你于深山中避了数月，出山时村落已是一片焦土。</p>');passTime(2);renderAll();}}
-    ]);
+    recordWorldEvent('妖兽潮来袭，天下动荡，守城战起');
+    beastTideEvent();
+    return;
   }else if(t<=28){
     scene('魔道袭村');
+    recordWorldEvent('血魔宗洗劫山脚村落，江湖动荡');
     log('<p>这一夜，血魔宗弟子洗劫山脚村落，火光冲天，哭喊声隔着山脊都听得真切。</p>');
     logChoices([
       {txt:'⚔️ 出手相救（功德+10）',cls:'primary',fn:()=>{S.flag.pendingMerit=10;startCombat({name:'魔道修士',atk:5+rl()*2,def:2+rl(),hp:28+rl()*12})}},
@@ -334,6 +438,7 @@ function yearlyEvent(){
     ]);
   }else if(t<=42){
     scene('论道大会');
+    recordWorldEvent('散修大能于无名山顶开坛论道');
     const R=doRoll('int',18);
     log('<p>这一年，几位散修大能于无名山顶开坛论道，你恰好赶上。'+rollBadge(R.r,R.mod,R.t,R.dc)+'</p>');
     if(R.hit){const g=rand(150,350);S.cult+=g;log('<p class="good">你于论道中窥见一线天机（修为 +'+g+'）。</p>');const lw=growWil(0.15,'闻道而悟');if(lw)log(lw)}
@@ -341,19 +446,23 @@ function yearlyEvent(){
     passTime(3);renderAll();
   }else if(t<=56){
     scene('坊市奇珍');
+    recordWorldEvent('坊市现奇珍，天下哄传');
     if(chance(0.5)){const g=rand(120,350);S.stones+=g;log('<p class="loot">你在坊市淘到一件被错认成废物的珍材，转手卖出，得灵石 '+g+'。</p>')}
     else{const it=randItem(3);addItem(it);log('<p class="loot">你在坊市淘得一件奇物：'+it.name+'（'+QNAMES[it.quality]+'）。</p>')}
     passTime(2);renderAll();
   }else if(t<=68){
     scene('秘境现世');
+    recordWorldEvent('灵光骤亮，一处秘境在众目睽睽之下现世');
     log('<p>这一年，天边灵光骤亮，一处秘境在众目睽睽之下现世。你随人流涌入……</p>');
-    enterDungeon(pick(['cave','ruin','nest','sword']));
+    enterDungeon(pick(['cave','ruin','nest','sword','ice']));
   }else if(t<=78){
     scene('灵潮涌动');
+    recordWorldEvent('天地灵气异常浓郁，灵潮涌动');
     S.flag.boostNext=true;
     log('<p class="good">这一年天地灵气异常浓郁，正是修炼的大好时机（下一次闭关修炼效率 ×1.5）。</p>');
   }else if(t<=86){
     scene('天狗食月');
+    recordWorldEvent('天狗食月，血光染遍九霄');
     log('<p>这一夜天地异象——天狗噬月，血光染遍九霄。凡间人心惶惶，修真界却有人暗中雀跃：阴煞最盛之时，正是炼心与摄取太阴精华的良机。</p>');
     logChoices([
       {txt:'🌑 仰观天象，参悟太阴之道（智慧判定）',cls:'primary',fn:()=>{
@@ -372,6 +481,7 @@ function yearlyEvent(){
     ]);
   }else if(t<=93){
     scene('苦行僧讲经');
+    recordWorldEvent('赤足苦行僧于山门外讲经三日');
     log('<p>这一年，一位赤足苦行僧于山门外讲经三日，听者如堵。他讲得并非高深道法，而是最朴素的因果与慈悲。</p>');
     logChoices([
       {txt:'📿 听经三日（功德+5）',cls:'primary',fn:()=>{addMerit(5);const g=growWil(0.25,'闻经悟道');if(g)log(g);log('<p class="good">经声入耳，你心头尘垢为之一洗（功德+5）。</p>');passTime(3);renderAll()}},
@@ -380,6 +490,7 @@ function yearlyEvent(){
     ]);
   }else if(t<=97){
     scene('凡人招亲');
+    recordWorldEvent('凡人王侯设招亲擂台，附灵矿红利');
     log('<p>这一日，山下王侯在城中设下招亲擂台——榜文上说，胜者可将千金迎娶，附赠一座灵矿山的三成红利。修士们嗤笑，你却若有所思：红尘俗缘，未必不是一条道。</p>');
     logChoices([
       {txt:'💐 登台招亲（魅力判定）',cls:'primary',fn:()=>{
@@ -595,6 +706,13 @@ function addForeshadow(name,resolver){
   S.flag.foreshadow=S.flag.foreshadow||[];
   if(S.flag.foreshadow.some(f=>f.name===name))return;
   S.flag.foreshadow.push({name:name,at:Math.floor(S.years),resolver:resolver||null});
+}
+/* 天下大事纪：年度/节日事件写入世界纪事（天下大势面板） */
+function recordWorldEvent(txt){
+  if(!S)return;
+  S.flag.worldLog=S.flag.worldLog||[];
+  S.flag.worldLog.unshift({y:Math.floor(S.years),t:String(txt||'')});
+  if(S.flag.worldLog.length>8)S.flag.worldLog.length=8;
 }
 function resolveForeshadow(year){
   const fs=S.flag.foreshadow||[];
