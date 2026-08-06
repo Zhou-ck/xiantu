@@ -111,7 +111,7 @@ function setSceneImg(title){
   el.style.backgroundImage=key?"url('"+key+"')":'';
 }
 function toast(t){const e=$('toast');e.textContent=t;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),1600)}
-function openPanel(title,html){$('panelTitle').textContent=title;$('panelBody').innerHTML=html;$('panel').style.display='flex';updatePendingUI()}
+function openPanel(title,html){$('panelTitle').textContent=title;$('panelBody').innerHTML=html;$('panel').style.display='flex';if(typeof T!=='undefined'&&T.reveal)T.reveal($('panel'));updatePendingUI()}
 function closePanel(){$('panel').style.display='none'}
 /* 通用事件弹窗：叙述 + 选项（用于历练/宗门任务/道侣互动等） */
 function openEventModal(title,html,opts){

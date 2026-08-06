@@ -36,12 +36,9 @@ const TABS=[
     {n:'副业',i:'⚒️',fn:()=>panelCraft(),desc:'炼丹、炼器、制符、布阵'},
     {n:'洞府',i:'🏡',fn:()=>panelRest(),desc:'灵田、参悟、静养、天机签'},
     {n:'家族',i:'👨‍👩‍👧',fn:()=>panelFamily(),desc:'子嗣培养、血脉与转生传承'},
-    {n:'每日修行',i:'📅',fn:()=>panelDaily(),desc:'每日与每周任务'},
     {n:'角色档案',i:'🗂️',fn:()=>openCharPanel(),desc:'角色面板：六维、灵根、战力构成与状态一览'},
-    {n:'仙途录',i:'📖',fn:()=>openTome(),desc:'称号、图鉴与生平'},
     {n:'设置',i:'⚙️',fn:()=>panelSettings(),desc:'特效、微操、音效、AI 接入'},
-    {n:'存档',i:'💾',fn:()=>panelSave(),desc:'三个存档位，自动备份与自动存档'},
-    {n:'修仙志',i:'📚',fn:()=>openHelp(),desc:'新手教程与玩法说明'},
+    {n:'检查更新',i:'🔄',fn:()=>checkGameUpdate(),desc:'检测并应用最新版本'},
   ]},
 ];
 function tabStatusCult(){

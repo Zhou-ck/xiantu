@@ -1,5 +1,5 @@
 /* App 化基础冒烟：版本 / 原生检测降级 / 更新检查 / 设置页 App 区 */
-const fs=require('fs'),vm=require('vm');
+const fs=require('fs'),path=require('path'),vm=require('vm');
 const js=fs.readFileSync(process.env.TEMP+'\\xiantu_game.js','utf8');
 function makeEl(){
   const el={_html:'',_txt:'',style:{},disabled:false,children:[],scrollTop:0,value:'',className:'',id:'',onclick:null,
@@ -21,7 +21,9 @@ let fails=0;
 function assert(c,msg){if(!c){fails++;console.log('FAIL:',msg)}else console.log('ok  :',msg)}
 
 // ---- T1 版本与模式检测
-assert(vm.runInContext('GAME_VERSION',ctx)==='37','版本号 v37');
+assert(vm.runInContext('GAME_VERSION',ctx)==='40','版本号 v40');
+const swText=fs.readFileSync(path.join(__dirname,'..','sw.js'),'utf8');
+assert(swText.indexOf('xiantu2-v'+vm.runInContext('GAME_VERSION',ctx))>=0,'SW 缓存名与版本号同步');
 assert(vm.runInContext('isNativeApp()',ctx)===false,'非原生环境降级 false');
 assert(vm.runInContext('isStandalone()',ctx)===false,'非 PWA 独立模式 false');
 // ---- T2 壳初始化安全降级
@@ -35,7 +37,7 @@ vm.runInContext(`S=newState('测试丑',BACKGROUNDS[0]); panelSettings();`,ctx);
 const html=vm.runInContext('document.getElementById("panelBody").innerHTML',ctx);
 assert(html.indexOf('App 与更新')>=0,'设置页含 App 与更新区');
 assert(html.indexOf('检查更新')>=0,'设置页含检查更新按钮');
-assert(html.indexOf('v37')>=0,'设置页显示版本号');
+assert(html.indexOf('v40')>=0,'设置页显示版本号');
 assert(html.indexOf('浏览器 / PWA 模式')>=0,'显示当前运行模式');
 
 console.log(fails===0?'smoke35: ALL PASS':'smoke35 FAILS: '+fails);

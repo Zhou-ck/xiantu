@@ -6,6 +6,26 @@
 /* ================= 存档 ================= */
 const SLOT_KEYS=['xiantu_save_0','xiantu_save_1','xiantu_save_2'];
 let SLOT=0;
+/* v40 save hardening: hash signature (anti-tamper) + rev reservation for future cloud sync */
+function hashStr(str){
+  let h=5381;
+  for(let i=0;i<str.length;i++){h=((h<<5)+h+str.charCodeAt(i))|0}
+  return 'x'+(h>>>0).toString(16);
+}
+function savePayload(s){
+  const c=JSON.parse(JSON.stringify(s));
+  if(c&&c.flag)c.flag.sig=undefined;
+  if(c&&c.sig!==undefined)c.sig=undefined;
+  return JSON.stringify(c);
+}
+function verifySig(s){
+  try{
+    if(!s||typeof s!=='object')return false;
+    const sig=s.flag&&s.flag.sig;
+    if(sig===undefined||sig===null)return true;
+    return hashStr(savePayload(s))===sig;
+  }catch(e){return false}
+}
 /* 14.5 本地排行榜：最快突破 / 试炼塔 / 身陨彩蛋 */
 const REC_KEY='xiantu_records';
 function getRecords(){try{return JSON.parse(localStorage.getItem(REC_KEY)||'{}')}catch(e){return {}}}
@@ -26,6 +46,7 @@ function save(slot){
     if(S&&S.flag)S.flag.lastVisit=Date.now();
     if(S&&S.flag)S.flag.cleanExit=false; /* 每次普通保存均为「进行中」状态 */
     if(S)S.version=2;
+    if(S&&S.flag){S.rev=(S.rev||0)+1;S.flag.sig=hashStr(savePayload(S))}
     const data=JSON.stringify(S);
     if(data.length>500000)console.warn('存档体积过大（'+Math.floor(data.length/1024)+'KB），建议清理背包与图鉴记忆');
     try{const prev=localStorage.getItem(k);if(prev)localStorage.setItem(k+'_bak',prev)}catch(e){}
@@ -74,9 +95,10 @@ function load(){
     let s=null;
     try{s=JSON.parse(raw)}catch(e){s=null}
     let fromBak=false;
-    if(!s||typeof s!=='object'||!s.name){
+    if(!s||typeof s!=='object'||!s.name||!verifySig(s)){
       const bak=localStorage.getItem(SLOT_KEYS[SLOT]+'_bak');
       if(bak){try{s=JSON.parse(bak);fromBak=true}catch(e){s=null}}
+      if(s&&(!verifySig(s)||typeof s!=='object'||!s.name))s=null;
     }
     if(!s||typeof s!=='object'||!s.name)return null;
     if(fromBak)console.warn('仙途：主存档损坏，已自动从备份恢复');
@@ -110,6 +132,7 @@ function load(){
     if(s.wis===undefined)s.wis=0;
     if(s.trail===undefined)s.trail=0;
     if(s.insight===undefined)s.insight=0;
+    if(s.rev===undefined)s.rev=0;
     if(s.spirit===undefined)s.spirit=maxSpirit(s);
     if(s.flag.cultLog===undefined)s.flag.cultLog=[];
     if(s.flag.craftLog===undefined)s.flag.craftLog={};
@@ -211,12 +234,13 @@ function pasteCode(){
   try{
     const s=JSON.parse(decodeURIComponent(escape(atob(String(code).trim()))));
     if(!s||!s.name||!s.attrs){toast('分享码无效');return}
-    importRaw(s);
+    if(!importRaw(s)){toast('分享码无效');return}
     toast('📥 已导入好友存档');
   }catch(e){toast('分享码无效');}
 }
 function importRaw(s){
   try{
+    if(!verifySig(s))return false;
     localStorage.setItem(SLOT_KEYS[0],JSON.stringify(s));
     loadFromSlot(0);
     return true;
@@ -248,7 +272,7 @@ function importSave(){
   rd.onload=()=>{
     try{
       const s=JSON.parse(rd.result);
-      if(!s||!s.name||s.attrs===undefined)throw new Error('bad');
+      if(!s||!s.name||s.attrs===undefined||!verifySig(s))throw new Error('bad');
       localStorage.setItem(SLOT_KEYS[SLOT],rd.result);
       S=load();
       toast('📥 存档已导入');

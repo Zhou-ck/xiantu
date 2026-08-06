@@ -32,6 +32,7 @@ function endEnding(title,desc,stats,extraBtns){
     (title==='飞升成仙'?'<button onclick="continueImmortal()">☁️ 遨游九界</button>':'')+
     '</div>';
   $('ending').style.display='flex';
+  if(typeof T!=='undefined'&&T.reveal)T.reveal($('ending'));
   save();
 }
 /* 2H 轮回结算：境界 × 结局 × 称号 × 天道枷锁 → 全局轮回点与轮回值 */

@@ -6,9 +6,10 @@
 /* ================= 初始化 ================= */
 function init(){
   fxInit();
+  if(typeof T!=='undefined'&&T.initAmbient)T.initAmbient();
   if(typeof gateInit==='function')gateInit();
   applyFont();
-  $('btnNew').onclick=()=>{$('screen-title').style.display='none';$('screen-create').style.display='flex';rerollPreview()};
+  $('btnNew').onclick=()=>{T.switchScreen('screen-title','screen-create',{after:()=>rerollPreview()})};
   $('btnLoop').onclick=()=>{refreshLoopBar();loopShop()};
   $('btnRandName').onclick=()=>{$('nameInput').value=randomName(GENDER_MODE)};
   $('btnReroll').onclick=rerollPreview;
@@ -27,15 +28,17 @@ function init(){
   try{const meta=JSON.parse(localStorage.getItem('xiantu_save_meta'));if(meta&&meta.last!=null)SLOT=meta.last}catch(e){}
   const s=load();
   if(s){$('btnLoad').style.display='inline-block';$('btnLoad').onclick=()=>{
-    S=s;$('screen-title').style.display='none';$('screen-game').style.display='flex';
+    S=s;
+    T.switchScreen('screen-title','screen-game',{after:()=>{
     /* 8 退出重进：清掉可能残留的弹层，恢复故事尾迹，避免「文字卡住拉不下来」 */
     for(const id of ['panel','battle','cultivate','breakthrough','ending','guide']){try{$(id).style.display='none'}catch(e){}}
     setSceneImg('title');restoreStory();
     scene('重返仙途');
     log('<p>你于洞府中醒来，前尘旧事历历在目。仙途未竟，道心依旧。</p>');
     applyOfflineGain();renderAll();
+    }});
   }}
-  if(location.hash==='#create'){$('screen-title').style.display='none';$('screen-create').style.display='flex';rerollPreviewG('男')}
+  if(location.hash==='#create'){T.switchScreen('screen-title','screen-create',{after:()=>rerollPreviewG('男')})}
   /* 每 60 秒自动存档至第 1 格；切后台/退出前也即时保存 */
   if(typeof setInterval==='function')setInterval(function(){autoSaveNow()},60000);
   if(typeof document!=='undefined'&&document.addEventListener){

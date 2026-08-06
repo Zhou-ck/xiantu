@@ -69,8 +69,7 @@ function beginGame(){
   if(S.memories.length>=6)S.flag.memCue=2;
   else if(S.memories.length>=3)S.flag.memCue=1;
   S.maxHp=calcMaxHp(S);S.hp=S.maxHp;
-  $('screen-title').style.display='none';$('screen-create').style.display='none';
-  $('screen-game').style.display='flex';
+  T.switchScreen('screen-title','screen-game',{after:()=>{
   setSceneImg('title');
   scene('天衍山 · 凡人界 · 晨曦');
   log('<p>云海翻涌如万顷白浪，天衍山孤峰刺破层云。你于破庙中醒来，掌心还残留着梦里的寒意。庙门外青石小径蜿蜒入雾，半截石碑上只余一个「仙」字可辨。</p><p>远处钟鸣悠长，惊起林间飞鸟。你明白，此去再也回不了头。</p>');
@@ -81,6 +80,7 @@ function beginGame(){
   if(S.flag.memCue)log('<p class="sys">💭 前世残梦袭来：'+(S.flag.memCue>=2?'你记得某处秘境深处有异宝，也记得某宗门长老欠你一个人情。':'你隐约记得，某处秘境深处似乎埋着什么东西……')+'</p>');
   checkQuests();renderAll();save();
   if(!S.flag.guideShown){S.flag.guideShown=true;showGuide(0)}
+  }});
 }
 /* 2H/2T 轮回兑换与天道枷锁 */
 function loopBarHtml(){

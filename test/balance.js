@@ -33,4 +33,35 @@ assert(Math.max.apply(null,data.wil)<=40,'心性需求不超过属性上限 40')
 // 6) 经济：坊市材料价格与修为奖励非负
 vm.runInContext(`{ S=newState('测',BACKGROUNDS[0]); window.__bp=buyPrice(MARKET_ITEMS.find(x=>x.name==='回春丹')); window.__sp=sellPrice({sell:100}); }`,ctx);
 assert(vm.runInContext('window.__bp>=1&&window.__sp>=1',ctx),'买卖价格恒为正');
+// 7) 蒙特卡洛仿真 v1：40 局随机出身/灵根跑分，输出修炼节奏报告（种子随机，稳定可复现）
+vm.runInContext(`window.__sim=(()=>{
+  let seed=20260806;
+  const rnd=()=>{seed=(seed*1103515245+12345)&0x7fffffff;return seed/0x7fffffff};
+  const out=[];
+  for(let i=0;i<40;i++){
+    const bg=BACKGROUNDS[Math.floor(rnd()*BACKGROUNDS.length)];
+    const s=newState('测',bg);
+    s.root=5+Math.floor(rnd()*90);
+    s.flag={};s.cult=0;s.days=0;s.cultStreak=0;s.realm=0;
+    let day=0,zhujiDay=-1,jindanDay=-1;
+    while(day<6000&&jindanDay<0){
+      if(day%30===0)s.cultStreak=0;
+      const gain=((8+s.root/6)*cultMult(s)/10)*(0.8+rnd()*0.4);
+      s.cult+=gain;day++;s.cultStreak++;
+      while(s.realm<41&&s.cult>=THRESHOLDS[s.realm+1])s.realm++;
+      if(zhujiDay<0&&s.realm>=9)zhujiDay=day;
+      if(jindanDay<0&&s.realm>=13)jindanDay=day;
+    }
+    out.push({root:s.root,zhujiDay,jindanDay});
+  }
+  return out;
+})();`,ctx);
+const sim=vm.runInContext('window.__sim',ctx);
+const zj=sim.map(x=>x.zhujiDay).sort((a,b)=>a-b);
+const jd=sim.map(x=>x.jindanDay).sort((a,b)=>a-b);
+const med=a=>a[Math.floor(a.length/2)];
+console.log('仿真报告：40 局 | 筑基 min='+zj[0]+' med='+med(zj)+' max='+zj[zj.length-1]+' | 金丹 min='+jd[0]+' med='+med(jd)+' max='+jd[jd.length-1]);
+assert(med(zj)>150&&med(zj)<1500,'筑基中位天数合理（150-1500）');
+assert(med(jd)>600&&med(jd)<4000,'金丹中位天数合理（600-4000）');
+assert(sim.every(x=>x.zhujiDay>0&&x.jindanDay>0),'无卡死局（6000 日内均达金丹）');
 console.log(fails===0?'ALL PASS':'FAILURES: '+fails);process.exit(fails?1:0);

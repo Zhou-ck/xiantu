@@ -8,6 +8,7 @@
 let _breakSteps=null,_breakDone=null;
 function breakOpen(title,realmName){
   $('breakthrough').style.display='flex';
+  if(typeof T!=='undefined'&&T.reveal)T.reveal($('breakthrough'));
   $('breakName').textContent=S.name;
   $('breakRealm').textContent='冲击 · '+realmName;
   const artKey=S.bg?(BG_ART[S.bg.id+(S.gender==='女'?'_f':'')]||BG_ART[S.bg.id]||ART.hero):ART.hero;

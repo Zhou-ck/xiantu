@@ -159,6 +159,7 @@ function doCultivate(days,mode,opts){
   }
   PENDING++;
   $('cultivate').style.display='flex';
+  if(typeof T!=='undefined'&&T.reveal)T.reveal($('cultivate'));
   $('cultTitle').textContent=(_cult.trust?'🧘 修炼托管 · ':'🧘 闭关修炼 · ')+(mode==='bitter'?'苦修':'静修');
   $('cultAbort').onclick=cultAbort;
   $('cultMode').onclick=cultToggleMode;

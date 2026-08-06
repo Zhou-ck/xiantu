@@ -515,3 +515,87 @@ header{padding-top:calc(10px + env(safe-area-inset-top))}
 .model-slot-tag{font-size:11px;color:#d8b45a}
 .model-slot-hint{font-size:9.5px;color:#6f7a94}
 @media(max-width:820px){.model-slot{width:92px;height:124px}}
+
+/* ======================================================
+  前端视觉深化 v39：水墨暗金 · 分层转场
+  墨晕卷帘（#veil）/ 弹层入场 / 按钮金箔流光 / 灵尘云雾
+  低档（html.fx-low）与系统「减少动态」整体降级为零动画
+====================================================== */
+/* ---------- 低档降级开关 ---------- */
+html.fx-low #veil,html.fx-low #veil::before,html.fx-low #ink-mist,html.fx-low #ink-mist::before,html.fx-low #ink-mist::after,html.fx-low #dust,html.fx-low #dust i{display:none!important}
+html.fx-low .title-seal,html.fx-low h1.title{animation:none!important}
+html.fx-low #screen-create.fx-in,html.fx-low #screen-game.fx-in,html.fx-low #panel.fx-in,html.fx-low #battle.fx-in,html.fx-low #cultivate.fx-in,html.fx-low #guide.fx-in,html.fx-low #breakthrough.fx-in,html.fx-low #ending.fx-in{animation:none!important}
+html.fx-low #panel.fx-in #panelBox,html.fx-low #cultivate.fx-in #cultBox,html.fx-low #battle.fx-in #battleBox,html.fx-low #breakthrough.fx-in #breakBox{animation:none!important}
+html.fx-low button::after{display:none!important}
+@media(prefers-reduced-motion:reduce){#veil,#ink-mist,#dust{display:none!important}}
+
+/* ---------- 墨晕卷帘转场蒙层 ---------- */
+#veil{position:fixed;inset:0;z-index:200;pointer-events:none;opacity:0;visibility:hidden;background:#07090f}
+#veil::before{content:'';position:absolute;inset:-30%;background:radial-gradient(circle at 50% 50%,#0b0e1a 0%,#0d101c 38%,rgba(10,12,20,.9) 62%,transparent 78%);opacity:0}
+#veil.veil-in,#veil.veil-out{visibility:visible}
+#veil.veil-in{animation:veilCover .34s ease-out forwards}
+#veil.veil-in::before{animation:veilRingIn .34s ease-out forwards}
+#veil.veil-out{animation:veilUncover .56s ease-in forwards}
+#veil.veil-out::before{animation:veilRingOut .56s ease-in forwards}
+@keyframes veilCover{0%{opacity:0}100%{opacity:1}}
+@keyframes veilUncover{0%{opacity:1}100%{opacity:0}}
+@keyframes veilRingIn{0%{transform:scale(.22);opacity:0}55%{opacity:1}100%{transform:scale(1.3);opacity:1}}
+@keyframes veilRingOut{0%{transform:scale(1);opacity:1}100%{transform:scale(1.8);opacity:0}}
+
+/* ---------- 屏幕进场（标题→创建 / 创建→游戏） ---------- */
+#screen-create.fx-in,#screen-game.fx-in{animation:screenEnter .58s cubic-bezier(.22,.9,.28,1) both}
+@keyframes screenEnter{0%{opacity:0;transform:translateY(18px) scale(.985);filter:blur(4px)}60%{opacity:1;filter:blur(0)}100%{opacity:1;transform:none;filter:none}}
+
+/* ---------- 弹层入场（卷轴上滑 / 展开） ---------- */
+#panel.fx-in,#battle.fx-in,#cultivate.fx-in,#guide.fx-in,#breakthrough.fx-in,#ending.fx-in{animation:overlayIn .28s ease-out both}
+@keyframes overlayIn{0%{opacity:0}100%{opacity:1}}
+#panel.fx-in #panelBox,#cultivate.fx-in #cultBox{animation:sheetIn .36s cubic-bezier(.2,.9,.28,1) both}
+#battle.fx-in #battleBox,#guide.fx-in #guideBox,#breakthrough.fx-in #breakBox{animation:popIn .34s cubic-bezier(.2,.9,.3,1.15) both}
+@keyframes sheetIn{0%{opacity:0;transform:translateY(44px) scale(.985)}100%{opacity:1;transform:none}}
+@keyframes popIn{0%{opacity:0;transform:scale(.9) translateY(14px)}100%{opacity:1;transform:none}}
+#ending.fx-in #endingBox h2{animation:titleReveal .72s ease-out both}
+@keyframes titleReveal{0%{opacity:0;letter-spacing:26px;filter:blur(4px)}100%{opacity:1;letter-spacing:12px;filter:none}}
+
+/* ---------- 按钮质感：金箔流光 / 主按钮云纹内框 ---------- */
+button{position:relative;overflow:hidden}
+button::after{content:'';position:absolute;top:0;bottom:0;left:-80%;width:55%;pointer-events:none;background:linear-gradient(105deg,transparent,rgba(255,255,255,.22),transparent);transform:skewX(-18deg);opacity:0}
+@media(hover:hover){
+  button::after{transition:left .45s ease,opacity .45s ease;opacity:1}
+  button:hover::after{left:130%}
+  button:disabled::after,button:active::after{left:-80%;opacity:0}
+}
+button.primary::before{content:'';position:absolute;inset:3px;border:1px solid rgba(232,200,106,.28);border-radius:6px;pointer-events:none}
+
+/* ---------- 弹窗装饰：卷轴角花 + 标题印章点 ---------- */
+#panelBox{position:relative}
+#panelBox::before{content:'';position:absolute;top:-1px;left:-1px;width:20px;height:20px;border-top:2px solid var(--gold);border-left:2px solid var(--gold);border-top-left-radius:14px;pointer-events:none;z-index:1}
+#panelBox::after{content:'';position:absolute;bottom:-1px;right:-1px;width:20px;height:20px;border-bottom:2px solid var(--gold);border-right:2px solid var(--gold);border-bottom-right-radius:14px;pointer-events:none;z-index:1}
+#panelTitle::before{content:'◆';font-size:9px;color:var(--gold);margin-right:8px;vertical-align:2px;opacity:.75}
+#cultHead::after,#battleHead::after{content:'◆';font-size:9px;color:var(--gold);margin-left:8px;vertical-align:2px;opacity:.75}
+
+/* ---------- 布局细节：页头云纹饰线 / 侧栏遮罩淡入 ---------- */
+header{position:relative}
+header::after{content:'';position:absolute;left:18px;right:18px;bottom:-1px;height:1px;background:linear-gradient(90deg,transparent,rgba(201,162,75,.5),transparent);pointer-events:none}
+#scrim{opacity:0;pointer-events:none;transition:opacity .28s ease}
+#scrim.show{opacity:1;pointer-events:auto}
+
+/* ---------- 标题页呼吸光晕 ---------- */
+.title-seal{animation:sealBreathe 4.4s ease-in-out infinite}
+h1.title{animation:titleGlow 4.4s ease-in-out infinite}
+@keyframes sealBreathe{0%,100%{box-shadow:0 0 24px rgba(201,162,75,.28),inset 0 0 18px rgba(201,162,75,.12);transform:scale(1)}50%{box-shadow:0 0 48px rgba(201,162,75,.5),inset 0 0 30px rgba(201,162,75,.22);transform:scale(1.025)}}
+@keyframes titleGlow{0%,100%{text-shadow:0 0 18px rgba(201,162,75,.35)}50%{text-shadow:0 0 34px rgba(201,162,75,.62)}}
+
+/* ---------- 灵尘 / 云雾氛围层 ---------- */
+#ink-mist{position:fixed;inset:0;z-index:51;pointer-events:none;overflow:hidden}
+#ink-mist::before,#ink-mist::after{content:'';position:absolute;border-radius:50%;filter:blur(56px);opacity:.12;mix-blend-mode:screen;will-change:transform}
+#ink-mist::before{width:58vmax;height:46vmax;top:-14vmax;left:-16vmax;background:radial-gradient(circle at 35% 35%,#43528a 0%,rgba(67,82,138,0) 66%);animation:mistDrift 46s ease-in-out infinite alternate}
+#ink-mist::after{width:52vmax;height:40vmax;bottom:-14vmax;right:-14vmax;background:radial-gradient(circle at 60% 60%,rgba(201,162,75,.85) 0%,rgba(201,162,75,0) 62%);animation:mistDrift 38s ease-in-out infinite alternate-reverse}
+@keyframes mistDrift{0%{transform:translate3d(0,0,0) scale(1)}100%{transform:translate3d(7vmax,4vmax,0) scale(1.14)}}
+#dust{position:fixed;inset:0;z-index:51;pointer-events:none;overflow:hidden}
+#dust i{position:absolute;width:3px;height:3px;border-radius:50%;background:radial-gradient(circle,#e8c86a 0%,rgba(232,200,106,0) 72%);opacity:0;animation:dustFloat linear infinite;will-change:transform,opacity}
+@keyframes dustFloat{0%{transform:translate3d(0,0,0);opacity:0}12%{opacity:.65}80%{opacity:.3}100%{transform:translate3d(var(--dx),var(--dy),0);opacity:0}}
+
+/* ---------- 移动端触控尺寸统一（非页头按钮） ---------- */
+@media(max-width:820px){
+  button:not(header button):not(.tab-btn){min-height:44px}
+}

@@ -17,6 +17,8 @@ function fxSetLevel(l){
   try{localStorage.setItem('xt_fx',FX.level)}catch(e){}
   const root=typeof document!=='undefined'?document.documentElement:null;
   if(root)root.style.setProperty('--fx-level',FX.level);
+  /* v39：同步 html.fx-low class，供 CSS 整体关闭动画/粒子层 */
+  if(root&&root.classList)root.classList.toggle('fx-low',FX.level==='low');
 }
 function fxInit(){
   let l='med';

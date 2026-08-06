@@ -371,6 +371,7 @@ function battle(enemy,onEnd,spar){
       setTimeout(step,650);
     };
     $('battle').style.display='flex';
+    if(typeof T!=='undefined'&&T.reveal)T.reveal($('battle'));
     $('battleResult').style.display='none';
     $('battleContinue').style.display='none';
     $('battleLog').innerHTML='';
@@ -402,13 +403,15 @@ const BOSSES=[
 function bossOf(stage){
   const b=BOSSES[clamp(stage,0,BOSSES.length-1)];
   const r=rl();
-  return {name:b.n,atk:b.atk+Math.floor(r/2),def:b.def+Math.floor(r/3),hp:b.hp+r*10,elem:b.elem,style:b.style,boss:true,stage:stage};
+  return {name:b.n,desc:b.desc,atk:b.atk+Math.floor(r/2),def:b.def+Math.floor(r/3),hp:b.hp+r*10,elem:b.elem,style:b.style,boss:true,stage:stage};
 }
 function bossBattle(stage){
   closePanel();
   if(stage===undefined)stage=bigStage(S.realm);
+  S.flag.bossArt=S.flag.bossArt||{};
+  S.flag.bosses=S.flag.bosses||{};
   const e=bossOf(stage);
-  const beat=S.flag.bosses||{};
+  const beat=S.flag.bosses;
   scene('守关试炼 · '+e.name);
   log('<p>'+(beat[stage]?'你再度来到守关之地，守关大妖一声低吼，旧账新算。':'天地之间荡开一圈涟漪，守关大妖 <b>'+esc(e.name)+'</b> 拦在去路上。')+'</p><p class="sys">'+e.desc+'（'+STAGE_NAMES[stage]+'守关 · 重伤后狂暴）</p>');
   logChoices([
@@ -420,7 +423,6 @@ function bossBattle(stage){
           S.stones+=stones;S.cult+=cult;
           log('<p class="loot">守关已破：灵石 +'+stones+'，修为 +'+cult+'。</p>');
           if(stage>=2&&!S.flag.bossArt[stage]){
-            S.flag.bossArt=S.flag.bossArt||{};
             const a=Object.assign({},pick(ARTS));
             if(!S.arts.some(x=>x.name===a.name)){S.arts.push(a);S.flag.bossArt[stage]=true;log('<p class="loot">守关遗宝：你习得功法《'+a.name+'》！</p>')}
           }

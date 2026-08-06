@@ -255,6 +255,7 @@ let GUIDE_IDX=0;
 function showGuide(start){
   GUIDE_IDX=start||0;
   $('guide').style.display='flex';
+  if(typeof T!=='undefined'&&T.reveal)T.reveal($('guide'));
   renderGuide();
 }
 function renderGuide(){
