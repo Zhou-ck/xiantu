@@ -214,6 +214,7 @@ function masterDuel(){
   log('<p>演武场上，你向师尊行了一礼，拔剑相向：「请师尊指点！」</p>');
   startCombat(e,res=>{
     if(res.win){m.favor=clamp((m.favor||60)+4,0,100);addTrail(2);log('<p class="good">师尊朗声大笑：「青出于蓝！」你竟在师尊手下讨得一场胜——师徒情分 +4，历练 +2。</p>')}
+    else if(res.draw){m.favor=clamp((m.favor||60)+2,0,100);log('<p class="sys">十回合鏖战、加时五回合后难分胜负，师尊收剑而立：「根基扎实了，再来。」（师徒情分 +2，你败而不伤）</p>')}
     else{m.favor=clamp((m.favor||60)+2,0,100);log('<p class="sys">师尊以剑脊压住你的剑势，收手而立：「功夫尚浅，再来。」（师徒情分 +2，你败而不伤）</p>')}
     const gw=growWil(0.12,'与师切磋，道心愈坚');if(gw)log(gw);
     maybeInsight('与师尊切磋');
@@ -253,6 +254,7 @@ function npcChat(i){
   maybeInsight('与'+esc(n.name)+'的闲谈');
   const gc=growAttr('cha',0.08,'言谈之间，气度渐成');
   if(gc)log(gc);
+  if(typeof questTick==='function')questTick();
   passTime(1);renderAll();
 }
 function npcAsk(i){

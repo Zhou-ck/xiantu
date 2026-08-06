@@ -131,7 +131,8 @@ function continueBigBreak(nxt){
     }
   }
   const minW=WIL_REQ[nxt],dc=DIFFS[nxt];
-  const kMod=karmaMod();
+  const kMod=karmaMod()+Math.min(4,S.flag.breakPity||0);
+  if((S.flag.breakPity||0)>0)log('<p class="good">🛡️ 屡败屡战，天道垂怜：本次突破判定 <b>+'+(Math.min(4,S.flag.breakPity||0))+'</b>（保底累计 '+(S.flag.breakPity||0)+' 次，破境后清零）。</p>');
   if(effWil(S)<minW){
     scene('突破 · '+REALMS[nxt]);
     log('<p>你盘膝引气，可那道门纹丝不动。<span class="danger">道心不足</span>——冲击此境需心性 <b>≥ '+minW+'</b>（当前 '+effWil(S)+'，还差 '+Math.max(0,minW-effWil(S))+' 点）。</p><p>炼气期无【心魔历练】，可多<b>闭关静修/苦修</b>、探索寻<b>悟道奇遇</b>、拜师修习<b>增益心性之功法</b>、参加论道与听经，或服<b>破境丹</b>临时提升判定。</p>');
@@ -173,7 +174,7 @@ function heartTrialStart(nxt,dc,kMod){
   if(attrVal(S,'wil')>=15)mod-=1; /* 8.3 道心圆融者，心魔有破绽 */
   const trial={round:0,wins:0,mod:mod};
   log('<p>道门之前，一道与你一模一样的身影自识海深处升起——那是<b>你的心魔</b>。它持着与你相同的法器，周身流转着相同的五行灵光，只一双眼睛比你的更冷。</p>');
-  log('<p class="sys">三回合试炼：正面硬撼（力量）/ 以巧破力（身法）/ 默诵道经（心性）。胜场越多，突破越顺。</p>');
+  log('<p class="sys">三回合试炼：正面硬撼（力量）/ 以巧破力（身法）/ 默诵道经（心性）。胜场越多，突破越顺；三战全败将留【心魔烙印】并使突破判定 -2（失败重伤，不致死）。</p>');
   if(mod>0)log('<p class="danger">你杀孽/业力/情债缠身，心魔格外狰狞（试炼难度 +'+mod+'）。</p>');
   if(mod<0)log('<p class="good">你功德在身，心魔露出一线破绽（试炼难度 -1）。</p>');
   if(S.flag.trialMem)log('<p class="sys">上一次突破，你败在「'+S.flag.trialMem+'」——这次，心魔记得。</p>');
@@ -328,6 +329,7 @@ function tribMiniGame(onDone){
 }
 /* 突破成功结算（动画完成后调用，逻辑与原版一致） */
 function applyBreakSuccess(nxt,R,kMod,pre){
+  if(S.flag.breakPity){S.flag.breakPity=0;}
   S.flag.tribSave=null;
   if(S.flag.daoInsight>0){S.flag.daoInsight--;log('<p class="good">道基感悟化为突破之力（判定加成已消耗）。</p>')}
   if((S.insight||0)>0){S.insight=0;log('<p class="good">渡劫感悟尽数化为突破之力，烙印消散（判定加成已消耗）。</p>')}
@@ -365,6 +367,7 @@ function applyBreakSuccess(nxt,R,kMod,pre){
   }
   logRealmDiff(nxt);
   if(S.bg.traits.some(t=>t.id==='blood')){S.luck=clamp(S.luck+1,1,100);log('<p class="good">家族血脉隐隐苏醒，气运 +1。</p>')}
+  if(nxt===9&&!S.flag.flowChosen){flowChoice();return}
   if(nxt===21&&!S.flag.daoDone){daoChoice()}
   S.flag.lifeWarn=false;
   if(nxt===41){
@@ -401,6 +404,7 @@ function applyBreakSuccess(nxt,R,kMod,pre){
 /* 突破失败结算 */
 function applyBreakFail(loss,R,failHd){
   S.cult=Math.max(0,S.cult-loss);
+  S.flag.breakPity=(S.flag.breakPity||0)+1;
   /* 渡劫感悟：失败保留部分修为（其余转为对天道的体悟），下次突破判定加成、破境时消耗 */
   const insGain=Math.max(1,Math.floor(loss/80));
   S.insight=Math.min(20,(S.insight||0)+insGain);
@@ -408,6 +412,7 @@ function applyBreakFail(loss,R,failHd){
   addMood(-10);
   log('<p class="danger">'+pickDemonNarr(pick(['fear','doubt','ignorance']))+'</p>');
   log('<p class="danger">道门震颤，反噬临身！修为倒退 '+loss+'，十年苦功付之东流（心境 -10）——所幸此败并非全无所得，那一瞬的天道余韵已烙入识海，化为渡劫感悟。</p>');
+  log('<p class="sys">🛡️ 突破保底 +1（累计 '+S.flag.breakPity+' 次）：下次突破判定 +'+Math.min(4,S.flag.breakPity)+'，破境后清零。</p>');
   log('<p class="sys">💡 渡劫感悟 +'+insGain+'：累计 '+S.insight+'（下次突破判定 +'+Math.min(10,S.insight)+'，破境时消耗）。</p>');
   if(S.temp.break<=0)log('<p class="sys">提示：若备有<b>破境丹</b>，可于突破前服用，心性判定临时 +3。</p>');
   const hasRewind=S.items.some(i=>i.use==='rewind');
@@ -451,7 +456,8 @@ function tribRestore(){
 /* 2.3 里程碑解锁清单：每个大境界解锁的新内容 */
 function unlockListAt(r){
   const m={
-    9:'心魔历练 · 修炼托管 · 筑基守关试炼 · 读书抄经',
+    2:'试炼塔 · 秘境之门 · 灵溪幽谷',
+    9:'心魔历练 · 修炼托管 · 筑基守关试炼 · 读书抄经 · 择道节点（流派选定）',
     13:'功法技能 · 守关功法遗宝（金丹起） · 天劫类型化',
     17:'元婴神识清明：战斗技能更强 · 心魔试炼破绽',
     21:'道统传承（收徒） · 问道抉择 · 洞府托管至目标',
@@ -461,6 +467,33 @@ function unlockListAt(r){
     37:'渡劫飞升之路 · 终极心魔劫',
   };
   return m[r]||'';
+}
+/* v44 筑基择道：二选一/三选一显式流派抉择（不可逆，可花轮回点重选） */
+function flowChoice(){
+  S.flag.flowChosen=true;
+  scene('择道 · 流派既定');
+  const pool=Object.keys(FLOW_DEFS);
+  const opts=[];const used={};
+  while(opts.length<3){
+    const k=pick(pool);
+    if(used[k])continue;
+    used[k]=true;
+    const f=FLOW_DEFS[k];
+    opts.push({k,n:f.n,i:f.i,d:f.desc});
+  }
+  log('<p>筑基功成那夜，你于识海中望见三条大道。道途既定，便是一生的方向——日后可花费轮回点重选，代价不菲。</p>');
+  logChoices(opts.map(o=>({
+    txt:o.i+' '+o.n+'——'+o.d,cls:'primary',
+    fn:()=>{
+      S.flag.flowChoice=o.k;
+      S.flag.insights=(S.flag.insights||0)+1;
+      log('<p class="good">你踏上了<b>'+o.n+'</b>之路。道心既定，万法随行（流派加成生效，悟道 +1）。</p>');
+      log('<p class="sys">流派加成：同流派功法修炼效率 +5%；战斗时流派克制/风格加成按「机制·六大流派」生效；日后可花轮回点重选。</p>');
+      breakClose();
+      if(!passTime(5)){renderAll();return}
+      checkQuests();renderAll();
+    }
+  })));
 }
 /* 化神问道：悟道选择，决定道途分支（被动加成） */
 function daoChoice(){

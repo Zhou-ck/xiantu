@@ -7,8 +7,10 @@
 const REGIONS=[
   {id:'near',name:'青石小径·周边',days:3,desc:'破庙周遭的丘陵与溪谷，尚算太平。',minRealm:0,common:70,beast:10,herb:50,rare:8,danger:5},
   {id:'hill',name:'荒山野岭',days:5,desc:'乱石嶙峋，时有妖兽出没，也藏着散修的旧洞。',minRealm:0,common:55,beast:28,herb:35,rare:12,danger:12},
+  {id:'valley',name:'灵溪幽谷',days:4,desc:'翠谷溪鸣，灵气盎然，相传是上古药仙闭关之地。',minRealm:1,common:60,beast:15,herb:65,rare:20,danger:6},
   {id:'forest',name:'暮色深林',days:7,desc:'古木参天，瘴气弥漫，传闻林中有一处上古药园。',minRealm:3,common:42,beast:35,herb:55,rare:16,danger:18},
   {id:'cliff',name:'断魂崖',days:8,desc:'悬崖千仞，云雾之下隐约有龙吟声传来。',minRealm:6,common:30,beast:45,herb:25,rare:25,danger:35},
+  {id:'ruin',name:'古战场遗迹',days:10,desc:'焦土千里，残旗断戟，一场灭世之战的遗骸。',minRealm:25,common:20,beast:50,herb:30,rare:40,danger:55},
   {id:'abyss',name:'荒古禁地',days:12,desc:'九界禁区，上古大能陨落之地，一步一劫。',minRealm:17,common:15,beast:55,herb:60,rare:45,danger:60},
 ];
 /* ===== 行迹图鉴：探索统计 / 足迹记录 / 里程碑（历练深化） ===== */
@@ -66,12 +68,14 @@ function exploreTome(){
     '<div class="bd-row"><span>守卫战</span><b>胜 '+(S.flag.tideWins||0)+' · 负 '+(S.flag.tideFails||0)+'</b></div>'+
     '<div class="bd-row"><span>守城战绩</span><b>'+(S.flag.tideWins||0)+' 次全胜</b></div></div>'+
     '<div class="bd-box"><div class="bd-head">🗺️ 到访之地</div>'+regionHtml+'</div>'+
+    regionMemoryHtml()+
     '<div class="bd-box"><div class="bd-head">⚖️ 际遇分布</div>'+typeHtml+'</div>'+
     '<div class="bd-box"><div class="bd-head">🏁 里程碑</div>'+milesHtml+'</div>'+
     (logHtml?'<div class="bd-box"><div class="bd-head">🦶 最近足迹</div>'+logHtml+'</div>':'')+
     '<p style="font-size:11.5px;color:#6f7a94;margin-top:8px">里程碑奖励一次性发放；行迹与际遇记录会随探索持续更新。</p>');
 }
 function panelExplore(){
+  if(typeof panelMap==='function'){panelMap();return}
   const tower=(S.realm>=2?'<div class="item-card"><div class="nm">🧗 试炼塔 <span style="font-size:12px;color:#6f7a94">（已通 '+(S.flag.tower||0)+' 层）</span></div><div class="ds">古修留下的历练之塔，一层一关，越往上越凶险，奖励也越丰厚。每五层有守塔统领。</div><div style="margin-top:8px"><button class="small primary" onclick="doTower()">挑战第 '+((S.flag.tower||0)+1)+' 层</button></div></div>':'');
   const bossStage=bigStage(S.realm);
   const bossBeat=!!(S.flag.bosses&&S.flag.bosses[bossStage]);
@@ -90,8 +94,8 @@ function doTower(){
   closePanel();
   if(S.realm<2){toast('炼气三层后开启试炼塔');return}
   const floor=(S.flag.tower||0)+1;
-  let e={name:'试炼塔 · 第'+floor+'层守关',atk:4+floor*3+rl(),def:1+Math.floor(floor/2)+Math.floor(rl()/3),hp:25+floor*12+rl()*8};
-  if(floor%5===0){e={name:'试炼塔 · 第'+floor+'层统领',atk:e.atk+4,def:e.def+2,hp:e.hp+40}}
+  let e={name:'试炼塔 · 第'+floor+'层守关',atk:4+floor*3+rl(),def:1+Math.floor(floor/2)+Math.floor(rl()/3),hp:25+floor*12+rl()*8,elem:pick(['metal','wood','water','fire','earth'])};
+  if(floor%5===0){e={name:'试炼塔 · 第'+floor+'层统领',atk:e.atk+4,def:e.def+2,hp:e.hp+40,elem:e.elem}}
   scene('试炼塔 · 第 '+floor+' 层');
   log('<p>塔门轰然开启，肃杀之气扑面而来。<b>'+e.name+'</b> 拦住了去路。</p>');
   startCombat(e,res=>{
@@ -99,7 +103,7 @@ function doTower(){
       S.flag.tower=floor;
       addTrail(1);
       recordScore('tower',floor);
-      const stones=Math.floor(50+floor*20),cult=Math.floor(40+floor*25+rl()*8);
+      const stones=Math.floor(50+floor*20),cult=Math.floor(eventGift()*0.03+rl()*8);
       S.stones+=stones;S.cult+=cult;
       log('<p class="loot">登上一层：灵石 +'+stones+'，修为 +'+cult+'。</p>');
       if(floor%5===0){S.luck=clamp(S.luck+1,1,100);log('<p class="loot">🏆 你击败了守塔统领，气运 +1。</p>')}
@@ -109,7 +113,7 @@ function doTower(){
       ]);
     }else if(res.draw){
       const g=Math.floor(10+floor*5);S.stones+=g;
-      log('<p class="sys">十回合力竭，你被塔灵送出塔外（灵石 +'+g+'）。</p>');
+      log('<p class="sys">十回合鏖战、加时五回合后仍力竭，你被塔灵送出塔外（灵石 +'+g+'）。</p>');
       renderAll();
     }else{
       if(S.hp<=0)S.hp=1;
@@ -124,6 +128,7 @@ function doExplore(rid){
   if(S.realm<r.minRealm){log('<p class="sys">迷雾锁路，你现在的境界还进不去。</p>');return}
   scene('外出探索 · '+r.name);
   log('<p class="sys">（时令：'+seasonLabel()+' · '+seasonDesc()+'）</p>');
+  if(typeof themeLabel==='function'&&themeLabel())log('<p class="sys">（赛季：'+themeLabel()+'）</p>');
   const se=seasonOf();
   let d=r.danger,b=r.beast,ra=r.rare,h=r.herb;
   if(se===0)h+=10;
@@ -167,6 +172,7 @@ function doExplore(rid){
   S.flag.explored=true;
   S.flag.exploreCount=(S.flag.exploreCount||0)+1;
   recordExplore(r,outcome);
+  if(REGION_LORE[r.id]&&(S.flag.regions[r.id]||0)===1)log('<p class="scene">'+REGION_LORE[r.id]+'</p>');
   checkExploreMiles();
   dC().c.explore++;
   addTrail(1);
@@ -174,7 +180,7 @@ function doExplore(rid){
     const tg1=growAttr('agi',0.06,'探幽寻踪，身法渐长'),tg2=growAttr('int',0.06,'推演机关，眼界渐开');
     if(tg1||tg2)log(tg1+tg2);
     if(!passTime(trav2)){renderAll();return}
-    maybeBreakHint();checkQuests();if(PENDING===0&&chance(0.3))encounterEvent();renderAll();
+    maybeBreakHint();checkQuests();maybeRegionEvent(r);if(PENDING===0&&chance(0.3))encounterEvent();renderAll();
     if(PENDING===0&&chance(0.06))petEvent();
     return;
   }
@@ -183,6 +189,7 @@ function doExplore(rid){
   S.flag.explored=true;
   S.flag.exploreCount=(S.flag.exploreCount||0)+1;
   recordExplore(r,outcome);
+  if(REGION_LORE[r.id]&&(S.flag.regions[r.id]||0)===1)log('<p class="scene">'+REGION_LORE[r.id]+'</p>');
   checkExploreMiles();
   dC().c.explore++;
   addTrail(1);
@@ -190,7 +197,15 @@ function doExplore(rid){
   const g1=growAttr('agi',0.08,'山川跋涉，身法渐长'),g2=growAttr('int',0.06,'旅途见闻，眼界渐开');
   if(g1||g2)log(g1+g2);
   if(!passTime(trav2)){renderAll();return}
-  maybeBreakHint();checkQuests();if(PENDING===0&&chance(0.3))encounterEvent();renderAll();
+  maybeBreakHint();checkQuests();maybeRegionEvent(r);if(PENDING===0&&chance(0.3))encounterEvent();renderAll();
+  if(PENDING===0&&(outcome==='calm'||outcome==='herb'||outcome==='rare')&&chance(0.22)){
+    const ev=rollStoryEvent(outcome);
+    if(ev)runStoryEvent(ev);
+  }
+  if(PENDING===0&&chance(0.12)){
+    const tev=rollThemeEvent();
+    if(tev)runStoryEvent(tev);
+  }
   if(PENDING===0&&chance(0.06))petEvent();
 }
 /* 2J 声望回响 · 正道截杀：魔道声望高时，正道中人前来问罪 */
@@ -542,6 +557,12 @@ const CALM_V=[
   {t:'你帮一只坠巢的雏鸟放回巢中，鸟鸣啾啾，似在道谢。',eff:()=>{addMerit(1);return '功德 +1'}},
   {t:'山路上一块万斤巨石横亘当道，你单手便将它掀下了山崖——力拔山兮！',eff:()=>{if(attrVal(S,'str')>=18){const g=rand(1,2);S.attrs.str=clamp(S.attrs.str+g,1,40);return '力拔山兮：力量 +'+g}return '你使出吃奶的劲也没推动它，只得绕行'}},
   {t:'一位路过的女修邀你同赴山中雅集，席间觥筹交错，众人皆赞你谈吐不凡。',eff:()=>{if(attrVal(S,'cha')>=18){const g=rand(1,2);S.attrs.cha=clamp(S.attrs.cha+g,1,40);S.stones+=rand(30,80);return '群仙宴请：魅力 +'+g+'，灵石 +'+'若干'}return '你坐在席末，只觉插不上话'}},
+  {t:'一株百年古松下，你于斑驳树影间辨认出几行刀刻小字：「松涛为枕，白云为衾。」你默诵三遍，心下一片澄明。',eff:()=>{if(chance(0.4)){S.flag.insights=(S.flag.insights||0)+1;return '于字间悟出一丝天机，悟道 +1'}const n=Math.floor(8+S.root/10);S.cult+=n;return '修为 +'+n}},
+  {t:'溪边石上搁着一只旧斗笠，笠沿刻着「赠有缘人」。你翻过斗笠，笠底压着一枚铜钱，铜绿斑驳。',eff:()=>{const g=rand(50,120);S.stones+=g;return '灵石 +'+g}},
+  {t:'一群稚童在山道边放纸鸢，一只断线的纸鸢落在你脚边。你御气一托，纸鸢重上青云。',eff:()=>{addMerit(1);return '童声朗朗谢过你，功德 +1'}},
+  {t:'你于乱石间发现一具新葬的棺椁，棺盖半开，内有半卷被血浸透的遗书。',eff:()=>{S.flag.foreshadow=S.flag.foreshadow||[];if(!S.flag.foreshadow.some(f=>f.name==='无名遗书'))S.flag.foreshadow.push({name:'无名遗书',at:Math.floor(S.years),resolver:null});return '一段无主因果，就此埋下'}},
+  {t:'雨后山路泥泞，你一脚深一脚浅地赶路，忽见前方石桥边立着一盏孤灯，灯下坐着一只白首老猿。',eff:()=>{if(chance(0.5)){const n=Math.floor(10+S.root/8);S.cult+=n;return '老猿颔首，似有灵性——你莫名多了几分感悟，修为 +'+n}return '老猿望你一眼，复又低头，仿佛守着一座山的寂静'}},
+  {t:'你在一处破败的亭子里躲雨，亭柱上题着一首未完的诗。你提笔续完，只觉胸中郁气尽散。',eff:()=>{addMood(5);return '心境 +5'}},
 ];
 const HERB_V=[
   {t:'你在溪谷边寻到一片灵草丛。',eff:()=>{const n=rand(1,3)+(S.bg.traits.some(t=>t.id==='herb')?rand(1,2):0);S.mats.herb=(S.mats.herb||0)+n;return '采得 草药 ×'+n}},
@@ -551,6 +572,10 @@ const HERB_V=[
   {t:'你发现一株会跑的「人形何首乌」，正往土里钻！',eff:()=>{const R=doRoll('agi',15);if(R.hit){S.mats.sherb=(S.mats.sherb||0)+2;return '捉住何首乌，灵草 ×2'}S.mats.herb=(S.mats.herb||0)+1;return '它遁地而逃，你只薅到一撮须（草药 ×1）'}},
   {t:'崖壁石缝间垂下一串金色蜂巢，蜜香四溢。',eff:()=>{const n=rand(2,4);S.mats.herb=(S.mats.herb||0)+n;const g=rand(20,60);S.stones+=g;return '采得灵蜜，草药 ×'+n+'，灵石 +'+g}},
   {t:'枯木之下露出一角青石，上面刻着一个「药」字。',eff:()=>{S.mats.sherb=(S.mats.sherb||0)+1;S.mats.jade=(S.mats.jade||0)+1;return '寻得药王遗藏：灵草 ×1、寒玉 ×1'}},
+  {t:'崖壁半腰一丛朱红灵果在风中摇曳，藤蔓粗壮，根系扎进岩缝深处。',eff:()=>{const R=doRoll('agi',14);if(R.hit){S.mats.sherb=(S.mats.sherb||0)+2;return '攀崖采得 灵草 ×2'}S.hp=Math.max(1,S.hp-Math.floor(S.maxHp*0.1));S.mats.herb=(S.mats.herb||0)+1;return '失手滑落，只采得 草药 ×1（气血-10%）'}},
+  {t:'腐木之下藏着一窝灵芝，菌盖如伞，药香扑鼻。',eff:()=>{const n=rand(2,3);S.mats.herb=(S.mats.herb||0)+n;S.mats.sherb=(S.mats.sherb||0)+1;return '草药 ×'+n+'、灵草 ×1'}},
+  {t:'灵泉边生着一丛银叶草，叶片在光下流转如水银。',eff:()=>{S.mats.herb=(S.mats.herb||0)+2;if(chance(0.3)){S.flag.insights=(S.flag.insights||0)+1;return '采得 草药 ×2，草叶纹路竟暗合道韵，悟道 +1'}return '采得 草药 ×2'}},
+  {t:'一株紫藤缠着古碑生长，藤上结着三枚晶莹的藤果。',eff:()=>{S.mats.sherb=(S.mats.sherb||0)+1;const g=rand(20,50);S.stones+=g;return '灵草 ×1、藤果换得灵石 +'+g}},
 ];
 const RARE_V=[
   {t:'你在山涧边拾得一截断剑，剑格处一朵青莲纹样古朴依旧。',eff:()=>{chainStart('jianzhong');return '一段前尘因果就此埋下'}},
@@ -578,6 +603,9 @@ const RARE_V=[
   {t:'你发现一处废弃丹炉，炉底还残着三粒丹丸，药香未散。',eff:()=>{const d=pick(['聚灵丹','破境丹','回春丹']);addItem(Object.assign({},MARKET_ITEMS.find(x=>x.name===d)));return '拾得「'+d+'」'}},
   {t:'月圆之夜，一只白狐对月吐纳。它瞥见你，竟衔来一枚温润的狐火石放在你脚边。',eff:()=>{S.luck=clamp(S.luck+1,1,100);S.mats.demonCore=(S.mats.demonCore||0)+1;return '狐赠狐火石：气运 +1、妖丹 ×1'}},
   {t:'路边酒肆，一位醉醺醺的剑客拉住你：「小友，陪我喝一杯，这柄剑就归你！」',eff:()=>{const R=doRoll('cha',14);if(R.hit){addItem({name:'青锋醉剑',type:'weapon',quality:2,bonus:3,desc:'剑客醉后所赠，剑身犹带三分酒香。',sell:350});return '陪剑客痛饮三坛，得「青锋醉剑」'}const lose=rand(10,40);S.stones=Math.max(0,S.stones-lose);return '你拼酒不敌，趴在桌上，赔了灵石 '+lose}},
+  {t:'你于溪中拾得一枚莹白的蚌珠，珠光流转，似有灵识。',eff:()=>{const R=doRoll('int',15);if(R.hit){S.flag.insights=(S.flag.insights||0)+1;return '以灵识探入珠心，竟悟出一丝天地妙理，悟道 +1'}const g=rand(80,200);S.stones+=g;return '蚌珠转手便值灵石 +'+g}},
+  {t:'古树洞中蜷着一只昏睡的灵狐幼崽，尾尖一点白毛。',eff:()=>{if(S.pet){return '你已有灵兽相伴，幼狐蹭了蹭你的手，又蜷回树洞'}addItem({name:'灵狐幼崽',type:'egg',quality:2,use:'hatch',desc:'树洞中拾得的灵狐幼崽，可驯为灵宠。',sell:500});return '获得「灵狐幼崽」'}},
+  {t:'你撞见两名修士以残局赌斗灵石，棋盘上黑白分明。',eff:()=>{const R=doRoll('int',15);if(R.hit){const g=rand(100,260);S.stones+=g;return '你旁观片刻，一语点破死局，赢家分你灵石 +'+g}return '你观棋不语，默默离去'}},
   {t:'市井间流传着一则传说：乱葬岗深处有前人洞府，唯有缘者得见。你默默记下了这个传闻。',eff:()=>{S.flag.rumor=true;return '听闻「乱葬岗遗藏」传说（日后探索或有机缘寻得线索）'}},
   {t:'山道尽头立着一座半坍的古传送阵，符文在暮色中明明灭灭。',eff:()=>{openEventModal('✨ 古传送阵','<p>阵纹残破，灵光时明时灭——有人以血饲阵，有人以灵石续灵。你如何抉择？</p>',[
     {txt:'🔮 以灵石激活（80灵石）',fn:()=>{if(S.stones<80){log('<p>你摸遍行囊，灵石不足，只得悻悻离去。</p>')}else{S.stones-=80;const r=rand(1,100);if(r<=30){const g=rand(100,300);S.cult+=g;log('<p class="loot">阵光暴涨，将你卷入一处灵机充沛的古地，修为 +'+g+'！</p>')}else if(r<=65){const it=randItem(2);addItem(it);log('<p class="loot">传送尽头是一间尘封石室，你拾得「'+it.name+'」（'+QNAMES[it.quality]+'）。</p>')}else{S.hp=Math.max(1,S.hp-Math.floor(S.maxHp*0.2));log('<p class="danger">阵纹失控，空间乱流把你甩出十里外（气血-20%）。</p>')}}}},
@@ -623,6 +651,13 @@ const DANGER_V=[
   {run:()=>{log('<p>天色将晚，你借宿一座荒村，村中竟无一人。</p>');const R=doRoll('wil',18);log('<p>心性判定：'+rollBadge(R.r,R.mod,R.t,R.dc)+'</p>');
     if(R.hit){S.cult+=80;return '<p class="good">夜半鬼哭，你心若磐石，反而于静寂中悟得一丝修为（修为 +80）。</p>'}
     S.heartDemons++;return '<p class="danger">噩梦缠身，你惊醒时满身冷汗，心魔留下烙印（心魔+1）。</p>'}},
+  {run:()=>{log('<p>山洪骤至，浊浪裹着碎石自上游倾泻而下！</p>');const R=doRoll('agi',16);log('<p>身法判定：'+rollBadge(R.r,R.mod,R.t,R.dc)+'</p>');
+    if(R.hit){log('<p class="good">你足尖连点，踏着浪头跃上高崖，安然无恙。</p>');return ''}
+    S.hp=Math.max(1,S.hp-Math.floor(S.maxHp*0.25));if(S.hp<=1){die('溺水');return false}
+    return '<p class="danger">你被浊浪卷出里许，呛了好几口水（气血-25%）。</p>'}},
+  {run:()=>{log('<p>碎石坡上，一道塌方如雷滚落，扬起漫天烟尘！</p>');const R=doRoll('agi',15);log('<p>身法判定：'+rollBadge(R.r,R.mod,R.t,R.dc)+'</p>');
+    if(R.hit){S.mats.iron=(S.mats.iron||0)+1;return '<p class="good">你翻滚避过滚石，反在石堆下捡到一块精铁（铁矿石 +1）。</p>'}
+    S.hp=Math.max(1,S.hp-Math.floor(S.maxHp*0.2));applyInjury('jiqiao');return '<p class="danger">一块碎石砸中肩头，你负伤而退（气血-20%，筋骨挫伤）。</p>'}},
   {run:()=>{log('<p>山道轰然塌陷，你被卷入地底裂缝！</p>');const R=doRoll('agi',16);log('<p>身法判定：'+rollBadge(R.r,R.mod,R.t,R.dc)+'</p>');
     if(R.hit){const g=rand(60,200);S.stones+=g;return '<p class="loot">你于裂缝中寻到一处矿脉，撬得灵石 '+g+' 块。</p>'}
     S.hp=Math.max(1,S.hp-Math.floor(S.maxHp*0.25));return '<p class="danger">乱石压身，你费尽气力才爬出，气血大损。</p>'}},

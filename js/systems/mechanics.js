@@ -13,6 +13,7 @@ const ELEMS={
   thunder:{n:'雷灵根（变异）',c:'#d8a8e8',i:'⚡',desc:'刚猛迅捷，主金火之属',aff:['metal','fire'],beats:'wood'},
   ice:{n:'冰灵根（变异）',c:'#a8d8e8',i:'❄️',desc:'寒澈凌厉，主水金之属',aff:['water','metal'],beats:'fire'},
   wind:{n:'风灵根（变异）',c:'#a8d8a8',i:'🌪️',desc:'轻灵飘忽，主木火之属',aff:['wood','fire'],beats:'earth'},
+  dark:{n:'魔气（非五行）',c:'#a86ae0',i:'🌑',desc:'魔道浊气，不属五行，无克制关系',aff:[],beats:''},
 };
 const ELEM_SHENG={wood:'fire',fire:'earth',earth:'metal',metal:'water',water:'wood'};
 const ELEM_POOL=['metal','wood','water','fire','earth','metal','wood','water','fire','earth','thunder','ice','wind'];
@@ -54,17 +55,29 @@ function dualElemMult(p){
 /* 功法与灵根相性：同属功法修炼效率 ×1.15（变异灵根可修主属+副属） */
 function elemArtMult(s,a){return rootAffinity(s,a&&a.elem)?1.15:1}
 
+/* 六大流派定义：id 与 ARTS 表 flow 字段一一对应，数据驱动时直接取用 */
+const FLOW_DEFS={
+  sword:{id:'sword',n:'剑修',i:'🗡️',desc:'剑出连击，锐不可当'},
+  demon:{id:'demon',n:'魔修',i:'🌑',desc:'噬血夺元，以伤换暴'},
+  body:{id:'body',n:'体修',i:'💪',desc:'肉身成圣，以身为盾'},
+  dan:{id:'dan',n:'丹修',i:'⚗️',desc:'丹火回春，绵绵不绝'},
+  spirit:{id:'spirit',n:'鬼修',i:'👻',desc:'召魂咒敌，诡异难测'},
+  law:{id:'law',n:'法修',i:'🔮',desc:'五行法术，相生相克'},
+};
 /* ---------- 2C 六大修行流派：主功法 + 武器 + 灵根共同决定 ---------- */
 function flowType(s){
-  const art=(s.arts&&s.arts[0]&&s.arts[0].name)||'';
+  const art=(s.arts&&s.arts[0])||{};
+  /* 数据驱动优先：主修功法声明 flow 字段则直接采用，避免正则误判与功法改名失效 */
+  if(art.flow&&FLOW_DEFS[art.flow])return FLOW_DEFS[art.flow];
+  const artName=art.name||'';
   const wpn=(s.weapon&&s.weapon.name)||'';
   const prof=s.prof||'';
-  if(/剑|锋|青锋|太乙|斩/.test(art)||/剑/.test(wpn))return {id:'sword',n:'剑修',i:'🗡️',desc:'剑出连击，锐不可当'};
-  if((s.flag&&s.flag.dao==='dark')||/魔|煞|血/.test(art))return {id:'demon',n:'魔修',i:'🌑',desc:'噬血夺元，以伤换暴'};
-  if(/体|淬|金刚|不灭/.test(art)||(s.attrs&&s.attrs.str>=25&&!s.weapon))return {id:'body',n:'体修',i:'💪',desc:'肉身成圣，以身为盾'};
-  if(/丹|药|炉/.test(art)||prof==='alchemy')return {id:'dan',n:'丹修',i:'⚗️',desc:'丹火回春，绵绵不绝'};
-  if(/阵|符|鬼|魂/.test(art)||prof==='talisman'||prof==='array')return {id:'spirit',n:'鬼修',i:'👻',desc:'召魂咒敌，诡异难测'};
-  return {id:'law',n:'法修',i:'🔮',desc:'五行法术，相生相克'};
+  if(/剑|锋|青锋|太乙|斩/.test(artName)||/剑/.test(wpn))return FLOW_DEFS.sword;
+  if((s.flag&&s.flag.dao==='dark')||/魔|煞|血/.test(artName))return FLOW_DEFS.demon;
+  if(/体|淬|金刚|不灭/.test(artName)||(s.attrs&&s.attrs.str>=25&&!s.weapon))return FLOW_DEFS.body;
+  if(/丹|药|炉/.test(artName)||prof==='alchemy')return FLOW_DEFS.dan;
+  if(/阵|符|鬼|魂/.test(artName)||prof==='talisman'||prof==='array')return FLOW_DEFS.spirit;
+  return FLOW_DEFS.law;
 }
 function flowCombatBonus(s,enemyStyle){
   const f=flowType(s).id;

@@ -5,6 +5,21 @@
 'use strict';
 /* ================= 死亡 / 结局 / 轮回 ================= */
 function die(reason){
+  /* v43 保命道具：致死时自动消耗，以「重伤濒死」替代身陨（寿元耗尽与自绝不救） */
+  if(reason!=='寿元耗尽'&&reason!=='自绝心脉'&&(S.items||[]).some(i=>i.use==='save')){
+    const idx=S.items.findIndex(i=>i.use==='save');
+    const it=S.items[idx];
+    S.items.splice(idx,1);
+    S.hp=1;
+    applyInjury(pick(['jiqiao','neijing','neishang']));
+    S.flag.saveUsed=(S.flag.saveUsed||0)+1;
+    S.flag.lifeSaves=S.flag.lifeSaves||0;S.flag.lifeSaves++;
+    scene('死里逃生');
+    log('<p class="good">千钧一发之际，<b>'+esc(it.name)+'</b> 自行炸开，化作一道灵光替你挡下死劫！你跌落尘埃、重伤濒死，却终究活了下来（'+esc(it.name)+' 已毁，保命次数 +1）。</p>');
+    log('<p class="sys">🛡️ 保命次数累计 '+S.flag.lifeSaves+'——此物千金不换，重创之后务必回洞府调养。</p>');
+    passTime(3);renderAll();
+    return false;
+  }
   S.deaths++;
   recordScore('deaths',S.deaths);
   scene('身陨');
@@ -28,6 +43,7 @@ function endEnding(title,desc,stats,extraBtns){
     '<div class="btns">'+
     '<button class="primary" onclick="rebirth()">🔄 转世重生（留一线灵光）</button>'+
     (extraBtns||'')+
+    '<button onclick="softReset()">🪞 软重启（保留收藏/称号/关系）</button>'+
     '<button onclick="resetAll()">🌱 重开一世</button>'+
     (title==='飞升成仙'?'<button onclick="continueImmortal()">☁️ 遨游九界</button>':'')+
     '</div>';
@@ -45,14 +61,17 @@ function settleLoop(ending){
   const mult=[1,1.2,1.5,2.0][Math.min(3,gates)];
   const pts=Math.floor((base+hidden)*mult);
   const lo=loopLoad();
-  lo.points=(lo.points||0)+pts;
-  lo.value=(lo.value||0)+pts;
+  const goalMet=karmaGoalMet();
+  const finalPts=goalMet?Math.floor(pts*1.5):pts;
+  lo.points=(lo.points||0)+finalPts;
+  lo.value=(lo.value||0)+finalPts;
   lo.history=lo.history||[];
-  lo.history.unshift({name:S.name,realm:REALMS[S.realm],ending:ending,points:pts,at:Date.now()});
+  const goal=karmaGoal();
+  lo.history.unshift({name:S.name,realm:REALMS[S.realm],ending:ending,points:finalPts,at:Date.now(),goal:goal?goal.id:null,goalMet:goalMet,flow:S.flag&&S.flag.flowChoice||null,mainCh:(S.quest&&S.quest.main&&(S.quest.main.chDone||[]).length)||0});
   if(lo.history.length>12)lo.history.length=12;
   if(S.arts&&S.arts[0])lo.art=S.arts[0].name;
   loopSave(lo);
-  log('<p class="sys">🌀 轮回结算：轮回点 <b>+'+pts+'</b>（累计 '+lo.points+'）· 轮回值 <b>'+lo.value+'</b>。天道枷锁 ×'+mult+'。</p>');
+  log('<p class="sys">🌀 轮回结算：轮回点 <b>+'+finalPts+'</b>'+(goalMet?'（执念「'+goal.n+'」得偿，×1.5）':'')+'（累计 '+lo.points+'）· 轮回值 <b>'+lo.value+'</b>。天道枷锁 ×'+mult+'。</p>');
 }
 function rebirth(){
   const old=S;
@@ -135,6 +154,32 @@ function resetAll(){
   localStorage.removeItem('xiantu_save_meta');
   localStorage.removeItem('xiantu_save_v1');
   location.reload();
+}
+/* v48 软重启缓冲：只重置战力与资源，保留收藏/称号/关系/轮回账户/剧情回顾 */
+function softReset(){
+  const old=S;
+  const bg=pick(BACKGROUNDS);
+  const ns=newState(randomName(),bg);
+  ns.titles=(old.titles||[]).slice();
+  ns.seenI=old.seenI||{}; ns.seenE=old.seenE||{};
+  ns.npcs=(old.npcs||[]).filter(n=>n.met).map(n=>JSON.parse(JSON.stringify(n)));
+  ns.daoPartner=old.daoPartner?JSON.parse(JSON.stringify(old.daoPartner)):null;
+  ns.children=(old.children||[]).slice();
+  ns.disciples=(old.disciples||[]).slice();
+  ns.merit=Math.max(0,Math.floor((old.merit||0)*0.5));
+  ns.karma=Math.max(0,Math.floor((old.karma||0)*0.5));
+  ns.memories=(old.memories||[]).concat(old.endings||[]).concat(['软重启：重铸道基，前尘犹在']);
+  ns.flag.memory='重铸道基，收藏/称号/关系皆存';
+  ns.flag.inherited='软重启';
+  ns.quest=old.quest?JSON.parse(JSON.stringify(old.quest)):{main:{ch:0,step:0,done:[],chDone:[],log:[]},side:{},sideStep:{},sideDone:{}};
+  if(old.sect)ns.flag.oldSect=old.sect.name;
+  S=ns;
+  $('ending').style.display='none';
+  $('screen-game').style.display='flex';
+  scene('软重启 · 重铸道基');
+  log('<p class="good">你于轮回台上回望一眼，将这一世的<b>收藏、称号与情缘</b>尽数渡入新躯——修为与灵石归零，道基重铸，江湖再见。</p>');
+  log('<p class="sys">保留：称号 '+(ns.titles.length)+' · 图鉴（物品 '+Object.keys(ns.seenI).length+' / 敌人 '+Object.keys(ns.seenE).length+'）· 结识 '+(ns.npcs.length)+' 人 · 剧情回顾 '+(ns.quest.main.log||[]).length+' 章。</p>');
+  renderAll();save();
 }
 function continueImmortal(){
   $('ending').style.display='none';

@@ -13,6 +13,8 @@ function freeAct(raw){
     [/(静修)/,()=>doCultivate(parseNum(t)||30,'quiet')],
     [/(修炼|闭关|打坐)/,()=>doCultivate(parseNum(t)||30)],
     [/(探索|游历|外出|走走|巡山)/,()=>panelExplore()],
+    [/(地图|舆图|九州|去哪)/,()=>panelMap()],
+    [/(主线|剧情|支线|任务|日志)/,()=>panelQuests()],
     [/(坊市|市场|买卖|购物|摊位)/,()=>panelMarket()],
     [/(宗门|门派|回宗)/,()=>panelSect()],
     [/(人际|社交|拜访|友人|朋友)/,()=>panelSocial()],
@@ -59,6 +61,8 @@ function routeAIIntent(txt,raw){
   const intentMap=[
     [/修炼|闭关|打坐|静修|苦修/,()=>doCultivate(parseNum(raw||txt)||30)],
     [/探索|游历|外出/,()=>panelExplore()],
+    [/地图|舆图/,()=>panelMap()],
+    [/主线|剧情|任务|日志/,()=>panelQuests()],
     [/坊市|买卖/,()=>panelMarket()],
     [/宗门/,()=>panelSect()],
     [/人际|聊天|拜访/,()=>panelSocial()],

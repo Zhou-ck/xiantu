@@ -6,6 +6,34 @@
 /* ================= 副业 ================= */
 const PROF_NAMES={alchemy:'炼丹师',forge:'炼器师',talisman:'符箓师',array:'阵法师'};
 const PROF_ICON={alchemy:'⚗️',forge:'🔨',talisman:'🪄',array:'🧿'};
+/* v43 副业专精分流：四艺各具专属加成 */
+function craftSpecialty(){
+  const p=S&&S.prof;
+  return {
+    alchemy:{n:'丹师',desc:'成丹 12% 概率双份',double:0.12},
+    forge:{n:'器师',desc:'品质保底上限 +1（最差也不坠凡品）',pityCap:3},
+    talisman:{n:'符师',desc:'失败返还 60% 材料',refund:0.6},
+    array:{n:'阵师',desc:'布阵成功 15% 概率顿悟',insight:0.15},
+  }[p]||null;
+}
+/* v43 材料闭环表：每材料 产出/流通/出口 */
+const MATERIAL_ECONOMY={
+  herb:{in:'探索采药 · 灵田',flow:'炼丹·疗伤丹',out:'炼丹消耗 · 坊市寄售'},
+  sherb:{in:'暮色深林 · 灵田',flow:'炼丹·回春丹/聚灵丹',out:'炼丹消耗 · 支线任务'},
+  iron:{in:'战斗掉落 · 坊市',flow:'炼器·精铁剑 · 强化',out:'炼器消耗 · 坊市寄售'},
+  pelt:{in:'妖兽掉落',flow:'炼器·护甲',out:'炼器消耗'},
+  demonCore:{in:'高阶妖兽掉落',flow:'炼丹·破境丹 · 炼器引灵',out:'炼丹炼器 · 提亲彩礼'},
+  jade:{in:'荒古禁地 · 冰宫 · 坊市',flow:'炼器·玄冰刃',out:'炼器 · 支线·琴姬断弦'},
+  paper:{in:'坊市',flow:'制符',out:'制符消耗'},
+  cinnabar:{in:'坊市',flow:'制符',out:'制符消耗'},
+};
+function matEconomyHtml(){
+  const rows=Object.keys(MAT_NAMES).map(k=>{
+    const e=MATERIAL_ECONOMY[k]||{};
+    return '<div class="bd-row"><span>'+MAT_NAMES[k]+' ×'+(S.mats[k]||0)+'</span><b>'+esc((e.in||'待补')+' → '+(e.flow||'')+' → '+(e.out||'待补'))+'</b></div>';
+  }).join('');
+  return '<div class="bd-box"><div class="bd-head">🧺 材料仓 · 产出→流通→出口</div>'+rows+'</div>';
+}
 const RECIPES={
   alchemy:[
     {name:'回春丹',lv:1,need:{herb:1},cost:50,dc:14,q:1,eff:'heal',desc:'恢复 60% 气血。'},
@@ -165,11 +193,18 @@ function craftMini(r,i){
   }
 }
 function craftResolve(r,i,mini){
+  if(S)S.flag.craftTotal=(S.flag.craftTotal||0)+1;
   const R=doRoll('int',r.dc,craftBonus()+(mini||0));
+  const sp=craftSpecialty();
+  S.flag.craftPity=S.flag.craftPity||{};
+  const pity=Math.min((sp&&sp.pityCap)||2,S.flag.craftPity[r.name]||0);
+  if(pity)log('<p class="sys">🧺 手艺沉淀（失败 '+(S.flag.craftPity[r.name]||0)+' 次）：品质判定 +'+pity+(sp&&sp.n?'（'+sp.n+' 专精）':'')+'。</p>');
   log('<p>你凝神静气，着手炼制 <b>'+r.name+'</b>：'+rollBadge(R.r,R.mod,R.t,R.dc)+'</p>');
   if(R.hit){
     if((mini||0)>=3)log('<p class="good">手法拿捏得妙极，'+PROF_ICON[S.prof]+'灵光暴涨！</p>');
-    const qTier=R.t-r.dc>=15?'极品':R.t-r.dc>=10?'上品':R.t-r.dc>=5?'中品':'下品';
+    if(S.flag.craftPity[r.name])S.flag.craftPity[r.name]=0;
+    const effTier=R.t-r.dc+pity;
+    const qTier=effTier>=15?'极品':effTier>=10?'上品':effTier>=5?'中品':'下品';
     /* 丹方手札：记录炼制次数与最佳品质 */
     S.flag.craftLog=S.flag.craftLog||{};
     const cl=(S.flag.craftLog[r.name]=S.flag.craftLog[r.name]||{count:0,best:null});
@@ -209,6 +244,11 @@ function craftResolve(r,i,mini){
       }
     }
     log('<p class="good">'+PROF_NAMES[S.prof]+'成功！'+(r.eff==='maze'?'你已布下迷踪阵，探索时凶险大减。':r.eff==='matrix'?'聚灵阵成，洞府灵气浓郁，修炼效率提升！':r.eff==='teleport'?'传送阵成，从此可瞬行千里！':'')+'</p>');
+    if(sp&&sp.double&&chance(sp.double)){
+      const last=S.flag._lastAdded;
+      if(last&&r.eff!=='maze'&&r.eff!=='matrix'&&r.eff!=='teleport'){addItem(Object.assign({},last));log('<p class="loot">'+sp.n+'妙手：此炉竟得双份！</p>')}
+    }
+    if(sp&&sp.insight&&chance(sp.insight)){S.flag.insights=(S.flag.insights||0)+1;log('<p class="loot">阵成之时灵机一动，你竟有所顿悟（悟道 +1）。</p>')}
     const ga=growAttr('int',0.12,'器物之道，越练越精');
     if(ga)log(ga);
     S.profExp+=rand(15,25);
@@ -219,10 +259,13 @@ function craftResolve(r,i,mini){
     }
   }else{
     log('<p class="danger">炼制失败，材料毁于一旦。'+(R.fumble?'火焰失控，你险些引火烧身！':'')+'</p>');
-    if((mini||0)<=-2){for(const k in r.need)S.mats[k]=(S.mats[k]||0)+Math.ceil(r.need[k]/2);log('<p class="sys">好在抢救及时，一半材料被捞了回来（各返还一半）。</p>')}
+    S.flag.craftPity[r.name]=(S.flag.craftPity[r.name]||0)+1;
+    if(pity<2||(sp&&sp.pityCap>=3))log('<p class="sys">🧺 手艺沉淀 +1：下次品质判定 +'+Math.min((sp&&sp.pityCap)||2,S.flag.craftPity[r.name])+'。</p>');
+    if((mini||0)<=-2||(sp&&sp.refund)){for(const k in r.need)S.mats[k]=(S.mats[k]||0)+Math.ceil(r.need[k]*(sp&&sp.refund||0.5));log('<p class="sys">好在抢救及时，一部分材料被捞了回来（各返还 '+(Math.round((sp&&sp.refund||0.5)*100))+'%）。</p>')}
     S.profExp+=rand(3,8);
   }
   dC().c.craft++;
+  if(typeof questTick==='function')questTick();
   passTime(2);renderAll();
 }
 /* 10.2 炼丹/炼器品质分级：下/中/上/极品（药效 60/100/140/180%） */
@@ -248,10 +291,11 @@ function craftTome(){
       (known?'':'<br><span style="color:#e08a8a">未掌握：造诣 '+(r.lv||1)+' 阶解锁</span>')+'</div></div>';
   }).join('');
   const mats=Object.keys(MAT_NAMES).map(k=>'<span class="tag">'+MAT_NAMES[k]+' ×'+(S.mats[k]||0)+'</span>').join(' ');
+  const sp=craftSpecialty();
   openPanel('📜 '+PROF_ICON[S.prof]+' '+PROF_NAMES[S.prof]+' · 手札',
-    '<p>造诣 '+(S.profLevel||1)+' 阶（'+(S.profExp||0)+'/100）· 判定加成 +'+craftLvBonus()+'</p>'+rows+
-    '<h4 style="margin-top:10px">🧺 材料仓</h4><p style="display:flex;flex-wrap:wrap;gap:4px">'+(mats||'空无一物')+'</p>'+
-    '<p style="font-size:11.5px;color:#6f7a94;margin-top:6px">材料出处：草药/灵草（采药、灵田、秘境）· 铁矿石（探索、坊市）· 妖皮/妖丹（妖兽掉落）· 寒玉（地脉、坊市）· 符纸/朱砂（坊市）。</p>');
+    '<p>造诣 '+(S.profLevel||1)+' 阶（'+(S.profExp||0)+'/100）· 判定加成 +'+craftLvBonus()+(sp?' · 🎯 '+sp.n+'专精：'+sp.desc:'')+'</p>'+rows+
+    matEconomyHtml()+
+    '<p style="font-size:11.5px;color:#6f7a94;margin-top:6px">每类材料都有来处、用处与去处——用不上就寄售坊市，别让仓库积灰。</p>');
 }
 function forgeStrengthen(k){
   const it=S[k];

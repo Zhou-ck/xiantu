@@ -10,6 +10,8 @@ const MARKET_ITEMS=[
   {name:'清心丹',type:'consumable',quality:2,cost:200,desc:'涤荡心魔，消除全部心魔烙印。',use:'clear'},
   {name:'安神香',type:'consumable',quality:1,cost:150,desc:'焚香静心，心境 +15（提升突破与心魔判定）。',use:'mood'},
   {name:'回溯符',type:'consumable',quality:3,cost:1500,desc:'天机回溯之符：大境界突破失败时，可回到突破前 3 日。',use:'rewind'},
+  {name:'保命符',type:'consumable',quality:2,cost:400,count:1,desc:'贴身护符：遭致命一击时自行焚毁，以重伤代死（自动消耗，最多携带两件）。',use:'save'},
+  {name:'替身傀儡',type:'consumable',quality:3,cost:900,count:1,desc:'木傀替身：遇死劫替主受难，重伤存活且修为不损（自动消耗，最多携带两件）。',use:'save'},
   {name:'破境丹',type:'consumable',quality:2,cost:600,desc:'突破时心性判定 +3（一次有效）。',use:'break'},
   {name:'洗髓丹',type:'consumable',quality:3,cost:1200,desc:'伐毛洗髓，灵根资质 +5。',use:'root'},
   {name:'延寿丹',type:'consumable',quality:3,cost:900,desc:'服之增寿 30-80 载（在境界寿元之上）。',use:'lifespan'},
@@ -145,9 +147,11 @@ function buyItem(i){
   const m=MARKET_ITEMS[i];
   const cost=buyPrice(m);
   if(S.stones<cost){toast('灵石不足');return}
+  if(m.use==='save'&&S.items.filter(x=>x.use==='save').length>=2){toast('护身之物最多携带两件');return}
   S.stones-=cost;
   if(m.type==='mat')S.mats[m.key]=(S.mats[m.key]||0)+1;
   else addItem(Object.assign({},m));
+  if(typeof questTick==='function')questTick();
   toast('购得 '+m.name);
   panelMarket();
 }

@@ -156,7 +156,24 @@ const ENEMY_STYLES={
   burst:{n:'爆发',i:'💥',desc:'凶性毕露，越伤越猛',bonus:0,act:'妖技 · 狂性大发：对方攻势暴涨！'},
   boss:{n:'妖技',i:'🌀',desc:'守关大妖，手段繁多',bonus:5,act:'妖技 · 妖元迸发：天地色变！'},
 };
+/* ===== 4a 战前五行克制预览：敌方五行 / 我方武器·功法五行 / 克制结果 ===== */
+function elemPreviewText(enemy){
+  const st=S||{};
+  const foeElem=enemy&&enemy.elem;
+  const myElem=(st.weapon&&st.weapon.elem)||elemOf(st); /* 与 battle 实际克制结算同源（武器→灵根），功法五行不参与克制 */
+  const foeInfo=foeElem&&(ELEMS[foeElem]||foeElem==='fuse')?elemInfo(foeElem):null;
+  const myInfo=(myElem&&(ELEMS[myElem]||myElem==='fuse'))?elemInfo(myElem):null;
+  const foeTxt=foeInfo?foeInfo.i+foeInfo.n:(foeElem?'未知五行':'属性未知');
+  const myTxt=myInfo?myInfo.i+myInfo.n:(myElem?'未知五行':'属性未知');
+  let relTxt='无克制',relCls='',relNote='';
+  if(foeInfo&&myInfo){
+    if(elemBeat(myElem,foeElem)){relTxt='我克敌方';relCls=' class="good"';relNote='伤害 ×1.25'}
+    else if(elemBeat(foeElem,myElem)){relTxt='我受克制';relCls=' class="danger"';relNote='受创 ×1.15'}
+  }
+  return '<p'+relCls+'>🔮 五行窥探：敌方属 <b>'+foeTxt+'</b>，你以 <b>'+myTxt+'</b> 应之——<b>'+relTxt+'</b>'+(relNote?'（'+relNote+'）':'')+'。</p><p class="sys">五行克敌时伤害 ×1.25，被克则受创 ×1.15。</p>';
+}
 function startCombat(enemy,onEnd,spar){
+  log(elemPreviewText(enemy));
   const hasFire=S.items.some(i=>i.name==='火球符');
   const hasThunder=S.items.some(i=>i.name==='天雷符');
   const hasEscape=S.items.some(i=>i.name==='遁地符');
@@ -206,6 +223,9 @@ function battle(enemy,onEnd,spar){
         if(enemy.name==='荒坟厉鬼'){addMerit(2);loot.push('功德 +2')}
         if(enemy.name==='血魔宗伏杀者'){addMerit(3);loot.push('功德 +3')}
         const g=rand(20,80)+rl()*8;S.stones+=g;loot.push('灵石 +'+g);
+        /* 问题 1 v2：战斗胜利修为锚定闭关 2 倍（一场 10 日 ≈ 20 日闭关量），随功法/根骨/境界同步缩放。
+           瓶颈压制/连坐递减为闭关专属惩罚，战斗不受其影响——瓶颈期战斗更划算是有意设计（鼓励玩家瓶颈期去探索/战斗而非干等） */
+        const cg=Math.max(5,Math.floor((8+S.root/6)*cultMult(S)*2));S.cult+=cg;loot.push('修为 +'+cg);
         if(chance(0.3)){const m=pick(['herb','iron','pelt','demonCore']);const n=rand(1,2);S.mats[m]=(S.mats[m]||0)+n;loot.push(MAT_NAMES[m]+' ×'+n)}
         if(chance(0.12)){const it=randItem(rand(1,3));addItem(it);loot.push(it.name+'（'+QNAMES[it.quality]+'）')}
         if(chance(0.08)){S.luck=clamp(S.luck+1,1,100);loot.push('气运 +1')}
@@ -232,9 +252,10 @@ function battle(enemy,onEnd,spar){
         }
       }else{
         S.hp=Math.max(1,ph-Math.floor(S.maxHp*0.1));
-        log('<p class="sys">十回合缠斗，双方力竭，你觅得空隙脱身而去。</p>');
+        log('<p class="sys">十回合鏖战、加时五回合后双方仍力竭难分胜负，你觅得空隙脱身而去。</p>');
       }
       if(S.hp<=0)S.hp=1; /* 防御：任何「包活」路径都不允许以 0 血继续 */
+      if(typeof questTick==='function')questTick();
       const alive=passTime(1);
       if(!alive){$('battle').style.display='none';const r={win,draw,st};resolve(r);if(onEnd)onEnd(r);return}
       const verdict=win?'<b style="color:#a8d5a8">🏆 胜</b>':(draw?'<b style="color:#e8c86a">⚖️ 平</b>':'<b style="color:#e08a8a">💀 败</b>');
@@ -267,13 +288,17 @@ function battle(enemy,onEnd,spar){
     const pushLog=(html)=>{logLines.push(html);if(logLines.length>8)logLines.shift();$('battleLog').innerHTML=logLines.join('');$('battleLog').scrollTop=999999};
     const step=()=>{
       if(finished)return;
-      if(rnd>10){st.rounds=10;finish(false,true);return}
+      /* 4b 平局软化：10 回合未分胜负进入加时赛（11-15 回合，伤害 ×1.2），15 回合封顶仍不胜则平局 */
+      if(rnd>15){st.rounds=15;finish(false,true);return}
+      const ot=rnd>10;
+      if(ot&&rnd===11)pushLog('<p class="bl">⚔️ 加时赛开始：双方拼死相搏，伤害 ×1.2！</p>');
       st.rounds=rnd;
       const html=[];
+      const rndTxt=ot?('⚔️ 加时赛第 '+(rnd-10)+' 回合'):('第 '+rnd+' 回合');
       const op=!enemy.boss&&(atkBonus(S)*2>=enemy.hp);
-      /* 持续状态：灼烧 / 中毒 */
-      if(burn>0&&eh>0){const bd=Math.max(1,Math.floor(enemy.hp*0.06));eh=Math.max(0,eh-bd);st.dmgDealt+=bd;html.push('<p class="bl">🔥 灼烧蔓延，<b>'+esc(enemy.name)+'</b> 受创 <span class="bhit">-'+bd+'</span>。</p>')}
-      if(poison>0){const pd=Math.max(1,Math.floor(S.maxHp*0.05));ph=Math.max(1,ph-pd);st.dmgTaken+=pd;html.push('<p class="bhit">☠️ 毒素侵蚀，你受创 -'+pd+'（剩余 '+poison+' 回合）。</p>');poison--}
+      /* 持续状态：灼烧 / 中毒（加时赛伤害同步 ×1.2） */
+      if(burn>0&&eh>0){let bd=Math.max(1,Math.floor(enemy.hp*0.06));if(ot)bd=Math.max(1,Math.floor(bd*1.2));eh=Math.max(0,eh-bd);st.dmgDealt+=bd;html.push('<p class="bl">🔥 灼烧蔓延，<b>'+esc(enemy.name)+'</b> 受创 <span class="bhit">-'+bd+'</span>。</p>')}
+      if(poison>0){let pd=Math.max(1,Math.floor(S.maxHp*0.05));if(ot)pd=Math.max(1,Math.floor(pd*1.2));ph=Math.max(1,ph-pd);st.dmgTaken+=pd;html.push('<p class="bhit">☠️ 毒素侵蚀，你受创 -'+pd+'（剩余 '+poison+' 回合）。</p>');poison--}
       if(ph<=0){renderBars();pushLog(html.join(''));finish(false,false);return}
       const skCd=skillCd();
       const useSkill=!!skill&&(rnd%skCd===0);
@@ -328,18 +353,19 @@ function battle(enemy,onEnd,spar){
         const crit=pa>=enemy.def+16;
         if(crit){dmg*=2;st.crits++}
         if(eGuard)dmg=Math.floor(dmg*0.6);
+        if(ot)dmg=Math.floor(dmg*1.2); /* 加时赛：双方伤害 ×1.2 */
         eh-=dmg;st.dmgDealt+=dmg;st.petDmg+=pDmg;st.compDmg+=cDmg;
         if(flow.drain){const h=Math.max(1,Math.floor(dmg*flow.drain));ph=Math.min(S.maxHp,ph+h);html.push('<p class="bl">🌑 噬血夺元，你汲取 '+h+' 点气血！</p>')}
         if(crit){fxShake(2);fxBurst(22,'#ffd76a');fxHitstop(110);fxFloatText('暴击 -'+dmg,'#ffd76a',true);fxVibrate([50,40,60])}
         else{fxShake(1);fxFloatText('-'+dmg,'#fff',false)}
-        html.push('<p class="bl">第 '+rnd+' 回合：你'+(useSkill&&skill?'施展 <b>'+skill.n+'</b> '+skTxt+'：':'出招')+(crit?'【暴击】':'')+'命中'+(beatHit?'【五行克敌 ×1.25】':'')+'，<b>'+esc(enemy.name)+'</b> 受创 <span class="bhit">-'+dmg+'</span>。</p>');
+        html.push('<p class="bl">'+rndTxt+'：你'+(useSkill&&skill?'施展 <b>'+skill.n+'</b> '+skTxt+'：':'出招')+(crit?'【暴击】':'')+'命中'+(beatHit?'【五行克敌 ×1.25】':'')+(ot?'【加时赛 ×1.2】':'')+'，<b>'+esc(enemy.name)+'</b> 受创 <span class="bhit">-'+dmg+'</span>。</p>');
         if(tac.self&&chance(0.2)){const sd=Math.max(1,Math.floor(rand(3,6)*tac.take));ph-=sd;st.selfHurt+=sd;html.push('<p class="bhit">搏命反噬自身，你受创 -'+sd+'。</p>')}
         if(ph<=0&&eh>0){renderBars();pushLog(html.join(''));finish(false,false);return}
         if(eh<=0){renderBars();pushLog(html.join(''));finish(true,false);return}
       }else{
         if(flow.healEvery&&rnd%flow.healEvery===0){const h=Math.floor(S.maxHp*(flow.healPct||0.08));ph=Math.min(S.maxHp,ph+h);html.push('<p class="bl">⚗️ 丹火流转，你伤势渐复（+'+h+'）。</p>')}
         st.misses++;
-        html.push('<p class="bdodge">第 '+rnd+' 回合：你的攻势被对方堪堪避开。</p>');
+        html.push('<p class="bdodge">'+rndTxt+'：你的攻势被对方堪堪避开。</p>');
       }
       if(eSkillTxt)html.push('<p class="bl">'+esc(enemy.name)+' 使出「'+es.n+'」——'+eSkillTxt+'</p>');
       if(frozen){
@@ -357,8 +383,9 @@ function battle(enemy,onEnd,spar){
           const myElem2=(S.weapon&&S.weapon.elem)?S.weapon.elem:elemOf(S);
           const beatByHit=enemy.elem&&elemBeat(enemy.elem,myElem2);
           if(beatByHit){d=Math.floor(d*1.15);st.beatBy++}
+          if(ot)d=Math.floor(d*1.2); /* 加时赛：敌方伤害 ×1.2 */
           ph-=d;st.dmgTaken+=d;
-          html.push('<p class="bhit">'+esc(enemy.name)+' 反扑而至'+(beatByHit?'【五行反克 ×1.15】':'')+'，你受创 <span class="bhit">-'+d+'</span>。</p>');
+          html.push('<p class="bhit">'+rndTxt+'：'+esc(enemy.name)+' 反扑而至'+(beatByHit?'【五行反克 ×1.15】':'')+(ot?'【加时赛 ×1.2】':'')+'，你受创 <span class="bhit">-'+d+'</span>。</p>');
           if(ph<=0){renderBars();pushLog(html.join(''));finish(false,false);return}
         }else{
           st.dodges++;
@@ -419,7 +446,7 @@ function bossBattle(stage){
       startCombat(e,res=>{
         if(res.win){
           beat[stage]=true;S.flag.bosses=beat;
-          const stones=Math.floor(150+stage*120),cult=Math.floor(200+stage*180+rl()*10);
+          const stones=Math.floor(150+stage*120),cult=Math.floor(eventGift(stage)*0.10+rl()*10);
           S.stones+=stones;S.cult+=cult;
           log('<p class="loot">守关已破：灵石 +'+stones+'，修为 +'+cult+'。</p>');
           if(stage>=2&&!S.flag.bossArt[stage]){
@@ -429,7 +456,7 @@ function bossBattle(stage){
           if(chance(0.4)){S.luck=clamp(S.luck+1,1,100);log('<p class="good">破关历练，气运 +1。</p>')}
           renderAll();
         }else if(res.draw){
-          log('<p class="sys">十回合力竭，守关大妖放你离去：「回去练练，再来。」</p>');
+          log('<p class="sys">加时赛十五回合仍分不出胜负，守关大妖放你离去：「回去练练，再来。」</p>');
           passTime(1);renderAll();
         }else{
           log('<p class="danger">你败下阵来，被守关大妖一掌送出十里。养好伤，再来讨教。</p>');

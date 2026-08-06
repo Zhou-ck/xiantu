@@ -59,18 +59,20 @@ function applyOfflineGain(){
     if(!S||!S.flag)return;
     const now=Date.now();
     const last=S.flag.lastVisit||now;
-    const hours=Math.min(12,Math.max(0,(now-last)/3600000));
-    if(hours<1)return;
-    const offMult=0.4*(1+(typeof trustTier==='function'?trustTier().offline:0));
-    const g=Math.floor((8+S.root/6)*cultMult(S)*offMult*hours*rand(8,12)/10);
-    const bonus=hours>=2?Math.floor(15+bigStage(S.realm)*8):0;
+    const rawHours=Math.max(0,(now-last)/3600000);
+    if(rawHours<1)return;
+    /* 问题 2 修复：不再硬截断离线时长——收益按「12 小时等价」结算（超时继续累积但不再增长），回归时按上限结算 */
+    const effHours=Math.min(12,rawHours);
+    const offMult=0.65*(1+(typeof trustTier==='function'?trustTier().offline:0));
+    const g=Math.floor((8+S.root/6)*cultMult(S)*offMult*effHours*rand(8,12)/10);
+    const bonus=rawHours>=2?Math.floor(15+bigStage(S.realm)*8):0;
     if(g>0)S.cult+=g;
     if(bonus>0)S.stones+=bonus;
-    if(g>0)log('<p class="good">⏳ 你回归仙途：闭关约 <b>'+(Math.floor(hours*10)/10)+' 小时</b>，收获修为 <b>+'+g+'</b>'+(bonus>0?'，灵石 <b>+'+bonus+'</b>':'')+'。</p>');
+    if(g>0)log('<p class="good">⏳ 你回归仙途：闭关约 <b>'+(Math.floor(rawHours*10)/10)+' 小时</b>（按 12 小时等价结算），收获修为 <b>+'+g+'</b>'+(bonus>0?'，灵石 <b>+'+bonus+'</b>':'')+'。</p>');
     openPanel('⏳ 回归仙途',
       '<p>山中方数日，世上已千年。你不在的这些时日，洞府灵气未曾停歇。</p>'+
-      '<div class="item-card"><div class="nm">⏳ 离线 '+(Math.floor(hours*10)/10)+' 小时</div>'+
-      '<div class="ds">灵气自行运转，按在线 40% 效率结算（上限 12 小时）<br>修为 +'+g+(bonus>0?'<br>回归赠礼 · 灵石 +'+bonus+'（离线满 2 小时可得）':'')+'</div></div>'+
+      '<div class="item-card"><div class="nm">⏳ 离线 '+(Math.floor(rawHours*10)/10)+' 小时</div>'+
+      '<div class="ds">灵气自行运转，按在线 65% 效率结算（12 小时内等价，超出不再累积）<br>修为 +'+g+(bonus>0?'<br>回归赠礼 · 灵石 +'+bonus+'（离线满 2 小时可得）':'')+'</div></div>'+
       '<p style="font-size:12.5px;color:#6f7a94">若已跨过新的一天，左侧「每日任务」也已刷新，去看看吧。</p>');
   }catch(e){}
 }

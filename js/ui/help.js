@@ -218,6 +218,13 @@ function npcProfile(i){
 function daoPathPage(){
   const s=S;
   if(!s)return;
+  const goal=karmaGoal();
+  const goalCard=goal?'<div class="item-card"><div class="nm">'+goal.i+' 前世执念 · '+esc(goal.n)+'</div><div class="ds">'+esc(goal.desc)+'</div><div class="bd-row"><span>进度</span><b>'+(karmaGoalProgress()||(karmaGoalMet()?'已达成 ✓':'未达成'))+'</b></div></div>':'';
+  const pathStats='<div class="item-card"><div class="nm">🗺️ 道途统计</div><div class="ds">'+
+    '流派：'+(s.flag&&s.flag.flowChoice&&FLOW_DEFS[s.flag.flowChoice]?FLOW_DEFS[s.flag.flowChoice].n:(s.flag&&s.flag.dao?({sword:'剑道',dan:'丹道',array:'阵道',dark:'魔道',free:'逍遥道'}[s.flag.dao]||s.flag.dao):'未择道'))+
+    ' · 主线 '+(s.quest&&s.quest.main?(s.quest.main.chDone||[]).length+'/'+MAIN_STORY.length+' 章':'0 章')+
+    ' · 支线 '+(s.quest&&s.quest.side?Object.keys(s.quest.side).filter(k=>s.quest.side[k]==='done').length:0)+'/'+SIDE_QUESTS.length+
+    ' · 保命 '+(s.flag&&s.flag.lifeSaves||0)+' 次 · 因果 '+(s.flag&&s.flag.foreshadow?s.flag.foreshadow.length:0)+' 桩</div></div>';
   const nxt=s.realm+1;
   const needCult=nxt<THRESHOLDS.length?THRESHOLDS[nxt]-s.cult:0;
   const cur=[];
@@ -239,6 +246,8 @@ function daoPathPage(){
   long.push({t:'渡劫飞升',d:'终极心魔劫，九界逍遥',go:'panelCult()'});
   const card=(c,ico)=>'<button class="tab-act" onclick="'+c.go+'"><span class="tab-act-ico">'+ico+'</span><span class="tab-act-tx"><b>🎯 '+esc(c.t)+'</b><small>'+esc(c.d)+'</small></span></button>';
   openPanel('🗺️ 道途','<p>修仙之路，既要有眼前的一步，也要有远处的山。以下为你当前的三层目标：</p>'+
+    goalCard+
+    pathStats+
     '<h4>🌱 当前目标</h4>'+(cur.map(c=>card(c,'📍')).join(''))+
     '<h4>🌿 中期目标</h4>'+(mid.map(c=>card(c,'🗺️')).join('')||'<p style="color:#6f7a94">暂无明确中期目标，继续探索仙途。</p>')+
     '<h4>🏔️ 长期目标</h4>'+(long.map(c=>card(c,'⛰️')).join(''))+

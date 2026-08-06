@@ -39,7 +39,7 @@ for(let k=0;k<3;k++)clickChoice(0);
 vm.runInContext(`window.__r2={realm:S.realm,disp:document.getElementById('breakthrough').style.display,pend:PENDING};`,ctx);
 assert(vm.runInContext('window.__r2.realm===13&&window.__r2.disp==="none"&&window.__r2.pend===0',ctx),'金丹突破：天劫动画流程完成并晋升');
 // 9) 飞升：心魔劫动画后成仙
-vm.runInContext(`{ S=newState('测',BACKGROUNDS[0]); S.attrs.wil=45; S.cult=1000000; S.realm=40; S.merit=300; S.heartDemons=0; S.demonMarks=[]; S.temp={break:0}; PENDING=0; tryBreak(); window.__p2=PENDING; }`,ctx);
+vm.runInContext(`{ S=newState('测',BACKGROUNDS[0]); S.attrs.wil=45; S.cult=THRESHOLDS[41]; S.realm=40; S.merit=300; S.heartDemons=0; S.demonMarks=[]; S.temp={break:0}; PENDING=0; tryBreak(); window.__p2=PENDING; }`,ctx);
 assert(vm.runInContext('window.__p2>0',ctx),'飞升先进入心魔试炼');
 for(let k=0;k<3;k++)clickChoice(0);
 vm.runInContext(`window.__r3={realm:S.realm,ending:S.endings.indexOf('飞升成仙')>=0};`,ctx);

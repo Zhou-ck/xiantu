@@ -61,6 +61,9 @@ function consume(i){
   }else if(it.use==='rewind'){
     log('<p class="sys">回溯符灵光内敛，已被你随身收好——大境界突破失败时，可凭此符天机回溯。</p>');
     toast('回溯符已备好');
+  }else if(it.use==='save'){
+    log('<p class="sys">'+esc(it.name)+'灵光内敛，贴肉而藏——遇致命一击时，它会替你做那最后一道防线。</p>');
+    toast('护身之物已备好');
   }else if(it.use==='break'){
     S.temp.break+=3;
     log('<p class="good">破境丹力沉入丹田，下一次突破心性判定 +3。</p>');
@@ -310,6 +313,7 @@ function panelRest(){
     '<p>洞府灵脉 Lv.'+(S.flag.caveLv||0)+' · 当前修炼效率 ×'+(1+(S.flag.caveLv||0)*0.08).toFixed(2)+'</p>'+
     ((S.flag.caveLv||0)<5?'<div class="row"><button onclick="upgradeCave()">升级灵脉 · '+caveCost()+' 灵石</button></div>':'<p style="color:#6f7a94">灵脉已至顶级，灵气充沛如海。</p>')+
     '<h4>🏠 房间扩建</h4>'+caveRoomsHtml()+
+    '<h4>🪞 洞府装饰（灵石出口 · 永久加成）</h4>'+decorHtml()+
     '<h4>📖 功法参悟</h4>'+(artsHtml||'<p style="color:#6f7a94">无功法可参。</p>')+
     '<h4>🩹 静养疗伤</h4>'+
     ((S.injuries||[]).length?'<p>你身上还有 <b>'+(S.injuries||[]).length+' 处</b>伤势，静养可徐徐图之。</p><div class="row">'+
@@ -359,6 +363,36 @@ function upgradeCave(){
   S.flag.caveLv=lv+1;
   scene('灵脉升级');
   log('<p class="loot">你引动阵法，将地底灵脉又贯通了一重。灵气如泉涌出，洞府为之一新（灵脉 Lv.'+(lv+1)+'，修炼效率 ×'+(1+(lv+1)*0.08).toFixed(2)+'）。</p>');
+  panelRest();renderAll();
+}
+/* v43 洞府装饰：持续灵石出口，永久小增益 */
+const DECOR_ITEMS=[
+  {id:'pingfeng',name:'云纹屏风',icon:'🪞',cost:800,desc:'真元上限 +5'},
+  {id:'xianglu',name:'鎏金香炉',icon:'🕯️',cost:900,desc:'心境判定 +1（永久）'},
+  {id:'jiange',name:'灵木剑架',icon:'🗡️',cost:1100,desc:'修炼效率 +2%'},
+];
+function decorHtml(){
+  const own=S.flag.decor=S.flag.decor||[];
+  return '<div class="bd-box">'+DECOR_ITEMS.map(d=>{
+    const bought=own.indexOf(d.id)>=0;
+    return '<div class="bd-row'+(bought?' ok':'')+'"><span>'+d.icon+' '+esc(d.name)+'（'+esc(d.desc)+'）</span>'+
+      (bought?'<b>已陈设</b>':'<b><button class="small" onclick="buyDecor(\''+d.id+'\')">购置 · '+d.cost+' 灵石</button></b>')+'</div>';
+  }).join('')+'</div>';
+}
+function decorBonus(){
+  const own=(S&&S.flag&&S.flag.decor)||[];
+  return {spirit:own.indexOf('pingfeng')>=0?5:0,mood:own.indexOf('xianglu')>=0?1:0,cult:own.indexOf('jiange')>=0?0.02:0};
+}
+function buyDecor(id){
+  const d=DECOR_ITEMS.find(x=>x.id===id);
+  if(!d)return;
+  if((S.flag.decor||[]).indexOf(id)>=0){toast('此物已陈设');return}
+  if(S.stones<d.cost){toast('灵石不足');return}
+  S.stones-=d.cost;
+  S.flag.decor=S.flag.decor||[];
+  S.flag.decor.push(id);
+  if(id==='pingfeng')S.spirit=Math.min(maxSpirit(S),S.spirit+5);
+  log('<p class="loot">🪞 你在洞府陈设了「'+d.name+'」：'+d.desc+'（灵石 -'+d.cost+'）。</p>');
   panelRest();renderAll();
 }
 function plantCrop(k){

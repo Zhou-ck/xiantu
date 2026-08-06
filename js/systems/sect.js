@@ -44,7 +44,8 @@ function panelSect(){
     '<p>'+(s.dark?'魔道门规，以力为尊。':'宗门道统，薪火相传。')+'</p>'+
     stageBanner+
     '<h4>门中身份</h4><p>职位：<b>'+rank+'</b>（'+nextTxt+'）</p>'+
-    '<p>贡献点：<b>'+S.contrib+'</b>（达标定阶，兑换不扣） · 贡献值：<b>'+S.contribVal+'</b>（仅用于兑换）</p>'+
+    '<p>贡献点：<b>'+S.contrib+'</b>（达标定阶，兑换不扣） · 贡献值：<b>'+S.contribVal+'</b>（仅用于兑换）</p>'+                      
+    '<div class="row"><button class="small" onclick="donateSect()">💎 捐资 500 灵石 → 贡献值（灵石出口）</button></div>'+                  
     (next&&!isProb?'<div class="row"><button class="small primary" onclick="promoteSect()">⚡ 冲击下一阶</button></div>':'')+
     '<h4>👥 宗门人物 <button class="small" onclick="sectEvent()">🏮 门中事宜</button></h4>'+peopleHtml+
     '<h4>📜 宗门任务</h4>'+thtml+
@@ -319,6 +320,18 @@ function genSectPeople(sec){
     }));
   }
   return list.concat(extras);
+}
+/* v43 宗门捐资：灵石出口 → 贡献值（持续回收货币） */
+function donateSect(){
+  if(!S||!S.sect){toast('先拜入宗门');return}
+  const cost=500;
+  if(S.stones<cost){toast('灵石不足（需 500）');return}
+  S.stones-=cost;
+  const gain=25+Math.floor((S.flag.donateCount||0)/2);
+  S.contribVal=(S.contribVal||0)+gain;
+  S.flag.donateCount=(S.flag.donateCount||0)+1;
+  log('<p class="loot">你向宗门捐资 500 灵石，换得贡献值 <b>+'+gain+'</b>（累计捐资 '+S.flag.donateCount+' 次，贡献值可于宝库兑换丹药功法）。</p>');
+  panelSect();renderAll();
 }
 function promoteSect(){
   const next=nextRankInfo(S);

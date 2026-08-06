@@ -10,6 +10,19 @@ function rand(a,b){return Math.floor(Math.random()*(b-a+1))+a}
 function d20(){return rand(1,20)}
 function pick(arr){return arr[Math.floor(Math.random()*arr.length)]}
 function chance(p){return Math.random()<p}
+/* 加权随机：items 为对象数组，按 item.weight 加权抽取（权重缺省 1） */
+function weightedPick(items){
+  if(!items||!items.length)return null;
+  let total=0;
+  for(const it of items)total+=Math.max(0,(it&&it.weight)||1);
+  if(total<=0)return items[0]||null;
+  let r=Math.random()*total;
+  for(const it of items){
+    r-=Math.max(0,(it&&it.weight)||1);
+    if(r<=0)return it;
+  }
+  return items[items.length-1];
+}
 function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
 function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
 /* 内嵌 SVG 图标集（跨端一致，随 currentColor 变色） */

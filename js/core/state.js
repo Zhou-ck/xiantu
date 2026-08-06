@@ -50,6 +50,8 @@ function newState(name,bg,gender){
     s.flag.chain={jiazu:1};
     s.flag.foreshadow=[{name:'家族兴衰链',at:0,resolver:null}];
   }
+  /* v44 轮回道途 2.0：每世一个前世执念 */
+  s.flag.karmaGoal=pick(KARMA_GOALS).id;
   return s;
 }
 
@@ -59,7 +61,8 @@ function bonusAttr(s,k){let b=0;for(const a of s.arts)b+=(a.bonus&&a.bonus[k])||
 /* ===== 真元系统：法力资源，随休整/静养/时光恢复，淬体与控火消耗 ===== */
 function maxSpirit(s){
   s=s||S;
-  return Math.max(30,30+bigStage(s.realm||0)*10+Math.floor(((s.attrs&&s.attrs.int)||0)*2));
+  const dec=typeof decorBonus==='function'?decorBonus().spirit:0;
+  return Math.max(30,30+bigStage(s.realm||0)*10+Math.floor(((s.attrs&&s.attrs.int)||0)*2)+dec);
 }
 function addSpirit(n){
   if(!S)return 0;
@@ -131,12 +134,24 @@ function cultMult(s){
   if(s.flag.dao==='dark')m*=1.1; /* 魔道问道：魔功更盛 */
   if(s.flag.caveLv)m*=1+(s.flag.caveLv||0)*0.08; /* 3.2 洞府灵脉等级 */
   if(s.flag.caveRooms&&s.flag.caveRooms.jing)m*=1.05; /* 11 静室 */
+  if(typeof decorBonus==='function')m*=1+decorBonus().cult; /* v43 洞府装饰：灵木剑架 */
   if(s.days%12<2)m*=1.1; /* 3.2 子时静修 +10% */
   const se=Math.floor(s.days/90)%4;
   if(se===0)m*=1.05;
   if(se===3)m*=0.95;
   if(s.pet&&s.pet.faint<=0&&(s.pet.talent==='root'||s.pet.talent==='speed'))m*=1.05;
+  /* 问题 1 v2（产出锚定版）：大境界修炼加成 —— 闭关基线随境界抬升（渡劫 ×3.8），
+     使闭关在后期仍是有意义的主产出；所有锚定闭关的奖励（战斗 2×、离线 0.65×）同步缩放 */
+  m*=1+0.35*bigStage(s.realm);
+  /* v42 小境界反馈：每小境界精进 +1.2% */
+  m*=smallStageMult(s.realm);
+  /* v44 择道流派：同流派主修功法效率 +5% */
+  if(s.flag&&s.flag.flowChoice&&typeof flowType==='function'&&s.arts&&s.arts[0]&&flowType(s).id===s.flag.flowChoice)m*=1.05;
   return m;
+}
+/* 展示辅助：当前收益倍率（两位小数），供修炼/闭关面板实时显示，公式本体不动 */
+function cultMultDisplay(){
+  return (S?cultMult(S):1).toFixed(2);
 }
 function effWil(s){
   const sg=signNow();
@@ -368,7 +383,7 @@ function tideEnemy(n){
 function tideWaveReward(n,prepOk){
   const mult=prepOk?1.2:1;
   const stones=Math.floor((30+n*25+rl()*8)*mult);
-  const cult=Math.floor((20+n*30+rl()*5)*mult);
+  const cult=Math.floor((eventGift()*0.015*n+rl()*5)*mult);
   S.stones+=stones;S.cult+=cult;addMerit(2);
   log('<p class="loot">第 '+n+' 波击退：灵石 +'+stones+'，修为 +'+cult+'，功德 +2。</p>');
   return {stones:stones,cult:cult};
@@ -734,6 +749,7 @@ function checkQuests(){
   if(S.flag.explored&&!q.explore){q.explore=true;S.mats.herb=(S.mats.herb||0)+2;log('<p class="good">【新手任务】迈出探索第一步——草药 ×2。</p>')}
   if(S.realm>=2&&!q.realm3){q.realm3=true;addItem({name:'回春丹',type:'consumable',quality:1,count:1,desc:'服之气血尽复（恢复 60% 气血）。',use:'heal',sell:60});log('<p class="good">【新手任务】炼气三层——获得 回春丹。</p>')}
   if(S.realm>=9&&!q.zhuji){q.zhuji=true;addItem({name:'聚灵丹',type:'consumable',quality:1,count:1,desc:'30 日内修炼效率 ×1.5。',use:'pill',sell:120});log('<p class="good">【新手任务】筑基功成——获得 聚灵丹。</p>')}
+  if(typeof questTick==='function')questTick();
 }
 function questHtml(){
   const q=S.quests||{};

@@ -24,7 +24,10 @@ function panelCult(){
     [bn.missingWis>0?'悟性（'+(S.wis||0)+'/'+bn.wisNeed+'）':null,bn.missingTrail>0?'历练（'+(S.trail||0)+'/'+bn.trailNeed+'）':null].filter(Boolean).join('、')+
     '</b>未足，闭关效率降至 ×0.6。'+bnStageAdvice()+'</div>'+(bnBtns.length?'<div class="row">'+bnBtns.join('')+'</div>':'')+'</div>':(bn.progress>=0.9?'<p style="color:#8fd0a0">⚓ 修为已足，悟性与历练兼备——瓶颈已破，可全力冲关，准备突破。</p>':'');
   openPanel('🧘 闭关修炼','<p>山中无甲子，寒尽不知年。'+realmTxt+'闭关可稳步增长修为，效率受<b>灵根</b>与<b>功法</b>影响'+(S.pillBuff>0?'，聚灵丹之力尚余 '+S.pillBuff+' 日（效率×1.5）':'')+'。</p>'+
-    (nxt<THRESHOLDS.length?'<div class="item-card"><div class="nm">📈 修为进度</div><div class="ds">'+fmtNum(S.cult)+' / '+fmtNum(THRESHOLDS[nxt])+'（'+progPct+'%）· 距「'+REALMS[nxt]+'」还需 '+fmtNum(needCult)+' 修为</div><div class="bar"><i style="width:'+progPct+'%"></i></div></div>':'')+
+    '<p style="font-size:14px;color:#e8d9a8">📈 基准收益 <b>×'+cultMultDisplay()+'</b>（灵根/功法/境界/季节/洞府等乘区合计；瓶颈压制/灵潮/苦修等临时增减见对应卡片）</p>'+
+    (nxt<THRESHOLDS.length?'<div class="item-card"><div class="nm">📈 修为进度</div><div class="ds">'+fmtNum(S.cult)+' / '+fmtNum(THRESHOLDS[nxt])+'（'+progPct+'%）· 距「'+REALMS[nxt]+'」还需 '+fmtNum(needCult)+' 修为 · 小境界精进 ×'+smallStageMult(S.realm).toFixed(2)+'</div><div class="bar"><i style="width:'+progPct+'%"></i></div></div>':'')+
+    artSynergyHtml()+
+    moodTuneHtml()+
     '<div class="item-card"><div class="nm">🧿 真元 '+(S.spirit!==undefined?S.spirit:maxSpirit(S))+' / '+maxSpirit(S)+'</div><div class="ds">法力随休整、静心养神与时光缓缓恢复；可消耗 30 真元淬体换修为，或在炼制选材时「以真元控火」提升判定。</div><div class="row"><button class="small" onclick="spiritQuench()">🧿 真元淬体（30 真元）</button></div></div>'+
     '<p style="font-size:13px;color:#a99a72">闭关将进入<b>修炼窗口</b>：按真实时间缓缓推进，途中或有异动需当场抉择，可随时「提前出关」按进度结算；若有道侣相伴，可在窗口中切换<b>双人同修</b>。</p>'+
     bnHtml+
@@ -36,14 +39,14 @@ function panelCult(){
     '<button onclick="doCultivate(90,\'quiet\')">⏳ 90 日</button>'+
     '<button onclick="doCultivate(365,\'quiet\')">⏳ 一年</button>'+
     '</div>'+
-    '<h4>🔥 苦修（凶险 · 效率 +40%）</h4>'+
+    '<h4>🔥 苦修（凶险 · 效率 +40% · 走火 ≈'+Math.round(bitterFireChance()*100)+'%'+(S.items.filter(i=>i.use==='save').length?' · 🛡️保命符 ×'+S.items.filter(i=>i.use==='save').length:'')+'）</h4>'+
     '<div class="row">'+
     '<button class="danger" onclick="doCultivate(7,\'bitter\')">🔥 7 日</button>'+
     '<button class="danger" onclick="doCultivate(30,\'bitter\')">🔥 30 日</button>'+
     '<button class="danger" onclick="doCultivate(90,\'bitter\')">🔥 90 日</button>'+
     '<button class="danger" onclick="doCultivate(365,\'bitter\')">🔥 一年</button>'+
     '</div>'+
-    (S.realm>=9?'<div class="row"><button class="danger" onclick="heartTraining()">😈 心魔历练 · 15日（凶险）</button></div>':'')+
+    (S.realm>=9?'<div class="row"><button class="danger" onclick="heartTraining()">😈 心魔历练 · 15日（凶险 · 判定大失败可致死）</button></div>':'')+
     '<div class="row"><button onclick="settleMind()">🧘 静心养神 · 30日'+(S.heartDemons>0?'（涤心魔，养道心）':'（养道心）')+'</button></div>'+
     (S.flag.boostNext?'<p style="font-size:13px;color:#a8d5a8">灵潮涌动：下一次闭关修炼效率 ×1.5。</p>':'')+
     (sg?'<p style="font-size:13px;color:#e8c86a">📜 本季天机签：'+signDesc(sg.k)+'</p>':'')+
@@ -96,9 +99,57 @@ function cultMultParts(s){
   if(se===0)parts.push({n:'🌸 春灵潮',m:1.05});
   if(se===3)parts.push({n:'❄️ 冬寒凝滞',m:0.95});
   if(s.pet&&s.pet.faint<=0&&(s.pet.talent==='root'||s.pet.talent==='speed'))parts.push({n:'🐾 灵兽相伴',m:1.05});
+  parts.push({n:'🏔️ 境界加成',m:1+0.35*bigStage(s.realm),note:'每大境修炼根基 +35%'});
+  parts.push({n:'📈 小境界精进',m:smallStageMult(s.realm),note:'大境内每层 +1.2%'});
+  if(s.flag&&s.flag.flowChoice&&typeof flowType==='function'&&s.arts&&s.arts[0]&&flowType(s).id===s.flag.flowChoice)parts.push({n:'🗡️ 流派·'+FLOW_DEFS[s.flag.flowChoice].n,m:1.05,note:'同流派主修 +5%'});
   const bn=bottleneckInfo(s);
   if(bn.active)parts.push({n:'⚓ 瓶颈压制',m:0.6,note:'悟性 '+(s.wis||0)+'/'+bn.wisNeed+' · 历练 '+(s.trail||0)+'/'+bn.trailNeed});
   return parts;
+}
+/* v42 功法相生推荐：灵根亲和（同属/变异主属）+ 五行相生关系一览，指引功法获取方向 */
+function artSynergyHtml(){
+  if(!S)return '';
+  const relOf=e=>{
+    if(!e||!ELEMS[e])return {t:'无属性',c:'#6f7a94'};
+    if(rootAffinity(S,e))return {t:'相合',c:'#8fd0a0'};
+    const r=elemOf(S);
+    if(elemSheng(e,r)||elemSheng(r,e))return {t:'相生',c:'#a8d8a8'};
+    if(elemBeat(e,r)||elemBeat(r,e))return {t:'相克',c:'#e08a6a'};
+    return {t:'无关',c:'#6f7a94'};
+  };
+  const ownedRows=S.arts.map(a=>{
+    const rel=relOf(a.elem);
+    return '<div class="bd-row"><span>'+esc(a.name)+'（'+elemInfo(a.elem).i+'）</span><b style="color:'+rel.c+'">'+rel.t+'</b></div>';
+  }).join('');
+  const ownedSet={};for(const a of S.arts)ownedSet[a.name]=1;
+  const rec=ARTS.filter(a=>!ownedSet[a.name]&&(rootAffinity(S,a.elem)||elemSheng(a.elem,elemOf(S)))).slice(0,3)
+    .map(a=>'<div class="bd-row"><span>📖 '+esc(a.name)+'（'+elemInfo(a.elem).i+'）</span><b style="color:#8fd0a0">'+(rootAffinity(S,a.elem)?'相合':'相生')+'</b></div>').join('');
+  const re=rootTier(S.root)[0]+' · '+elemInfo(elemOf(S)).n;
+  return '<div class="item-card"><div class="nm">☯️ 功法相生</div><div class="ds">你为'+re+'。同属（或变异主属）功法修炼效率 ×1.15；相生之属亦有裨益。'+(rec?'<br>推荐参悟：'+rec:'<br>你已尽得相合功法，或可去坊市/宗门藏经阁/守关遗宝中寻更高品阶。')+'</div>'+(ownedRows?'<div class="bd-box" style="margin-top:6px"><div class="bd-head">已修功法</div>'+ownedRows+'</div>':'')+'</div>';
+}
+/* v44 心境主动微调：丹药/功法/静养多手段调控心境 */
+function moodTuneHtml(){
+  if(!S)return '';
+  const hasClear=(S.items||[]).some(i=>i.use==='clear');
+  const hasMood=(S.items||[]).some(i=>i.use==='mood');
+  const calmArt=(S.arts||[]).some(a=>a.name==='清心诀');
+  const sg=signNow();
+  const mods=['当前心境 '+S.mood+'（突破/心魔判定 '+(moodMod()>=0?'+':'')+moodMod()+'）'];
+  if(hasClear)mods.push('清心丹：涤尽心魔 · 心境 +15');
+  if(hasMood)mods.push('安神香：心境 +15');
+  if(calmArt)mods.push('《清心诀》相随：静心判定更稳');
+  if(sg&&sg.demon)mods.push('⚠️ 本季忧思签：易生心魔');
+  const btns='<div class="row">'+
+    (hasMood?'<button class="small" onclick="useItemByName(\'安神香\')">🕯️ 焚安神香</button>':'')+
+    (hasClear?'<button class="small" onclick="useItemByName(\'清心丹\')">💊 服清心丹</button>':'')+
+    '<button class="small" onclick="settleMind()">🧘 静心养神</button></div>';
+  return '<div class="item-card"><div class="nm">🪷 心境调控</div><div class="ds">'+mods.join(' · ')+'</div>'+btns+'</div>';
+}
+function useItemByName(name){
+  if(!S)return;
+  const i=(S.items||[]).findIndex(x=>x.name===name);
+  if(i>=0){consume(i);panelCult();}
+  else toast('行囊中没有 '+name);
 }
 function cultBreakdown(){
   const parts=cultMultParts(S);
@@ -160,7 +211,7 @@ function doCultivate(days,mode,opts){
   PENDING++;
   $('cultivate').style.display='flex';
   if(typeof T!=='undefined'&&T.reveal)T.reveal($('cultivate'));
-  $('cultTitle').textContent=(_cult.trust?'🧘 修炼托管 · ':'🧘 闭关修炼 · ')+(mode==='bitter'?'苦修':'静修');
+  $('cultTitle').textContent=(_cult.trust?'🧘 修炼托管 · ':'🧘 闭关修炼 · ')+(mode==='bitter'?'苦修（走火 ≈'+Math.round(bitterFireChance()*100)+'%）':'静修（基准收益 ×'+cultMultDisplay()+'）');
   $('cultAbort').onclick=cultAbort;
   $('cultMode').onclick=cultToggleMode;
   $('cultLog').innerHTML='<div class="cult-line">你于洞府中盘膝而坐，运转'+esc(S.arts[0].name)+'，缓缓入定……</div>';
@@ -198,6 +249,7 @@ function _cultPartnerHtml(p){
 }
 function _cultChips(){
   const chips=[];
+  chips.push('📈 基准收益 ×'+cultMultDisplay());
   chips.push('灵根 '+rootTier(S.root)[0]);
   chips.push('功法 ×'+S.arts.reduce((a,x)=>a*(x.mult+((x.level||1)-1)*0.05)*artMasteryMult(x),1).toFixed(2));
   const bn=bottleneckInfo(S);
@@ -418,6 +470,10 @@ function _cultEvents(){
   }
   return evs;
 }
+/* 苦修走火概率：与 _cultFinish 结算处的 dch 同源（22% 基础，本季忧思签再 +8%） */
+function bitterFireChance(){
+  return 0.22+(signNow()&&signNow().demon?0.08:0);
+}
 function _cultResult(days,mode,solo){
   const bitter=mode==='bitter';
   let mult=cultMult(S);
@@ -466,7 +522,7 @@ function _cultFinish(frac){
   S.cult+=r.gain;
   let pre='';
   if(r.bitter){
-    const dch=0.22+(signNow()&&signNow().demon?0.08:0);
+    const dch=bitterFireChance();
     if(chance(dch)){S.heartDemons++;pre+='<p class="danger">苦修走火，气血攻心，一道心魔悄然烙下（心魔+1）。</p>'}
     if(chance(0.2)){S.hp=Math.max(1,S.hp-Math.floor(S.maxHp*0.12));pre+='<p class="danger">血气亏损，你咳出一口浊血（气血-12%）。</p>'}
     pre+=growWil(0.16,'以苦为薪，你的道心在磨砺中愈发坚韧');

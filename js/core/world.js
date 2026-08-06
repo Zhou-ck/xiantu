@@ -4,14 +4,31 @@
 ====================================================== */
 'use strict';
 /* ================= 世界观数据 ================= */
-const THRESHOLDS=[0,100,200,300,400,500,600,700,800,1000,1500,2000,2500,3000,4250,5500,6750,8000,11000,14000,17000,20000,27500,35000,42500,50000,62500,75000,87500,100000,125000,150000,175000,200000,275000,350000,425000,500000,625000,750000,875000,1000000];
+/* 问题 10 修复：渡劫期小境界阈值增幅 1.17→1.10（500k→550k→605k→665.5k→732k），缓解终局挂机黑洞 */
+const THRESHOLDS=[0,100,200,300,400,500,600,700,800,1000,1500,2000,2500,3000,4250,5500,6750,8000,11000,14000,17000,20000,27500,35000,42500,50000,62500,75000,87500,100000,125000,150000,175000,200000,275000,350000,425000,500000,550000,605000,665500,732050];
+/* 事件奖励基准（问题 1 v2：产出锚定版）：
+   一次性事件（试炼塔/秘境/妖潮守城/守关 BOSS）修为 = eventGift(stage) × 占比系数。
+   eventGift = 升入该大境的首段需求，随 THRESHOLDS 自动联动，不写死绝对值。
+   战斗胜利修为不走此表（锚定闭关 2 倍，见 combat.js）。 */
+function eventGift(stage){
+  const st=stage===undefined?bigStage(S.realm):stage;
+  return st<=0?100:THRESHOLDS[Math.min(st*4+5,41)];
+}
 const REALMS=['炼气一层','炼气二层','炼气三层','炼气四层','炼气五层','炼气六层','炼气七层','炼气八层','炼气九层','筑基前期','筑基中期','筑基后期','筑基圆满','金丹前期','金丹中期','金丹后期','金丹圆满','元婴前期','元婴中期','元婴后期','元婴圆满','化神前期','化神中期','化神后期','化神圆满','炼虚前期','炼虚中期','炼虚后期','炼虚圆满','合体前期','合体中期','合体后期','合体圆满','大乘前期','大乘中期','大乘后期','大乘圆满','渡劫前期','渡劫中期','渡劫后期','渡劫圆满','仙人'];
 const LIFESPANS=[100,100,100,100,100,100,100,100,100,200,200,200,200,400,400,400,400,800,800,800,800,1600,1600,1600,1600,3200,3200,3200,3200,6400,6400,6400,6400,12800,12800,12800,12800,30000,30000,30000,30000,Infinity];
 const WIL_REQ=[0,0,0,0,0,0,0,0,0,15,0,0,0,18,0,0,0,20,0,0,0,22,0,0,0,25,0,0,0,28,0,0,0,30,0,0,0,32,0,0,0,32];
 const DIFFS=[0,0,0,0,0,0,0,0,0,23,0,0,0,27,0,0,0,30,0,0,0,33,0,0,0,36,0,0,0,39,0,0,0,42,0,0,0,46,0,0,0,46];
 const BIG_KEYS=[9,13,17,21,25,29,33,37,41];
+const BIG_START=[0,9,13,17,21,25,29,33,37,41];
 function isBigBreak(n){return BIG_KEYS.indexOf(n)>=0}
 function bigStage(r){return r<=8?0:r<=12?1:r<=16?2:r<=20?3:r<=24?4:r<=28?5:r<=32?6:r<=36?7:r<=40?8:9}
+/* 小境界精进系数：大境内每跨一层 +1.2%（炼气九层 +10.8%，渡劫圆满 +4.8%），让玩家隔几天能感知成长 */
+function smallStageMult(r){
+  const b=bigStage(r);
+  const sub=clamp((r||0)-BIG_START[b],0,8);
+  return 1+0.012*sub;
+}
+function smallStageIdx(r){return clamp((r||0)-BIG_START[bigStage(r)],0,8)}
 const STAGE_NAMES=['炼气期','筑基期','金丹期','元婴期','化神期','炼虚期','合体期','大乘期','渡劫期','仙人'];
 function stageName(st){return STAGE_NAMES[clamp(st||0,0,9)]}
 function powR(r){if(r<=8)return r;const b=bigStage(r);const base=[0,9,13,17,21,25,29,33,37,41][b];return base+(r-base)/4}
@@ -208,18 +225,19 @@ function rankEligible(s,r){
   return s.contrib>=r.point&&bigStage(s.realm)>=r.minStage&&rankIdx(s)===SECT_RANKS.indexOf(r)-1;
 }
 
+/* flow 字段：流派数据驱动（sword/demon/body/dan/spirit/law），flowType 优先读取，缺失时正则兜底 */
 const ARTS=[
-  {name:'清心诀',grade:1,elem:'wood',mult:1.05,bonus:{wil:1},desc:'木属清心法门，静心凝神，可助抵御心魔。'},
-  {name:'大衍诀',grade:1,elem:'earth',mult:1.05,bonus:{int:1},desc:'土属推演之术，观星望气，参悟大道。'},
-  {name:'太乙剑诀',grade:3,elem:'metal',mult:1.2,bonus:{str:1},desc:'金属剑宗绝学，剑气纵横三千里。'},
-  {name:'丹火诀',grade:2,elem:'fire',mult:1.15,bonus:{int:1},desc:'火属丹宗秘法，以丹火淬炼真元。'},
-  {name:'遁光术',grade:2,elem:'water',mult:1.1,bonus:{agi:1},desc:'水属身法绝学，御光而行，流转不息。'},
-  {name:'龙象体诀',grade:3,elem:'earth',mult:1.2,bonus:{str:2},desc:'土属镇派锻体术，力可拔山，厚重如山。'},
-  {name:'心魔淬体功',grade:3,elem:'thunder',mult:1.25,bonus:{wil:2},desc:'雷属凶险法门，以心魔为薪，淬炼道心。'},
-  {name:'熔火真解',grade:3,elem:'fire',mult:1.2,bonus:{str:1},desc:'火属攻伐秘典，真元如熔岩奔涌。'},
-  {name:'玄冰诀',grade:2,elem:'ice',mult:1.18,bonus:{int:1},desc:'冰属寒澈法门，一念千里冰封。'},
-  {name:'青木长生诀',grade:2,elem:'wood',mult:1.15,bonus:{wil:1},desc:'木属养生法门，生机绵长，伤势易愈。'},
-  {name:'惊雷诀',grade:3,elem:'thunder',mult:1.22,bonus:{str:1},desc:'雷属刚猛法门，动若雷霆万钧。'},
+  {name:'清心诀',grade:1,elem:'wood',mult:1.05,bonus:{wil:1},desc:'木属清心法门，静心凝神，可助抵御心魔。',flow:'spirit'},
+  {name:'大衍诀',grade:1,elem:'earth',mult:1.05,bonus:{int:1},desc:'土属推演之术，观星望气，参悟大道。',flow:'law'},
+  {name:'太乙剑诀',grade:3,elem:'metal',mult:1.2,bonus:{str:1},desc:'金属剑宗绝学，剑气纵横三千里。',flow:'sword'},
+  {name:'丹火诀',grade:2,elem:'fire',mult:1.15,bonus:{int:1},desc:'火属丹宗秘法，以丹火淬炼真元。',flow:'dan'},
+  {name:'遁光术',grade:2,elem:'water',mult:1.1,bonus:{agi:1},desc:'水属身法绝学，御光而行，流转不息。',flow:'law'},
+  {name:'龙象体诀',grade:3,elem:'earth',mult:1.2,bonus:{str:2},desc:'土属镇派锻体术，力可拔山，厚重如山。',flow:'body'},
+  {name:'心魔淬体功',grade:3,elem:'thunder',mult:1.25,bonus:{wil:2},desc:'雷属凶险法门，以心魔为薪，淬炼道心。',flow:'demon'},/* 心魔凶险属魔道，非体修 */
+  {name:'熔火真解',grade:3,elem:'fire',mult:1.2,bonus:{str:1},desc:'火属攻伐秘典，真元如熔岩奔涌。',flow:'demon'},/* 攻伐爆发向，归魔修 */
+  {name:'玄冰诀',grade:2,elem:'ice',mult:1.18,bonus:{int:1},desc:'冰属寒澈法门，一念千里冰封。',flow:'law'},
+  {name:'青木长生诀',grade:2,elem:'wood',mult:1.15,bonus:{wil:1},desc:'木属养生法门，生机绵长，伤势易愈。',flow:'law'},
+  {name:'惊雷诀',grade:3,elem:'thunder',mult:1.22,bonus:{str:1},desc:'雷属刚猛法门，动若雷霆万钧。',flow:'demon'},/* 雷属刚猛攻伐，爆发归魔修 */
 ];
 
 const MAT_NAMES={herb:'草药',sherb:'灵草',iron:'铁矿石',pelt:'妖皮',demonCore:'妖丹',jade:'寒玉',paper:'符纸',cinnabar:'朱砂'};

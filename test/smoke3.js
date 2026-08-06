@@ -21,7 +21,7 @@ function lastChoices(){let last=null;walk(ids['story'],el=>{if(String(el.classNa
 function clickChoice(i){const g=lastChoices();if(!g||!g.children||!g.children[i])throw new Error('no choice '+i);g.children[i].onclick()}
 assert(vm.runInContext('THRESHOLDS.length===42&&REALMS.length===42&&LIFESPANS.length===42&&WIL_REQ.length===42&&DIFFS.length===42',ctx),'常量表均为42档');
 assert(vm.runInContext("REALMS[9]==='筑基前期'&&REALMS[12]==='筑基圆满'&&REALMS[13]==='金丹前期'&&REALMS[41]==='仙人'",ctx),'境界名称正确');
-assert(vm.runInContext('THRESHOLDS[9]===1000&&THRESHOLDS[12]===2500&&THRESHOLDS[13]===3000&&THRESHOLDS[41]===1000000',ctx),'修为阈值正确');
+assert(vm.runInContext('THRESHOLDS[9]===1000&&THRESHOLDS[12]===2500&&THRESHOLDS[13]===3000&&THRESHOLDS[41]===732050',ctx),'修为阈值正确');
 assert(vm.runInContext('LIFESPANS[9]===200&&LIFESPANS[13]===400&&LIFESPANS[41]===Infinity',ctx),'寿元按大境');
 assert(vm.runInContext('WIL_REQ[9]===15&&WIL_REQ[10]===0&&WIL_REQ[13]===18&&DIFFS[41]===46',ctx),'心性门槛仅在大境点');
 assert(vm.runInContext('bigStage(0)===0&&bigStage(9)===1&&bigStage(40)===8&&bigStage(41)===9',ctx),'bigStage 正确');
@@ -34,7 +34,7 @@ assert(vm.runInContext('S.realm===10',ctx),'修为只够中期时只升一段');
 vm.runInContext(`{ S=newState('测',BACKGROUNDS[0]); S.realm=12; S.cult=3500; S.kills=3; S.attrs.wil=40; S.heartDemons=0; S.temp={break:0}; PENDING=0; tryBreak(); }`,ctx);
 for(let k=0;k<3;k++)clickChoice(0);
 assert(vm.runInContext('S.realm===13',ctx),'筑基圆满→金丹前期判定成功');
-vm.runInContext(`{ S=newState('测',BACKGROUNDS[0]); S.realm=40; S.cult=1000000; S.attrs.wil=45; S.merit=300; S.heartDemons=0; S.temp={break:0}; PENDING=0; tryBreak(); }`,ctx);
+vm.runInContext(`{ S=newState('测',BACKGROUNDS[0]); S.realm=40; S.cult=THRESHOLDS[41]; S.attrs.wil=45; S.merit=300; S.heartDemons=0; S.temp={break:0}; PENDING=0; tryBreak(); }`,ctx);
 for(let k=0;k<3;k++)clickChoice(0);
 assert(vm.runInContext('S.realm===41&&S.endings.indexOf("飞升成仙")>=0',ctx),'渡劫圆满→飞升成仙');
 const old={name:'旧档',realm:10,cult:3000,attrs:{str:5,agi:5,int:5,cha:5,wil:5},root:30,luck:30,hp:100,maxHp:100,stones:10,items:[],arts:[],mats:{},weapon:null,armor:null,trinket:null,sect:null,contrib:0,prof:null,profLevel:0,profExp:0,npcs:[],daoPartner:null,master:null,enemy:null,quests:{},merit:0,karma:0,pet:null,titles:[],seenE:{},seenI:{},wins:0,heartTrains:0,heartDemons:0,kills:0,age:16,years:0,days:0,pillBuff:0,temp:{break:0},flag:{}};

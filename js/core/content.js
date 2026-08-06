@@ -93,7 +93,38 @@ const TITLES=[
   {id:'atlas40',name:'收藏大家',desc:'图鉴收集（物品+敌人）达 40，魅力 +1',check:s=>Object.keys(s.seenI||{}).length+Object.keys(s.seenE||{}).length>=40,effect:s=>{s.attrs.cha=clamp(s.attrs.cha+1,1,40)}},
   {id:'ownSect',name:'开宗立派',desc:'自建宗门，魅力 +1',check:s=>!!(s.flag&&s.flag.ownSect),effect:s=>{s.attrs.cha=clamp(s.attrs.cha+1,1,40)}},
   {id:'spirit100',name:'真元凝练',desc:'真元上限达 100，智慧 +1',check:s=>maxSpirit(s)>=100,effect:s=>{s.attrs.int=clamp(s.attrs.int+1,1,40)}},
+  {id:'t_quest_pomiao',name:'山神眷顾',desc:'完成支线「破庙香火」，机缘常伴',check:s=>!!(s.quest&&s.quest.side&&s.quest.side.sq_pomiao==='done'),effect:s=>{s.luck=clamp(s.luck+1,1,100)}},
+  {id:'t_quest_longyin',name:'蛟龙之托',desc:'完成支线「龙吟断魂」，灵兽亲和',check:s=>!!(s.quest&&s.quest.side&&s.quest.side.sq_longyin==='done'),effect:s=>{s.luck=clamp(s.luck+1,1,100)}},
+  {id:'t_quest_guxiu',name:'古修传人',desc:'完成支线「禁地古修」，悟性超然',check:s=>!!(s.quest&&s.quest.side&&s.quest.side.sq_guxiu==='done'),effect:s=>{s.attrs.wil=clamp(s.attrs.wil+1,1,40)}},
+  {id:'t_quest_valley',name:'知音人',desc:'完成支线「幽谷琴师」，曲中有道',check:s=>!!(s.quest&&s.quest.side&&s.quest.side.sq_valley==='done'),effect:s=>{s.attrs.cha=clamp(s.attrs.cha+1,1,40)}},
+  {id:'t_quest_ruin',name:'魂归故里',desc:'完成支线「战魂安息」，功德无量',check:s=>!!(s.quest&&s.quest.side&&s.quest.side.sq_ruin==='done'),effect:s=>{s.attrs.wil=clamp(s.attrs.wil+1,1,40)}},
+  {id:'t_quest_huxian',name:'狐缘',desc:'完成支线「狐仙报恩」，草木亲近',check:s=>!!(s.quest&&s.quest.side&&s.quest.side.sq_huxian==='done'),effect:s=>{s.attrs.cha=clamp(s.attrs.cha+1,1,40)}},
+  {id:'t_quest_mozong',name:'卧底',desc:'完成支线「魔道卧底」，正魔难辨',check:s=>!!(s.quest&&s.quest.side&&s.quest.side.sq_mozong==='done'),effect:s=>{s.attrs.int=clamp(s.attrs.int+1,1,40)}},
+  {id:'t_main_ask',name:'问心无悔',desc:'主线「天道问心」：问心三问后道心愈坚',check:s=>!!(s.quest&&s.quest.main&&(s.quest.main.done||[]).indexOf('m9s2')>=0),effect:s=>{s.attrs.wil=clamp(s.attrs.wil+1,1,40)}},
 ];
+/* v44 轮回道途 2.0：前世执念（每世一个目标，轮回结算加成） */
+const KARMA_GOALS=[
+  {id:'ascend',n:'证道飞升',i:'☁️',desc:'这一世，登临仙位，推开天门。',check:s=>!!(s.endings&&s.endings.includes('飞升成仙'))},
+  {id:'sect',n:'开宗立派',i:'🏯',desc:'这一世，自立门户，香火不绝。',check:s=>!!(s.flag&&s.flag.ownSect)},
+  {id:'dao',n:'双修同心',i:'💞',desc:'这一世，与道侣结缡同心。',check:s=>!!(s.daoPartner&&s.daoPartner.married)},
+  {id:'kill',n:'百战成名',i:'⚔️',desc:'这一世，斩敌过百，以战证名。',check:s=>(s.kills||0)>=100},
+  {id:'merit',n:'功德圆满',i:'🕯️',desc:'这一世，功德过百，泽被苍生。',check:s=>(s.merit||0)>=100},
+  {id:'main',n:'天衍传人',i:'📖',desc:'这一世，走完主线，了却天衍之劫。',check:s=>!!(s.quest&&s.quest.main&&s.quest.main.finished)},
+];
+function karmaGoal(){
+  if(!S||!S.flag||!S.flag.karmaGoal)return null;
+  return KARMA_GOALS.find(g=>g.id===S.flag.karmaGoal)||null;
+}
+function karmaGoalMet(){const g=karmaGoal();return !!g&&g.check(S)}
+function karmaGoalProgress(){
+  const g=karmaGoal();
+  if(!g)return '';
+  if(karmaGoalMet())return '<span style="color:#8fd0a0">已达成 ✓</span>';
+  if(g.id==='kill')return '斩敌 '+(S.kills||0)+'/100';
+  if(g.id==='merit')return '功德 '+(S.merit||0)+'/100';
+  if(g.id==='main')return '主线 '+(S.quest&&S.quest.main?(S.quest.main.chDone||[]).length:0)+'/'+MAIN_STORY.length+' 章';
+  return '';
+}
 function checkTitles(){
   if(!S)return;
   for(const t of TITLES){

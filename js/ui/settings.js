@@ -30,7 +30,8 @@ function panelSettings(){
     '<div class="row" style="margin-top:8px"><button class="small primary" onclick="aiSaveForm()">💾 保存 AI 配置</button>'+
     '<button class="small" onclick="aiClear();panelSettings()">🗑️ 清除</button></div>'+
     '<p style="font-size:12px;color:#6f7a94">AI 仅润色叙事与自由输入理解，不直接改动任何数值；网络失败自动回退本地规则版。Key 只保存在你的浏览器本地。</p>'+
-    '<h4>📱 App 与更新</h4><p style="font-size:12.5px;color:#6f7a94">当前版本 v'+(typeof GAME_VERSION==='string'?GAME_VERSION:'38')+' · '+(isNativeApp()?'已运行于原生 App 壳':'浏览器 / PWA 模式')+'。安装到主屏后全屏离线游玩，更新随推送自动生效。</p>'+
+    '<div class="row" style="margin-top:6px"><button class="small" onclick="panelAiStudio()">🤖 内容生产（AI 扩写流水线）</button></div>'+
+    '<h4>📱 App 与更新</h4><p style="font-size:12.5px;color:#6f7a94">当前版本 v'+(typeof GAME_VERSION==='string'?GAME_VERSION:'41')+' · '+(isNativeApp()?'已运行于原生 App 壳':'浏览器 / PWA 模式')+'。安装到主屏后全屏离线游玩，更新随推送自动生效。</p>'+
     '<div class="row"><button class="small" onclick="checkGameUpdate()">🔄 检查更新</button></div>'+
     '<h4>🙏 素材鸣谢</h4><p style="font-size:12.5px;color:#6f7a94">本作美术素材来自 AI 生成与免费可商用渠道，授权台账见 <b>assets/LICENSES.md</b>。需署名素材将在此统一展示。</p>'+
     '<div class="row"><button class="small" onclick="openCredit()">📜 查看素材台账</button></div>');

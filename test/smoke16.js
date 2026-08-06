@@ -35,7 +35,10 @@ assert(vm.runInContext(`(S.mats.herb||0)>=${herbBefore}+3&&!S.flag.farm.crop`,ct
 // T3 功法参悟
 vm.runInContext(`S.realm=9; S.root=50; S.arts=[{name:'基础吐纳诀',mult:1.0}]; S.stones=1000; S.days=0; {const m=Math.random; Math.random=()=>0.99; cultivateArt(0); Math.random=m;}`,ctx);
 assert(vm.runInContext(`S.arts[0].level===2`,ctx),'功法参悟至第 2 重');
-assert(Math.abs(vm.runInContext('cultMult(S)',ctx)-1.1025)<1e-9,'参悟后修炼效率 ×1.05（含春季加成）');
+/* 同刻对比：参悟后(level2)与临时降回 level1 的 cultMult 比值恰为 1.05，排除境界/季节/子时等环境干扰 */
+assert(vm.runInContext('(S.arts[0].mult+((S.arts[0].level||1)-1)*0.05)===1.05',ctx),'功法等级因子升至 1.05');
+vm.runInContext(`const a=cultMult(S);S.arts[0].level=1;const b=cultMult(S);S.arts[0].level=2;window.__artRatio=a/b;`,ctx);
+assert(Math.abs(vm.runInContext('window.__artRatio',ctx)-1.05)<1e-9,'参悟提升修炼效率 ×1.05（同刻对比）');
 // T4 装备强化
 vm.runInContext(`S.weapon={name:'精铁剑',type:'weapon',bonus:2}; S.mats.iron=3; S.stones=500; {const m=Math.random; Math.random=()=>0.99; forgeStrengthen('weapon'); Math.random=m;}`,ctx);
 assert(vm.runInContext(`S.weapon.bonus===3&&S.weapon.strengthen===1`,ctx),'强化成功 bonus+1');

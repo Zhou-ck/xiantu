@@ -140,7 +140,7 @@ function dungeonRoom(){
       recordDungeonDone(S.dungeon.kind);
       S.dungeon=null;
       S.flag.dungeons=(S.flag.dungeons||0)+1;
-      const g=Math.floor(150+rl()*25);S.cult+=g;
+      const g=Math.floor(eventGift()*0.05+rl()*5);S.cult+=g;
       log('<p class="loot">天地灵气灌体，此番秘境之行化作实打实的修为（修为 +'+g+'）。</p>');
       maybeInsight('秘境险关');
       if(!passTime(3)){renderAll();return}

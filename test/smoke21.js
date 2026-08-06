@@ -27,7 +27,7 @@ vm.runInContext(`{ S=newState('测',BACKGROUNDS[0]); daoPathPage(); window.__h=d
 assert(vm.runInContext('window.__h.indexOf("当前目标")>=0&&window.__h.indexOf("长期目标")>=0',ctx),'道途页显示三层目标');
 // 6) 副业微操自动路径：测试桩直接结算
 vm.runInContext(`{ S=newState('测',BACKGROUNDS[0]); S.prof='alchemy'; S.profLevel=1; S.profExp=0; S.attrs.int=40; S.mats={herb:5}; S.stones=500; S.items=[]; PENDING=0; craft(0); window.__items=S.items.length; window.__herb=S.mats.herb; }`,ctx);
-assert(vm.runInContext('window.__items===1&&window.__herb===4',ctx),'副业炼制（自动路径）正常结算');
+assert(vm.runInContext('window.__items>=1&&window.__herb===4',ctx),'副业炼制（自动路径）正常结算（丹师专精 12% 可得双份）');
 // 7) 渡劫小游戏：可弹三波选项、结算回调返回分档
 vm.runInContext(`{ S=newState('测',BACKGROUNDS[0]); window.__cb=null; tribMiniGame(function(b){window.__cb=b}); window.__opts=window._eventModalOpts?window._eventModalOpts.length:0; }`,ctx);
 assert(vm.runInContext('window.__opts>=3',ctx),'渡劫小游戏弹出三波选项');

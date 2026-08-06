@@ -49,7 +49,8 @@ function pickDemonNarr(kind){
 /* 心境：0-100，影响突破与心魔判定（面板可见） */
 function moodMod(){
   if(!S||S.mood===undefined)return 0;
-  return clamp(Math.floor((S.mood-50)/12),-3,3);
+  const dec=typeof decorBonus==='function'?decorBonus().mood:0;
+  return clamp(Math.floor((S.mood-50)/12),-3,3)+dec;
 }
 function moodLabel(m){
   if(m>=85)return ['心境澄明','#8fd0a0'];

@@ -7,8 +7,8 @@ let CUR_TAB='cult';
 const TABS=[
   {k:'cult',i:'🧘',n:'修炼',d:'闭关 · 突破 · 心魔 · 灵兽',items:[
     {n:'闭关修炼',i:'🧘',fn:()=>panelCult(),desc:'实时修炼窗口，途中或有异动，可双修'},
-    {n:'突破境界',i:'⚡',fn:()=>tryBreak(),desc:'冲击更高境界，需过心性与天劫'},
-    {n:'心魔历练',i:'😈',fn:()=>heartTraining(),ok:()=>S.realm>=9,need:'筑基之后方可直面心魔',desc:'直面心魔，道心精进'},
+    {n:'突破境界',i:'⚡',fn:()=>tryBreak(),desc:'冲击更高境界，需过心性与天劫（筑基起大境界前有心魔试炼，三战全败留烙印）'},
+    {n:'心魔历练',i:'😈',fn:()=>heartTraining(),ok:()=>S.realm>=9,need:'筑基之后方可直面心魔',desc:'直面心魔，道心精进（判定大失败可致死）'},
     {n:'静心养神',i:'🪷',fn:()=>settleMind(),desc:'涤尘养道，消磨心魔烙印'},
     {n:'战技参悟',i:'⚔️',fn:()=>panelBattleArts(),desc:'以战悟道，点化攻势/身法/御体/技能'},
     {n:'论道台',i:'📖',fn:()=>panelDaolun(),desc:'与道友辩道证心，道韵共鸣更益'},
@@ -16,7 +16,8 @@ const TABS=[
     {n:'双修',i:'💞',fn:()=>doDualCultivate(),ok:()=>!!S.daoPartner,need:'需先有道侣（人际→培养好感→表白）',desc:'与道侣合气双修'},
   ]},
   {k:'world',i:'🧭',n:'历练',d:'探索 · 试炼 · 奇遇 · 秘境',items:[
-    {n:'外出探索',i:'🗺️',fn:()=>panelExplore(),desc:'山水之间，机缘与凶险并存'},
+    {n:'主线任务',i:'📖',fn:()=>panelQuests(),desc:'主线指引 · 支线 · 每日修行，一目了然'},
+    {n:'九州舆图',i:'🗺️',fn:()=>panelExplore(),desc:'水墨舆图选点：探索 · 试炼塔 · 守关 · 秘境'},
     {n:'试炼塔',i:'🏔️',fn:()=>doTower(),ok:()=>S.realm>=2,need:'炼气三层后开启试炼塔',desc:'一层一关，每五层有守塔统领'},
     {n:'时令',i:'🌸',fn:()=>toast(seasonLabel()+'：'+seasonDesc()),desc:'查看当前季节与吉凶'},
   ]},

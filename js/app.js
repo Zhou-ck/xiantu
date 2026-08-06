@@ -16,7 +16,7 @@ function init(){
   $('btnBegin').onclick=beginGame;
   $('btnSave').onclick=panelSave;
   $('btnHelp').onclick=openHelp;
-  $('btnDaily').onclick=()=>{if(!S){toast('尚未踏入仙途');return}closePanel();panelDaily()};
+  $('btnDaily').onclick=()=>{if(!S){toast('尚未踏入仙途');return}closePanel();panelQuests()};
   $('btnSide').onclick=()=>{$('side').classList.toggle('show');$('scrim').classList.toggle('show')};
   $('scrim').onclick=()=>{$('side').classList.remove('show');$('scrim').classList.remove('show')};
   $('battleContinue').onclick=()=>{$('battle').style.display='none';if(window._battleResolve){window._battleResolve();window._battleResolve=null}};

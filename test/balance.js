@@ -64,4 +64,37 @@ console.log('仿真报告：40 局 | 筑基 min='+zj[0]+' med='+med(zj)+' max='+
 assert(med(zj)>150&&med(zj)<1500,'筑基中位天数合理（150-1500）');
 assert(med(jd)>600&&med(jd)<4000,'金丹中位天数合理（600-4000）');
 assert(sim.every(x=>x.zhujiDay>0&&x.jindanDay>0),'无卡死局（6000 日内均达金丹）');
+// 8) 问题 1 v2（产出锚定版）：大境界修炼加成生效 —— 渡劫闭关效率 ≥ 3× 炼气
+vm.runInContext(`{const a=newState('测',BACKGROUNDS[0]);a.root=60;a.realm=5;a.days=0;a.cultStreak=0;a.arts=[{name:'基础吐纳诀',mult:1.0,grade:1}];a.daoPartner=null;a.flag={};window.__mQ=cultMult(a);a.realm=37;window.__mD=cultMult(a);}`,ctx);
+assert(vm.runInContext('window.__mD>=window.__mQ*3',ctx),'境界加成生效：渡劫闭关效率 ≥3× 炼气');
+// 9) 战斗胜利修为锚定闭关 2×（一场 10 日 ≈ 20 日闭关量）
+vm.runInContext(`{S=newState('测',BACKGROUNDS[0]);S.root=60;S.realm=29;S.days=0;S.cultStreak=0;S.arts=[{name:'基础吐纳诀',mult:2.0,grade:1}];S.daoPartner=null;S.flag={};window.__cg=Math.max(5,Math.floor((8+S.root/6)*cultMult(S)*2));window.__daily=(8+S.root/6)*cultMult(S)/10;}`,ctx);
+assert(vm.runInContext('window.__cg>=window.__daily*19&&window.__cg<=window.__daily*21',ctx),'战斗胜利修为 = 20 日闭关量（恒 2× 闭关效率）');
+// 10) 一次性事件奖励落在阈值 2-5%（BOSS 10%）
+vm.runInContext(`{S=newState('测',BACKGROUNDS[0]);S.root=60;S.realm=29;S.days=0;S.cultStreak=0;S.arts=[{name:'基础吐纳诀',mult:2.0,grade:1}];S.daoPartner=null;S.flag={};window.__t1=eventGift()*0.03/THRESHOLDS[29];window.__t2=eventGift()*0.05/THRESHOLDS[29];window.__t3=eventGift()*0.015*3/THRESHOLDS[29];window.__t4=eventGift(6)*0.10/THRESHOLDS[29];}`,ctx);
+assert(vm.runInContext('window.__t1>=0.025&&window.__t1<=0.035',ctx),'试炼塔单层 ≈ 阈值 3%');
+assert(vm.runInContext('window.__t2>=0.045&&window.__t2<=0.055',ctx),'秘境通关 ≈ 阈值 5%');
+assert(vm.runInContext('window.__t3>=0.04&&window.__t3<=0.05',ctx),'妖潮守城三波合计 ≈ 阈值 4.5%');
+assert(vm.runInContext('window.__t4>=0.09&&window.__t4<=0.11',ctx),'守关 BOSS ≈ 阈值 10%');
+// 11) 渡劫期阈值增幅 ≤1.10（问题 10）
+vm.runInContext(`window.__mt=(()=>{let mx=0;for(let i=38;i<=41;i++){const r=THRESHOLDS[i]/THRESHOLDS[i-1];if(r>mx)mx=r;}return mx;})();`,ctx);
+assert(vm.runInContext('window.__mt<=1.1001',ctx),'渡劫期小境界阈值增幅 ≤1.10');
+// 12) 问题 2：离线 12h 等价上限 + 效率基准 0.6-0.8（固定 Math.random 消除随机噪声，精确验证 24h=12h）
+vm.runInContext(`const _mr=Math.random;Math.random=()=>0.5;{S=newState('测',BACKGROUNDS[0]);S.root=50;S.days=0;S.cultStreak=0;S.arts=[{name:'基础吐纳诀',mult:1.0,grade:1}];S.daoPartner=null;S.flag={lastVisit:Date.now()-12*3600000};S.cult=0;applyOfflineGain();window.__o12=S.cult;S=newState('测',BACKGROUNDS[0]);S.root=50;S.days=0;S.cultStreak=0;S.arts=[{name:'基础吐纳诀',mult:1.0,grade:1}];S.daoPartner=null;S.flag={lastVisit:Date.now()-24*3600000};S.cult=0;applyOfflineGain();window.__o24=S.cult;}Math.random=_mr;`,ctx);
+const o12=vm.runInContext('window.__o12',ctx),o24=vm.runInContext('window.__o24',ctx);
+assert(o12>0,'离线 12h 有收益');
+assert(Math.abs(o24-o12)<=1,'离线 24h 收益 = 12h 上限（等价截断精确生效）');
+vm.runInContext(`window.__om=0.65*(1+(typeof trustTier==='function'?trustTier().offline:0));`,ctx);
+assert(vm.runInContext('window.__om>=0.6&&window.__om<=0.85',ctx),'离线效率基准 0.6-0.85（含托管加成）');
+// 13) v43 灵石出口：至少 4 个持续回收手段（问题 6）
+vm.runInContext(`window.__sinks=(function(){
+  const out=[];
+  if(typeof donateSect==='function')out.push('宗门捐资');
+  if(typeof buyDecor==='function'&&DECOR_ITEMS&&DECOR_ITEMS.length>=3)out.push('洞府装饰');
+  if(MARKET_ITEMS&&MARKET_ITEMS.some(m=>m.use==='save'))out.push('保命道具');
+  if(typeof startTrustTo==='function')out.push('托管修炼');
+  if(typeof buyAuction==='function')out.push('奇珍拍卖');
+  return out;
+})();`,ctx);
+assert(vm.runInContext('window.__sinks.length>=4',ctx),'灵石出口 ≥4（'+vm.runInContext('window.__sinks.join("、")',ctx)+'）');
 console.log(fails===0?'ALL PASS':'FAILURES: '+fails);process.exit(fails?1:0);

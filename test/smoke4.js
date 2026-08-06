@@ -40,7 +40,7 @@ assert(vm.runInContext('window.__c>0&&window.__s>0',ctx),'离线 3 小时获得�
 assert(vm.runInContext('document.getElementById("panel").style.display==="flex"',ctx),'回归详情弹窗打开');
 // 6) 新人加成：炼气三层前修炼效率 +20%
 vm.runInContext(`{ S=newState('新人测',BACKGROUNDS[0]); S.realm=0; window.__m0=cultMult(S); S.realm=3; window.__m3=cultMult(S); }`,ctx);
-assert(Math.abs(vm.runInContext('window.__m0/window.__m3',ctx)-1.2)<1e-9,'新人修炼效率 +20%（炼气三层前）');
+assert(Math.abs(vm.runInContext('window.__m0/window.__m3',ctx)-vm.runInContext('1.2/smallStageMult(3)',ctx))<1e-9,'新人修炼效率 +20%（炼气三层前，扣除小境界精进项）');
 // 7) 新称号：交谈 20 次与双修 20 次
 vm.runInContext(`{ S=newState('称号测',BACKGROUNDS[0]); S.npcs=[{talks:20}]; S.flag.dualCount=20; S.flag.sectTasks=50; S.prof='alchemy'; S.profLevel=5; checkTitles(); window.__t=S.titles.slice(); }`,ctx);
 assert(vm.runInContext('window.__t.indexOf("talks20")>=0&&window.__t.indexOf("dual20")>=0&&window.__t.indexOf("sect50")>=0&&window.__t.indexOf("prof5")>=0',ctx),'新称号按条件授予');

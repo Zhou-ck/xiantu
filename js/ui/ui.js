@@ -83,6 +83,8 @@ function scene(title){
 }
 /* 场景背景：按标题关键词匹配生成好的场景插画 */
 const SCENE_IMG=[
+  [/天衍|祭坛|天门/,'assets/scenes/tianyan.jpg'],
+  [/幽冥之门|裂隙|九幽|封魔/,'assets/scenes/ghostgate.jpg'],
   [/渡劫|天劫|雷劫/,'assets/scenes/tribulation.jpg'],
   [/闭关|修炼|静心|打坐|苦修|入定/,'assets/scenes/cult.jpg'],
   [/心魔/,'assets/scenes/heart.jpg'],
