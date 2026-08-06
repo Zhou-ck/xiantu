@@ -137,6 +137,97 @@ function masterPanel(){
     '<div class="nm"><b>'+esc(m.name)+'</b> <span class="tag">'+esc(m.title||m.role)+'</span></div>'+
     '<div class="ds">'+esc(m.desc)+' · '+stageName(m.stage||0)+'<br>师承：'+(m.art?esc(m.art.name):'——')+'<br>可常「请教」师尊，点拨获益更丰。</div></div>';
 }
+/* 师尊面板：请安 / 请教 / 传功 / 切磋 / 出师（7） */
+function panelMaster(){
+  const m=S.master;
+  if(!m){toast('尚未拜师');return}
+  openPanel('🎓 师尊 · '+esc(m.name),
+    '<p>一日为师，终身为父。师尊是你在修行路上的引路人——请安温养师徒情分，请教获修为点拨，传功淬炼功法与道心，切磋以武会师，缘法圆满后亦可出师。</p>'+
+    masterPanel()+
+    '<h4>🎓 师徒互动</h4><div class="row">'+
+    '<button class="small" onclick="masterGreet()">🙏 请安（每日）</button>'+
+    '<button class="small" onclick="masterAsk()">📖 请教（隔 10 日）</button>'+
+    '<button class="small" onclick="masterTeach()">🪷 传功（隔 20 日 · 100灵）</button>'+
+    '<button class="small" onclick="masterDuel()">⚔️ 切磋（隔 15 日）</button>'+
+    '<button class="small danger" onclick="masterLeave()">🎓 出师</button></div>'+
+    '<p style="font-size:12.5px;color:#6f7a94">师承如灯，照我前行。请教与传功皆可增长<b>悟性</b>，用以冲破修行瓶颈。</p>');
+}
+function masterGreet(){
+  const m=S.master;
+  if(!m){toast('尚未拜师');return}
+  closePanel();
+  if((m.cd&&m.cd.greet||0)>0){log('<p class="sys">'+esc(m.name)+'摆摆手：「日日请安，心意到了便是，去忙你的吧。」</p>');passTime(1);renderAll();return}
+  m.cd=m.cd||{};m.cd.greet=5;
+  const g=rand(1,3);
+  m.favor=clamp((m.favor||60)+g,0,100);
+  log('<p>你于师尊座前恭恭敬敬行了一礼，奉上清茶一盏。'+esc(m.name)+'接过茶，微微颔首：「有心了。」（师徒情分 +'+g+'）</p>');
+  const gw=growWil(0.06,'晨昏定省，道心渐稳');if(gw)log(gw);
+  passTime(1);renderAll();
+}
+function masterAsk(){
+  const m=S.master;
+  if(!m){toast('尚未拜师');return}
+  closePanel();
+  m.cd=m.cd||{};
+  if((m.cd.ask||0)>0){log('<p class="sys">'+esc(m.name)+'捋须道：「修行贵在自悟，过犹不及。过些时日再来问吧。」</p>');passTime(1);renderAll();return}
+  m.cd.ask=10;
+  if(m.stage<=bigStage(S.realm)){log('<p class="sys">'+esc(m.name)+'笑道：「你的境界已不在我之下，为师能教你的，已不多了。」</p>');passTime(1);renderAll();return}
+  const R=doRoll('int',15);
+  const g=Math.floor((12+m.stage*8)*(0.7+(m.favor||60)/150));
+  log('<p>你于师尊座前请益修行疑难：'+rollBadge(R.r,R.mod,R.t,R.dc)+'</p>');
+  if(R.hit){S.cult+=g;m.favor=clamp((m.favor||60)+1,0,100);log('<p class="good">'+esc(m.name)+'三言两语点破关隘，你如醍醐灌顶（修为 +'+g+'，悟性 +1）。</p>');addWis(1);}
+  else{S.cult+=Math.floor(g*0.45);log('<p>师尊不厌其烦地讲解，你虽未全懂，也记下了大半（修为 +'+Math.floor(g*0.45)+'）。</p>');}
+  const gw=growWil(0.18,'师尊言传身教，道心愈发坚定');if(gw)log(gw);
+  maybeInsight('请教师尊');
+  passTime(1);renderAll();
+}
+function masterTeach(){
+  const m=S.master;
+  if(!m){toast('尚未拜师');return}
+  closePanel();
+  m.cd=m.cd||{};
+  if((m.cd.teach||0)>0){log('<p class="sys">'+esc(m.name)+'道：「法不轻传，贪多无益。先把你那门功法吃透再说。」</p>');passTime(1);renderAll();return}
+  if(S.stones<100){toast('传功需备 100 灵石为仪');return}
+  m.cd.teach=20;S.stones-=100;
+  const g=Math.floor(40+bigStage(S.realm)*18);
+  S.cult+=g;
+  const a=S.arts[0];
+  if(a&&a.level!==undefined&&a.level<Math.min(5,bigStage(S.realm)+1)&&chance(0.35)){
+    a.level=(a.level||1)+1;
+    log('<p class="good">师尊亲授功法玄奥，你将《'+esc(a.name)+'》参悟至<b>第 '+a.level+' 重</b>（修炼效率 ×'+((a.mult+(a.level-1)*0.05)).toFixed(2)+'）。</p>');
+  }
+  log('<p>师尊于座前为你开坛传功三日，引你周天运转，道韵流转（修为 +'+g+'，悟性 +1）。</p>');
+  addWis(1);
+  const gw=growWil(0.22,'得师亲授，道心澄明');if(gw)log(gw);
+  m.favor=clamp((m.favor||60)+2,0,100);
+  passTime(3);renderAll();
+}
+function masterDuel(){
+  const m=S.master;
+  if(!m){toast('尚未拜师');return}
+  closePanel();
+  m.cd=m.cd||{};
+  if((m.cd.duel||0)>0){log('<p class="sys">'+esc(m.name)+'收剑而立：「点到为止，过些时日再试。」</p>');passTime(1);renderAll();return}
+  m.cd.duel=15;
+  const e={name:m.name+'（师尊）',atk:(m.atk||5+(m.stage||0)*2),def:Math.max(1,Math.floor((m.stage||0)/2)),hp:(m.hp||25+(m.stage||0)*15),boss:false};
+  log('<p>演武场上，你向师尊行了一礼，拔剑相向：「请师尊指点！」</p>');
+  startCombat(e,res=>{
+    if(res.win){m.favor=clamp((m.favor||60)+4,0,100);addTrail(2);log('<p class="good">师尊朗声大笑：「青出于蓝！」你竟在师尊手下讨得一场胜——师徒情分 +4，历练 +2。</p>')}
+    else{m.favor=clamp((m.favor||60)+2,0,100);log('<p class="sys">师尊以剑脊压住你的剑势，收手而立：「功夫尚浅，再来。」（师徒情分 +2，你败而不伤）</p>')}
+    const gw=growWil(0.12,'与师切磋，道心愈坚');if(gw)log(gw);
+    maybeInsight('与师尊切磋');
+    renderAll();
+  },true);
+}
+function masterLeave(){
+  const m=S.master;
+  if(!m){toast('尚未拜师');return}
+  closePanel();
+  openEventModal('🎓 出师礼','<p>你跪于师尊座前，郑重叩首：「弟子今日斗胆，请出师门。」</p><p class="sys">'+esc(m.name)+'静静看了你许久，目光里有欣慰，也有一丝不舍。</p>',[
+    {txt:'🎓 行出师礼',cls:'primary',fn:()=>{const nm=m.name;S.master=null;addWis(2);const gw=growWil(0.5,'出师之礼，道心大成');log('<p class="good">'+esc(nm)+'亲手为你系上一条护身穗：「此去山高水长，好自为之。」</p>');if(gw)log(gw);log('<p class="sys">自此你出师自立，师门香火情仍在——日后江湖相遇，仍执弟子礼。悟性 +2。</p>');passTime(1);renderAll()}},
+    {txt:'🫂 再留一段时间',fn:()=>{log('<p>你把话咽了回去：「弟子还想再听师尊教诲几年。」'+esc(m.name)+'笑了：「好，那便再教几年。」</p>');passTime(1);renderAll()}},
+  ]);
+}
 function npcChat(i){
   const n=S.npcs[i];
   if(n.foe){log('<p>'+esc(n.name)+'冷眼相待：「道不同不相为谋。」</p>');passTime(1);renderAll();return}
@@ -739,7 +830,7 @@ function takeDisciple(){
   }}));
   opts.push({txt:'🌱 收一名门中记名弟子（随机）',fn:()=>{
     const g=pick(['男','女']);
-    S.disciples.push({name:randomName(g),gender:g,root:rand(25,80),rootElem:pickRootElem(),art:Object.assign({},S.arts[0]||{name:'基础吐纳诀',mult:1.0,desc:''}),stage:0,progress:0,favor:rand(30,50),talent:pick(DISCIPLE_TALENTS),growth:0,source:null});
+    S.disciples.push({name:uniqueName(g),gender:g,root:rand(25,80),rootElem:pickRootElem(),art:Object.assign({},S.arts[0]||{name:'基础吐纳诀',mult:1.0,desc:''}),stage:0,progress:0,favor:rand(30,50),talent:pick(DISCIPLE_TALENTS),growth:0,source:null});
     log('<p class="good">一名记名'+(g==='女'?'女':'男')+'弟子<b>'+esc(S.disciples[S.disciples.length-1].name)+'</b>跪在你面前，眼中有光。你将他收入门下，传下第一门功法。</p>');
     passTime(1);renderAll();
   }});

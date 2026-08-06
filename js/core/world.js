@@ -65,6 +65,52 @@ function randomName(gender){
   const pool=(gender==='女'?GIVEN_F:GIVEN);
   return pick(SURNAMES)+pick(pool)+(chance(0.45)?pick(pool):'');
 }
+/* 去重命名：生成人名时避开当前江湖中已出现的名字，杜绝「重名」 */
+function usedNameSet(extra){
+  const set={};
+  const add=a=>{if(a&&a.name)set[a.name]=1};
+  if(S){
+    add(S);
+    (S.npcs||[]).forEach(add);
+    (S.sectNpcs||[]).forEach(add);
+    (S.children||[]).forEach(add);
+    (S.disciples||[]).forEach(add);
+    (S.affairs||[]).forEach(add);
+    add(S.daoPartner);add(S.master);add(S.companion);
+  }
+  if(extra)for(const n of extra)add(typeof n==='string'?{name:n}:n);
+  return set;
+}
+function uniqueName(gender,used){
+  const set=used||usedNameSet();
+  for(let i=0;i<40;i++){
+    const n=randomName(gender);
+    if(!set[n]){set[n]=1;return n}
+  }
+  const n=randomName(gender);set[n]=1;return n;
+}
+/* 子嗣头像：内嵌 SVG 幼童立绘（襁褓→幼童→少年），避免新生儿显示成人立绘 */
+function childAvatar(gender,stage){
+  const girl=gender==='女';
+  const hair=girl?'#33202e':'#1f1b28';
+  const robe=girl?'#c98ab0':'#7f9fc9';
+  const eye=girl?'#3a2f45':'#33415c';
+  const age=clamp(stage||0,0,3);
+  const label=age===0?'襁褓':age===1?'幼童':age===2?'少年':'及冠';
+  return '<svg class="child-avatar" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="'+label+'">'+
+    '<circle cx="40" cy="40" r="38" fill="#efe0c8"/>'+
+    (girl
+      ?'<circle cx="26" cy="16" r="8" fill="'+hair+'"/><circle cx="54" cy="16" r="8" fill="'+hair+'"/>'
+      :'<circle cx="40" cy="13" r="9" fill="'+hair+'"/>')+
+    '<circle cx="40" cy="40" r="17" fill="#f7d6b4"/>'+
+    '<path d="M27 43 Q40 35 53 43 L50 49 Q40 43 30 49 Z" fill="'+hair+'"/>'+
+    '<ellipse cx="33" cy="40" rx="2.1" ry="2.7" fill="'+eye+'"/><ellipse cx="47" cy="40" rx="2.1" ry="2.7" fill="'+eye+'"/>'+
+    '<path d="M36 48 Q40 51 44 48" stroke="#b8766a" stroke-width="1.4" fill="none" stroke-linecap="round"/>'+
+    '<path d="M17 59 Q40 69 63 59 L65 75 Q40 79 15 75 Z" fill="'+robe+'"/>'+
+    '<path d="M40 55 L40 67" stroke="#fff" stroke-width="1.5" opacity=".45"/>'+
+    '<text x="40" y="76" text-anchor="middle" font-size="8" fill="#8a7456">'+label+'</text>'+
+    '</svg>';
+}
 
 const BACKGROUNDS=[
   /* —— 男修身份池（7 位）—— */

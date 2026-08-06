@@ -10,6 +10,25 @@ function log(html,cls){
   S.logCount++;
   if(S.logCount>240){const old=$('story').querySelector('.log');if(old)old.remove();S.logCount--}
   $('story').scrollTop=999999;
+  /* 记录故事尾迹：退出重进后恢复可见文字（8） */
+  try{
+    if(S&&S.flag){
+      S.flag.storyTail=S.flag.storyTail||[];
+      const raw=String(html).replace(/\s+/g,' ').slice(0,220);
+      if(S.flag.storyTail[S.flag.storyTail.length-1]!==raw)S.flag.storyTail.push(raw);
+      if(S.flag.storyTail.length>14)S.flag.storyTail.shift();
+    }
+  }catch(e){}
+}
+/* 退出重进：恢复上次故事尾迹并滚动到底部 */
+function restoreStory(){
+  try{
+    const tail=S&&S.flag&&S.flag.storyTail||[];
+    const st=$('story');
+    if(!st)return;
+    st.innerHTML=tail.map(t=>'<div class="log">'+t+'</div>').join('');
+    st.scrollTop=st.scrollHeight||999999;
+  }catch(e){}
 }
 function logChoices(btns){
   PENDING++;
@@ -178,6 +197,8 @@ function renderAll(){
     (s.sect?'<div class="sb-row"><span>🏅 贡献点</span><b>'+s.contrib+'</b></div><div class="sb-row"><span>🪙 贡献值</span><b>'+s.contribVal+'</b></div>':'')+
     '<div class="sb-row"><span>💞 道侣</span><b>'+(s.daoPartner?esc(s.daoPartner.name):'无')+'</b></div>'+
     '<div class="sb-row"><span>🧙 师尊</span><b>'+(s.master?esc(s.master.name):'无')+'</b></div>'+
+    '<div class="sb-row"><span>🧠 悟性</span><b>'+(s.wis||0)+'</b></div>'+
+    '<div class="sb-row"><span>🗺️ 历练</span><b>'+(s.trail||0)+'</b></div>'+
     (s.pet?'<div class="sb-row"><span>🐾 灵兽</span><b>'+esc(s.pet.species+'·'+s.pet.name)+' '+s.pet.level+'级</b></div>':'')+
     (s.prof?'<div class="sb-row"><span>🛠️ 副业</span><b>'+PROF_NAMES[s.prof]+' '+s.profLevel+'阶</b></div>':'')+
     '</div>'+
@@ -198,6 +219,7 @@ function renderAll(){
     '<div class="sb-sec">'+ico('glory')+' 功业</div>'+
     '<div class="sb-row"><span>☠️ 击杀</span><b>'+s.kills+'</b></div>'+
     '<div class="sb-row"><span>🕰️ 年岁</span><b>'+Math.floor(s.years)+' 载</b></div>'+
+    '<div class="sb-row"><span>☯️ 双修</span><b>'+(s.flag.dualCount||0)+' 次 · '+(s.flag.dualDays||0)+' 日</b></div>'+
     '<div class="sb-row"><span>🔄 轮回</span><b>'+s.rebirths+' 世</b></div>'+
     '</div>';
   checkTitles();

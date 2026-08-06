@@ -69,6 +69,7 @@ function battle(enemy,onEnd,spar){
       if(win){
         S.kills++;S.wins++;S.hp=Math.max(1,ph);
         dC().c.kill++;
+        addTrail(1);
         weaponGainMastery(S);
         if(S.flag.pendingMerit){addMerit(S.flag.pendingMerit);loot.push('功德 +'+S.flag.pendingMerit);S.flag.pendingMerit=0}
         if(enemy.name==='荒坟厉鬼'){addMerit(2);loot.push('功德 +2')}
@@ -102,6 +103,7 @@ function battle(enemy,onEnd,spar){
         S.hp=Math.max(1,ph-Math.floor(S.maxHp*0.1));
         log('<p class="sys">十回合缠斗，双方力竭，你觅得空隙脱身而去。</p>');
       }
+      if(S.hp<=0)S.hp=1; /* 防御：任何「包活」路径都不允许以 0 血继续 */
       const alive=passTime(1);
       if(!alive){$('battle').style.display='none';const r={win,draw,st};resolve(r);if(onEnd)onEnd(r);return}
       const verdict=win?'<b style="color:#a8d5a8">🏆 胜</b>':(draw?'<b style="color:#e8c86a">⚖️ 平</b>':'<b style="color:#e08a8a">💀 败</b>');
@@ -198,6 +200,7 @@ function battle(enemy,onEnd,spar){
         else{fxShake(1);fxFloatText('-'+dmg,'#fff',false)}
         html.push('<p class="bl">第 '+rnd+' 回合：你'+(useSkill&&skill?'施展 <b>'+skill.n+'</b> '+skTxt+'：':'出招')+(crit?'【暴击】':'')+'命中'+(beatHit?'【五行克敌 ×1.25】':'')+'，<b>'+esc(enemy.name)+'</b> 受创 <span class="bhit">-'+dmg+'</span>。</p>');
         if(tac.self&&chance(0.2)){const sd=Math.max(1,Math.floor(rand(3,6)*tac.take));ph-=sd;st.selfHurt+=sd;html.push('<p class="bhit">搏命反噬自身，你受创 -'+sd+'。</p>')}
+        if(ph<=0&&eh>0){renderBars();pushLog(html.join(''));finish(false,false);return}
         if(eh<=0){renderBars();pushLog(html.join(''));finish(true,false);return}
       }else{
         if(flow.healEvery&&rnd%flow.healEvery===0){const h=Math.floor(S.maxHp*(flow.healPct||0.08));ph=Math.min(S.maxHp,ph+h);html.push('<p class="bl">⚗️ 丹火流转，你伤势渐复（+'+h+'）。</p>')}

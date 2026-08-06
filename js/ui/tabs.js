@@ -20,19 +20,20 @@ const TABS=[
   ]},
   {k:'sect',i:'🏯',n:'宗门',d:'拜入 · 任务 · 晋升 · 宝库',items:[
     {n:'宗门（拜入/事务）',i:'🏯',fn:()=>panelSect(),desc:'无宗门时可择派拜入，入宗后接任务晋升'},
-    {n:'宗门大比',i:'⚔️',fn:()=>bigCompetition(),ok:()=>!!S.sect,need:'需先拜入宗门',desc:'三年一赛，扬名立万'},
+    {n:'宗门大比',i:'⚔️',fn:()=>bigCompetition(),ok:()=>!!S.sect&&S.bigCd<=0,need:()=>S&&S.bigCd>0?'大比尚需 '+S.bigCd+' 日':'需先拜入宗门',desc:'三年一赛，扬名立万'},
     {n:'领取月俸',i:'💰',fn:()=>sectSalary(),ok:()=>!!S.sect,need:'需先拜入宗门',desc:'按职位领取灵石与贡献'},
   ]},
   {k:'social',i:'👥',n:'人际',d:'道侣 · 师尊 · 好友',items:[
     {n:'人际往来',i:'👥',fn:()=>panelSocial(),desc:'交谈、请教、赠礼、切磋、结伴'},
-    {n:'道侣',i:'💞',fn:()=>partnerPanel(),ok:()=>!!S.daoPartner,need:'需先有道侣（人际→培养好感→表白）',desc:'情缘与双修之路'},
-    {n:'师尊',i:'🎓',fn:()=>masterPanel(),ok:()=>!!S.master,need:'需先拜师（宗门长老或江湖高人）',desc:'师承点拨，功法相传'},
+    {n:'道侣',i:'💞',fn:()=>panelPartner(),ok:()=>!!S.daoPartner,need:'需先有道侣（人际→培养好感→表白）',desc:'聊天、约会、同游、相处与双修'},
+    {n:'师尊',i:'🎓',fn:()=>panelMaster(),ok:()=>!!S.master,need:'需先拜师（宗门长老或江湖高人）',desc:'请安、请教、传功与出师'},
   ]},
   {k:'more',i:'☰',n:'更多',d:'坊市 · 副业 · 洞府 · 行囊',items:[
     {n:'坊市',i:'🏮',fn:()=>panelMarket(),desc:'买卖丹药法器，奇珍拍卖'},
     {n:'行囊',i:'🎒',fn:()=>panelInventory(),desc:'查看并使用物品、装备'},
     {n:'副业',i:'⚒️',fn:()=>panelCraft(),desc:'炼丹、炼器、制符、布阵'},
     {n:'洞府',i:'🏡',fn:()=>panelRest(),desc:'灵田、参悟、静养、天机签'},
+    {n:'家族',i:'👨‍👩‍👧',fn:()=>panelFamily(),desc:'子嗣培养、血脉与转生传承'},
     {n:'每日修行',i:'📅',fn:()=>panelDaily(),desc:'每日与每周任务'},
     {n:'仙途录',i:'📖',fn:()=>openTome(),desc:'称号、图鉴与生平'},
     {n:'设置',i:'⚙️',fn:()=>panelSettings(),desc:'特效、微操、音效、AI 接入'},
@@ -45,8 +46,10 @@ function tabStatusCult(){
   const nxt=S.realm+1;
   const req=nxt<THRESHOLDS.length?fmtNum(S.cult)+' / '+fmtNum(THRESHOLDS[nxt]):'∞';
   const eff=S.heartDemons>0?'（心魔压制 -'+Math.min(S.heartDemons,4)+'）':'';
+  const bn=bottleneckInfo(S);
+  const bnTxt=bn.active?' · ⚓瓶颈×0.6':'';
   return '<div class="item-card"><div class="nm">'+REALMS[S.realm]+'</div>'+
-    '<div class="ds">修为 '+req+' · 修炼效率 ×'+cultMult(S).toFixed(2)+' · 心性 '+effWil(S)+eff+' · 心境 <b style="color:'+moodLabel(S.mood||60)[1]+'">'+moodLabel(S.mood||60)[0]+'</b>（'+(S.mood||60)+'，判定 '+(moodMod()>=0?'+':'')+moodMod()+'）</div></div>'+
+    '<div class="ds">修为 '+req+(nxt<THRESHOLDS.length&&S.cult>=THRESHOLDS[nxt]?' <span class="tag" style="color:#8fd0a0">可突破</span>':'')+' · 修炼效率 ×'+cultMult(S).toFixed(2)+bnTxt+' · 心性 '+effWil(S)+eff+' · 心境 <b style="color:'+moodLabel(S.mood||60)[1]+'">'+moodLabel(S.mood||60)[0]+'</b>（'+(S.mood||60)+'，判定 '+(moodMod()>=0?'+':'')+moodMod()+'）</div></div>'+
     '<h4 style="margin-top:10px">🎯 当下目标</h4>'+goalCards();
 }
 /* 动态目标引导：任何时刻至少给出可执行的下一步 */
@@ -56,6 +59,9 @@ function goalCards(){
   const nxt=S.realm+1;
   const needCult=nxt<THRESHOLDS.length?THRESHOLDS[nxt]-S.cult:0;
   if(needCult>0)cards.push({i:'🧘',t:'积累修为（还差 '+needCult+'）',d:'闭关修炼或探索历练',go:'panelCult()'});
+  else if(nxt<THRESHOLDS.length)cards.push({i:'⚡',t:'修为已足，可冲击 '+REALMS[nxt],d:'准备心性与渡劫道具后突破',go:'tryBreak()'});
+  const bn=bottleneckInfo(S);
+  if(bn.active)cards.push({i:'⚓',t:'破瓶颈：悟性 '+bn.wis+'/'+bn.wisNeed+' · 历练 '+bn.trail+'/'+bn.trailNeed,d:'功法参悟增悟性 · 探索/试炼塔增历练',go:'panelRest()'});
   if(isBigBreak(nxt)&&effWil(S)<WIL_REQ[nxt]){
     const gap=WIL_REQ[nxt]-effWil(S);
     cards.push({i:'🪷',t:'提升心性 '+gap+' 点（'+effWil(S)+'/'+WIL_REQ[nxt]+'）',d:'静心养神 / 读书抄经 / 清心丹',go:'panelRest()'});
@@ -81,9 +87,10 @@ function tabHome(k){
   const lead=(k==='cult'?tabStatusCult():'')+'<p style="font-size:13px;color:#a99a72;margin:8px 0 10px">'+t.d+'</p>';
   const items=t.items.map((it,i)=>{
     const ok=it.ok===undefined||it.ok();
+    const needTxt=typeof it.need==='function'?it.need():it.need;
     return '<button class="tab-act'+(ok?'':' locked')+'" onclick="tabGo(\''+k+'\','+i+')">'+
       '<span class="tab-act-ico">'+(ok?it.i:'🔒')+'</span>'+
-      '<span class="tab-act-tx"><b>'+esc(it.n)+'</b><small>'+esc(ok?it.desc:('🔒 '+it.need))+'</small></span></button>';
+      '<span class="tab-act-tx"><b>'+esc(it.n)+'</b><small>'+esc(ok?it.desc:('🔒 '+(needTxt||'条件未满足')))+'</small></span></button>';
   }).join('');
   openPanel(t.i+' '+t.n,lead+items+
     '<p style="font-size:12px;color:#6f7a94;margin-top:10px">🔒 表示尚未满足条件，达成后自动解锁。</p>');
@@ -95,7 +102,7 @@ function tabGo(k,i){
   if(!t)return;
   const it=t.items[i];
   if(!it)return;
-  if(it.ok!==undefined&&!it.ok()){toast(it.need||'条件未满足');return}
+  if(it.ok!==undefined&&!it.ok()){const needTxt=typeof it.need==='function'?it.need():it.need;toast(needTxt||'条件未满足');return}
   closePanel();
   it.fn();
 }

@@ -22,6 +22,7 @@ function newState(name,bg,gender){
     seenE:{},seenI:{},wins:0,heartTrains:0,
     heartDemons:0,kills:0,deaths:0,rebirths:0,memories:[],
     demonMarks:[],
+    wis:0,trail:0,
     set:{fx:'med',autoTrib:false,autoCraft:false,audio:true,shake:true},
     age:16,years:0,days:0,pillBuff:0,temp:{break:0},mood:60,
     cultStreak:0,lifeBonus:0,
@@ -123,6 +124,35 @@ function effWil(s){
   const sg=signNow();
   const qj=(s.flag&&s.flag.qingjie)>0?-2:0;
   return attrVal(s,'wil')-Math.min(s.heartDemons,4)+s.temp.break+qj+(sg&&sg.wil?sg.wil:0);
+}
+/* ===== 17 瓶颈系统：悟性 / 历练 ===== */
+function addWis(n){
+  if(!S)return;
+  S.wis=(S.wis||0)+Math.max(1,Math.floor(n||1));
+  dC().c.wis=(dC().c.wis||0)+Math.max(1,Math.floor(n||1));
+}
+function addTrail(n){
+  if(!S)return;
+  S.trail=(S.trail||0)+Math.max(1,Math.floor(n||1));
+  dC().c.trail=(dC().c.trail||0)+Math.max(1,Math.floor(n||1));
+}
+/* 瓶颈判定：修为到达下一境界 90% 时进入瓶颈，需悟性+历练双达标方可全力冲关 */
+function bottleneckInfo(s){
+  s=s||S;
+  const nxt=(s&&s.realm!==undefined)?s.realm+1:1;
+  if(!s||nxt>=THRESHOLDS.length)return {active:false};
+  const thr=THRESHOLDS[nxt];
+  const progress=(s.cult||0)/thr;
+  if(progress<0.9)return {active:false,progress:progress,thr:thr};
+  const wisNeed=8+Math.floor(nxt/2);
+  const trailNeed=4+Math.floor(nxt/2);
+  const active=((s.wis||0)<wisNeed)||((s.trail||0)<trailNeed);
+  return {active:active,progress:progress,thr:thr,wis:(s.wis||0),trail:(s.trail||0),wisNeed:wisNeed,trailNeed:trailNeed};
+}
+/* 瓶颈对修炼效率的压制：触发时 ×0.6 */
+function bottleneckMult(s){
+  const b=bottleneckInfo(s);
+  return b.active?0.6:1;
 }
 function lifespanStr(s){const l=LIFESPANS[s.realm]+(s.lifeBonus||0);return isFinite(l)?l+' 岁':'∞'}
 /* 连续闭关收益递减：满 60 日后每 30 日 -10%，最低 40% */

@@ -107,11 +107,19 @@ function load(){
     if(s.dungeon===undefined)s.dungeon=null;
     if(s.eventChain===undefined)s.eventChain=null;
     if(s.mood===undefined)s.mood=60;
+    if(s.wis===undefined)s.wis=0;
+    if(s.trail===undefined)s.trail=0;
     if(!s.set)s.set={fx:'med',autoTrib:false,autoCraft:false,audio:true,shake:true};
     if(s.gender===undefined)s.gender='男';
     if(s.contribVal===undefined)s.contribVal=0;
     if(s.sectStage===undefined)s.sectStage=s.sect?'outer':null;
     if(s.sectNpcs===undefined)s.sectNpcs=[];
+    if(s.sectNpcs)for(const p of s.sectNpcs){
+      if(!p.name)p.name=uniqueName(p.gender||'男');
+      if(!p.title)p.title=p.role||'宗门弟子';
+      if(p.gender===undefined)p.gender='男';
+      if(!p.artKey)p.artKey=SECT_PERSON_ART[p.role+(p.gender==='女'?'女':'男')]||SECT_PERSON_ART['传功弟子'+(p.gender==='女'?'女':'男')]||'';
+    }
     if(s.companion===undefined)s.companion=null;
     if(!s.affairs)s.affairs=[];
     if(!s.disciples)s.disciples=[];
@@ -249,6 +257,8 @@ function loadFromSlot(i){
   if(!s){toast('该存档位为空');return}
   S=s;
   $('screen-game').style.display='flex';
+  for(const id of ['panel','battle','cultivate','breakthrough','ending','guide']){try{$(id).style.display='none'}catch(e){}}
+  restoreStory();
   scene('重返仙途');
   log('<p>你于洞府中醒来，前尘旧事历历在目，仙途未竟，道心依旧。</p>');
   applyOfflineGain();

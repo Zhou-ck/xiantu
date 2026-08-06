@@ -36,6 +36,7 @@ function doTower(){
   startCombat(e,res=>{
     if(res.win){
       S.flag.tower=floor;
+      addTrail(1);
       recordScore('tower',floor);
       const stones=Math.floor(50+floor*20),cult=Math.floor(40+floor*25+rl()*8);
       S.stones+=stones;S.cult+=cult;
@@ -50,6 +51,7 @@ function doTower(){
       log('<p class="sys">十回合力竭，你被塔灵送出塔外（灵石 +'+g+'）。</p>');
       renderAll();
     }else{
+      if(S.hp<=0)S.hp=1;
       log('<p class="danger">你败下阵来，被塔灵轻柔地送出塔外。养精蓄锐，他日再战。</p>');
       renderAll();
     }
@@ -104,6 +106,7 @@ function doExplore(rid){
   S.flag.explored=true;
   S.flag.exploreCount=(S.flag.exploreCount||0)+1;
   dC().c.explore++;
+  addTrail(1);
     maybeInsight('寻宝途中');
     const tg1=growAttr('agi',0.06,'探幽寻踪，身法渐长'),tg2=growAttr('int',0.06,'推演机关，眼界渐开');
     if(tg1||tg2)log(tg1+tg2);
@@ -117,6 +120,7 @@ function doExplore(rid){
   S.flag.explored=true;
   S.flag.exploreCount=(S.flag.exploreCount||0)+1;
   dC().c.explore++;
+  addTrail(1);
   maybeInsight('山水之间');
   const g1=growAttr('agi',0.08,'山川跋涉，身法渐长'),g2=growAttr('int',0.06,'旅途见闻，眼界渐开');
   if(g1||g2)log(g1+g2);

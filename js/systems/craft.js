@@ -52,7 +52,9 @@ function panelCraft(){
     .map(([k,nm,it])=>'<div class="item-card"><div class="nm">'+esc(it.name)+' <span class="tag">'+nm+'</span>'+(it.strengthen?' <span class="tag">强化+'+it.strengthen+'</span>':'')+'</div><div class="ds">当前加成：+'+(it.bonus||0)+' · 强化需 灵石150 + 铁矿石×1（智慧判定，失败不降级）</div><div style="margin-top:6px"><button class="small" onclick="forgeStrengthen(\''+k+'\')">⚒️ 强化</button></div></div>').join('');
   const bondHtml='<h4>🔮 本命法宝</h4>'+(S.bond?'<div class="item-card"><div class="nm">'+esc(S.bond.name)+' <span class="tag">Lv.'+S.bond.level+'</span></div><div class="ds">与你的'+elemInfo(S.bond.elem).n+'同根同源 · 战斗攻势 +'+(1+S.bond.level)+'（每破一大境界 +1）</div></div>':(S.realm>=13?'<div class="row"><button class="small primary" onclick="refineBondWeapon()">祭炼本命法宝（妖丹×1 + 寒玉×1 + 500灵）</button></div>':'<p style="color:#6f7a94">金丹期方可祭炼本命法宝。</p>'));
   const ec=elemCraftBonus(S.prof);
-  openPanel(PROF_ICON[S.prof]+' '+PROF_NAMES[S.prof]+'（'+S.profLevel+'阶）','<p>⭐ 造诣：'+(S.profLevel*100+S.profExp)+' 经验 · 距下一阶还需 '+(100-S.profExp)+(ec?' · <span class="tag" style="color:#8fd0a0">灵根加成 +'+Math.round(ec*100)+'%</span>':'')+'</p>'+bondHtml+'<h4>📜 丹方 / 图纸</h4>'+list+'<h4>⚒️ 装备强化</h4>'+(eqHtml||'<p style="color:#6f7a94">尚未装备法器/防具/佩饰，先去坊市或秘境弄一件吧。</p>'));
+  openPanel(PROF_ICON[S.prof]+' '+PROF_NAMES[S.prof]+'（'+S.profLevel+'阶）','<p>⭐ 造诣：'+(S.profLevel*100+S.profExp)+' 经验 · 距下一阶还需 '+(100-S.profExp)+(ec?' · <span class="tag" style="color:#8fd0a0">灵根加成 +'+Math.round(ec*100)+'%</span>':'')+'</p>'+
+    '<p style="font-size:12px;color:#6f7a94">炼制有「选材 → 微操」两段交互：选材可加料提纯（品质 +2 档）或以妖丹引灵（判定 +3）；微操凭本事赚品质。不喜可在设置把「副业微操」切为自动。</p>'+
+    bondHtml+'<h4>📜 丹方 / 图纸</h4>'+list+'<h4>⚒️ 装备强化</h4>'+(eqHtml||'<p style="color:#6f7a94">尚未装备法器/防具/佩饰，先去坊市或秘境弄一件吧。</p>'));
 }
 function learnProf(k){
   if(S.stones<800){toast('灵石不足');return}
@@ -75,32 +77,77 @@ function craftBonus(){
 }
 function craft(i){
   const r=RECIPES[S.prof][i];
+  r._prepDone=false;r._prepBonus=0; /* 每次炼制重新选材，避免残留 */
   for(const k in r.need)if((S.mats[k]||0)<r.need[k]){toast('材料不足：'+MAT_NAMES[k]);return}
   if(S.stones<r.cost){toast('灵石不足');return}
   for(const k in r.need)S.mats[k]-=r.need[k];
   S.stones-=r.cost;
   S.flag._crafting=true;
-  /* 2M 副业微操：炼丹火候 / 制符连笔（可跳过，跳过=默认结算） */
-  if((S.prof==='alchemy'||S.prof==='talisman')&&fxOn()&&(!S.set||!S.set.autoCraft)){
-    craftMini(r,i);
+  /* 10/2M 副业交互：四大副业统一「选材 → 微操」两段式（设置可切自动，跳过=默认结算） */
+  if(fxOn()&&(!S.set||!S.set.autoCraft)){
+    craftPrep(r,i);
     return;
   }
   craftResolve(r,i,0);
 }
+/* 选材：每业一种「加料提纯」+「妖丹引灵」，影响品质与判定 */
+const CRAFT_PREP={
+  alchemy:{title:'🌿 炼丹 · 投药',intro:'丹方已备，如何下药颇有讲究——药材的取舍与引药的火种，都影响成丹品质。',
+    boost:'🌿 多加一株灵草提纯（需灵草×1 · 品质 +2 档）',boostKey:'sherb',boostMat:'灵草',boostLv:2,boostLog:'你加入一株灵草提纯药力，炉中药香骤然浓郁。',
+    core:'🔥 以妖丹引火（需妖丹×1 · 判定 +3）',coreLog:'妖丹入炉，丹火猛地一窜，火候变得更好掌控。',
+    normal:'将药材按序投入炉中，只待火候。',normalLog:'你依丹方所言，将药材按序投入炉中。'},
+  forge:{title:'🔨 炼器 · 选料',intro:'炉火已燃，胚料如何配比颇有讲究——料足则器坚，引灵则器灵。',
+    boost:'⭐ 加一块铁矿石提纯（需铁矿石×1 · 品质 +2 档）',boostKey:'iron',boostMat:'铁矿石',boostLv:2,boostLog:'你添入一块精铁矿石，炉中灵焰骤然凝实。',
+    core:'🔥 以妖丹淬火（需妖丹×1 · 判定 +3）',coreLog:'妖丹投入炉中，器胚泛起一层暗红宝光。',
+    normal:'依图纸配比投料，匀火熔炼。',normalLog:'你依图纸配比投料，炉火均匀舔舐着胚料。'},
+  talisman:{title:'🪄 制符 · 调墨',intro:'符纸铺开，墨色浓淡皆关乎灵性——墨足则符灵，点睛则符活。',
+    boost:'⭐ 加一份朱砂提纯（需朱砂×1 · 品质 +2 档）',boostKey:'cinnabar',boostMat:'朱砂',boostLv:2,boostLog:'你多加一份朱砂，砚中灵墨殷红如血。',
+    core:'🔥 以妖丹血点睛（需妖丹×1 · 判定 +3）',coreLog:'妖丹研磨入墨，笔尖隐隐泛出灵光。',
+    normal:'按式调墨，浓淡相宜。',normalLog:'你按符式调好朱砂墨，提笔凝神。'},
+  array:{title:'🧿 布阵 · 选基',intro:'阵基乃阵法之骨——灵石摆放、阵眼镇物皆有讲究。',
+    boost:'⭐ 加一枚寒玉镇阵眼（需寒玉×1 · 品质 +2 档）',boostKey:'jade',boostMat:'寒玉',boostLv:2,boostLog:'你将寒玉嵌入阵眼，阵纹泛起清冷灵光。',
+    core:'🔥 以妖丹引灵（需妖丹×1 · 判定 +3）',coreLog:'妖丹置于阵枢，灵力如潮涌入阵纹。',
+    normal:'依阵图布基，中规中矩。',normalLog:'你依阵图布置阵基，灵石嵌合得严丝合缝。'},
+};
+function craftPrep(r,i){
+  const p=CRAFT_PREP[S.prof];
+  if(!p){r._prepDone=true;craftMini(r,i);return}
+  openEventModal(p.title,'<p>'+p.intro+'</p><p class="sys">选材不影响成功率，只影响成品品质与判定加成。</p>',[
+    {txt:'📜 按方行事（稳妥）',fn:()=>{r._prepDone=true;log('<p>'+p.normalLog+'</p>');craftMini(r,i)}},
+    {txt:p.boost,fn:()=>{if((S.mats[p.boostKey]||0)<1){toast(p.boostMat+'不足');return}if((S.profLevel||1)<p.boostLv){toast(PROF_NAMES[S.prof]+'造诣不足，此手法需 '+p.boostLv+' 阶');return}S.mats[p.boostKey]--;r._prepDone=true;r._prepBonus=2;log('<p class="good">'+p.boostLog+'</p>');craftMini(r,i)}},
+    {txt:p.core,fn:()=>{if((S.mats.demonCore||0)<1){toast('妖丹不足');return}S.mats.demonCore--;r._prepDone=true;r._prepBonus=3;log('<p class="good">'+p.coreLog+'</p>');craftMini(r,i)}},
+    {txt:'🚶 照常炼制',fn:()=>{r._prepDone=true;craftMini(r,i)}},
+  ]);
+}
 function craftMini(r,i){
+  const b=r._prepBonus||0;
   if(S.prof==='alchemy'){
     openEventModal('⚗️ 炼丹 · 火候微操','<p>丹炉火光跳动，药液翻滚——火候的时机稍纵即逝。</p><p class="sys">「文火温养」稳中求进；「猛火催化」富贵险中求；「看准时机」凭本事吃饭。微操仅影响品质，失败也只会返还一半材料。</p>',[
-      {txt:'🔥 文火温养（稳 · 判定 +1）',fn:()=>craftResolve(r,i,1)},
-      {txt:'⚡ 猛火催化（赌 · 成败各半）',fn:()=>craftResolve(r,i,chance(0.5)?3:-4)},
-      {txt:'🎯 看准时机（智慧判定）',fn:()=>{const R=doRoll('int',14);log('<p>你紧盯炉火，在药液沸腾的刹那掐诀：'+rollBadge(R.r,R.mod,R.t,R.dc)+'</p>');craftResolve(r,i,R.hit?3:-2)}},
-      {txt:'🚶 不玩了，照常炼制',fn:()=>craftResolve(r,i,0)},
+      {txt:'🔥 文火温养（稳 · 判定 +1）',fn:()=>craftResolve(r,i,1+b)},
+      {txt:'⚡ 猛火催化（赌 · 成败各半）',fn:()=>craftResolve(r,i,(chance(0.5)?3:-4)+b)},
+      {txt:'🎯 看准时机（智慧判定）',fn:()=>{const R=doRoll('int',14);log('<p>你紧盯炉火，在药液沸腾的刹那掐诀：'+rollBadge(R.r,R.mod,R.t,R.dc)+'</p>');craftResolve(r,i,(R.hit?3:-2)+b)}},
+      {txt:'🚶 不玩了，照常炼制',fn:()=>craftResolve(r,i,b)},
     ]);
-  }else{
+  }else if(S.prof==='forge'){
+    openEventModal('🔨 炼器 · 锻打微操','<p>炉中器胚通红，你抄起灵锤——落锤的轻重缓急，决定器胚的致密与灵性。</p><p class="sys">「稳锤慢打」稳中求进；「重锤猛击」富贵险中求；「看准时机」凭本事吃饭。</p>',[
+      {txt:'🔨 稳锤慢打（稳 · 判定 +1）',fn:()=>craftResolve(r,i,1+b)},
+      {txt:'💥 重锤猛击（赌 · 成败各半）',fn:()=>craftResolve(r,i,(chance(0.5)?3:-4)+b)},
+      {txt:'🎯 看准时机落锤（智慧判定）',fn:()=>{const R=doRoll('int',14);log('<p>你盯住器胚变色的刹那抡下灵锤：'+rollBadge(R.r,R.mod,R.t,R.dc)+'</p>');craftResolve(r,i,(R.hit?3:-2)+b)}},
+      {txt:'🚶 不玩了，照常打造',fn:()=>craftResolve(r,i,b)},
+    ]);
+  }else if(S.prof==='talisman'){
     openEventModal('🪄 制符 · 连笔微操','<p>符纸铺开，朱砂砚中漾着灵光——运笔的轻重缓急，全在毫厘之间。</p>',[
-      {txt:'✍️ 从容落笔（稳 · 判定 +1）',fn:()=>craftResolve(r,i,1)},
-      {txt:'🌀 疾走龙蛇（身法判定）',fn:()=>{const R=doRoll('agi',14);log('<p>你手腕一抖，笔走龙蛇：'+rollBadge(R.r,R.mod,R.t,R.dc)+'</p>');craftResolve(r,i,R.hit?2:-2)}},
-      {txt:'🎯 一笔呵成（智慧判定）',fn:()=>{const R=doRoll('int',15);log('<p>你凝神静气，一笔到底：'+rollBadge(R.r,R.mod,R.t,R.dc)+'</p>');craftResolve(r,i,R.hit?4:-4)}},
-      {txt:'🚶 不玩了，照常制符',fn:()=>craftResolve(r,i,0)},
+      {txt:'✍️ 从容落笔（稳 · 判定 +1）',fn:()=>craftResolve(r,i,1+b)},
+      {txt:'🌀 疾走龙蛇（身法判定）',fn:()=>{const R=doRoll('agi',14);log('<p>你手腕一抖，笔走龙蛇：'+rollBadge(R.r,R.mod,R.t,R.dc)+'</p>');craftResolve(r,i,(R.hit?2:-2)+b)}},
+      {txt:'🎯 一笔呵成（智慧判定）',fn:()=>{const R=doRoll('int',15);log('<p>你凝神静气，一笔到底：'+rollBadge(R.r,R.mod,R.t,R.dc)+'</p>');craftResolve(r,i,(R.hit?4:-4)+b)}},
+      {txt:'🚶 不玩了，照常制符',fn:()=>craftResolve(r,i,b)},
+    ]);
+  }else if(S.prof==='array'){
+    openEventModal('🧿 布阵 · 引灵微操','<p>阵基已定，只差引灵入阵的时机——灵力灌注的节奏，决定阵法威力。</p><p class="sys">「中规中矩」稳中求进；「险阵求奇」富贵险中求；「看准时机」凭本事吃饭。</p>',[
+      {txt:'🧿 中规中矩布九宫（稳 · 判定 +1）',fn:()=>craftResolve(r,i,1+b)},
+      {txt:'⚡ 险阵求奇效（赌 · 成败各半）',fn:()=>craftResolve(r,i,(chance(0.5)?3:-4)+b)},
+      {txt:'🎯 看准天时引灵（智慧判定）',fn:()=>{const R=doRoll('int',14);log('<p>你掐算天时，在灵气最盛的一瞬引灵入阵：'+rollBadge(R.r,R.mod,R.t,R.dc)+'</p>');craftResolve(r,i,(R.hit?3:-2)+b)}},
+      {txt:'🚶 不玩了，照常布阵',fn:()=>craftResolve(r,i,b)},
     ]);
   }
 }
@@ -108,7 +155,7 @@ function craftResolve(r,i,mini){
   const R=doRoll('int',r.dc,craftBonus()+(mini||0));
   log('<p>你凝神静气，着手炼制 <b>'+r.name+'</b>：'+rollBadge(R.r,R.mod,R.t,R.dc)+'</p>');
   if(R.hit){
-    if((mini||0)>=3)log('<p class="good">火候拿捏得妙极，炉中灵光暴涨！</p>');
+    if((mini||0)>=3)log('<p class="good">手法拿捏得妙极，'+PROF_ICON[S.prof]+'灵光暴涨！</p>');
     const qTier=R.t-r.dc>=15?'极品':R.t-r.dc>=10?'上品':R.t-r.dc>=5?'中品':'下品';
     if(r.eff==='heal')addItem({name:'回春丹',type:'consumable',quality:r.q,count:1,desc:r.desc,use:'heal',sell:60});
     else if(r.eff==='pill')addItem({name:'聚灵丹',type:'consumable',quality:r.q,count:1,desc:r.desc,use:'pill',sell:120});

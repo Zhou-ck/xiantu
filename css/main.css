@@ -111,6 +111,7 @@ header .spacer{flex:1}
 #scrim{position:fixed;inset:0;background:rgba(5,7,12,.55);z-index:35;display:none}
 #story{
   flex:1;overflow:auto;padding:22px 26px;position:relative;
+  overscroll-behavior:contain;
   background:
     radial-gradient(ellipse at 50% -20%,rgba(90,105,160,.16),transparent 55%),
     linear-gradient(180deg,rgba(15,18,30,.08),rgba(14,17,28,.45)),
@@ -221,6 +222,9 @@ header .spacer{flex:1}
 .tome-cell{text-align:center;font-size:12px;color:#c9b98e}
 .tome-cell img{width:64px;height:64px;border-radius:50%;object-fit:cover;margin-bottom:3px}
 .item-card .ds{color:#a99a72;font-size:12px;margin-top:3px;line-height:1.65}
+.child-card{display:flex;align-items:center;gap:8px}
+.child-card .art-img,.child-avatar{width:40px;height:40px;border-radius:50%;object-fit:cover;flex:0 0 auto}
+#signBox{background:linear-gradient(180deg,rgba(201,162,75,.10),rgba(201,162,75,.03));border:1px solid rgba(201,162,75,.35);border-radius:8px;padding:8px 12px;margin:6px 0}
 .q0{color:#cfd3dc}.q1{color:#8fc08f}.q2{color:#8fb8d8}.q3{color:#d8a8e8}.q4{color:#ffd75e}
 
 #ending{
@@ -292,7 +296,7 @@ header .spacer{flex:1}
   #guideBox{padding:20px 16px}
   #guideBox p{font-size:13.5px}
   #guideBox h3{font-size:17px}
-  #battleBox{width:96vw;border-radius:12px}
+  #battleBox{width:96vw;border-radius:12px;overflow-y:auto}
   .bside{padding:8px 12px 4px}
   #battleLog{max-height:30vh;margin:6px 10px;padding:8px 10px;font-size:12.5px}
   #battleHead{font-size:14.5px}
@@ -329,7 +333,8 @@ header .spacer{flex:1}
 #battleResult h4{color:var(--gold2);margin-bottom:5px;letter-spacing:2px}
 #battleResult p{display:flex;justify-content:space-between;gap:12px;margin:2px 0}
 #battleResult p b{font-weight:normal;color:#f0e6c8;text-align:right}
-#battleFoot{padding:0 14px 14px;display:flex;justify-content:center}
+#battleResult{max-height:26vh;overflow-y:auto}
+#battleFoot{padding:0 14px 14px;display:flex;justify-content:center;position:sticky;bottom:0;background:linear-gradient(180deg,#141724 60%,#10131d);z-index:2}
 #cultivate{position:fixed;inset:0;z-index:54;display:none;align-items:center;justify-content:center;background:rgba(5,7,12,.82);backdrop-filter:blur(3px)}
 #cultBox{width:min(560px,94vw);max-height:92vh;display:flex;flex-direction:column;background:linear-gradient(180deg,#232940,#141724);border:1px solid var(--gold);border-radius:14px;box-shadow:0 0 60px rgba(0,0,0,.8);overflow:hidden}
 #cultHead{padding:11px 16px;text-align:center;color:var(--gold2);letter-spacing:3px;font-size:16px;border-bottom:1px solid #3a3f5c;background:rgba(0,0,0,.22)}

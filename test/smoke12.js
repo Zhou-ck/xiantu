@@ -29,7 +29,7 @@ assert(vm.runInContext('S.attrs.agi',ctx)===6,'轻身丹身法+1');
 vm.runInContext(`
   S=newState('测',BACKGROUNDS[0]);
   for(const k in S.attrs)S.attrs[k]=10;
-  S.root=50; S.luck=50; S.cult=5000; S.realm=0; S.kills=3;
+  S.root=50; S.luck=50; S.cult=14000; S.realm=0; S.kills=3;
   S.items=[{name:'筑基丹',type:'consumable',quality:2,use:'break'}];
   S.arts=[{name:'太乙剑诀',mult:1.2}];
   S.attrs.wil=40; S.heartDemons=0; S.temp={break:0};

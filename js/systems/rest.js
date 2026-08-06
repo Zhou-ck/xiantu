@@ -142,6 +142,8 @@ function readBooks(){
   const got=S.attrs.wil-before;
   log('<p>你于书斋/藏经阁中静心抄读三十日，胸中块垒渐消。</p>'+(got>0?'<p class="good">道心更为沉凝（心性 +'+got+'，现 '+S.attrs.wil+'）。</p>':'<p class="sys">道心已至上限，读之无益。</p>'));
   S.flag.readCd=30;
+  addWis(1);
+  log('<p class="sys">书卷气养灵台，悟性 +1。</p>');
   passTime(30);renderAll();
 }
 const TRUST_TIERS={free:{n:'免费托管',mult:0.4},stones:{n:'灵石托管',mult:0.65},pill:{n:'聚灵丹托管',mult:0.85},elixir:{n:'灵乳托管',mult:1.05}};
@@ -267,6 +269,10 @@ function panelRest(){
   }).join('');
   openPanel('🏡 洞府',
     '<p>山中方一日，世上已千年。此处是你的道场：歇息、种药、参悟功法、求问天机。</p>'+
+    '<h4>📜 天机签（每季一签）</h4><div id="signBox">'+
+    '<p>'+(canSign?'焚香祝祷，可窥本季天机——吉凶由命，签意自现，亦可凭此趋吉避凶。':'<span style="color:#e8c86a">本季已求：'+signDesc(sg.k)+'</span>')+'</p>'+
+    (canSign?'<div class="row"><button class="small primary" onclick="drawSign()">🪷 焚香求签（一日）</button></div>':'')+
+    '</div>'+
     '<h4>😴 歇息</h4><div class="row"><button onclick="doRest()">休整一日（恢复气血 35%）</button></div>'+
     '<h4>📖 读书抄经</h4>'+
     (S.flag.readCd>0?'<p style="color:#6f7a94">你近来抄读已多（'+(30-S.flag.readCd)+' 日后可再读）。</p>':'<div class="row"><button onclick="readBooks()">静读抄经 30 日（养道心）</button></div>')+
@@ -310,9 +316,6 @@ function panelRest(){
       '<button onclick="restHeal(10)">静养 10 日</button>'+
       '<button onclick="restHeal(30)">静养 30 日</button></div>'
       :'<p style="color:#6f7a94">身上并无伤势，休整即可。</p>')+
-    '<h4>📜 天机签（每季一签）</h4>'+
-    '<p>'+(canSign?'焚香祝祷，可窥本季天机——吉凶由命，签意自现，亦可凭此趋吉避凶。':'本季已求：'+signDesc(sg.k))+'</p>'+
-    (canSign?'<div class="row"><button class="small primary" onclick="drawSign()">🪷 焚香求签（一日）</button></div>':'')+
     '<p style="font-size:12.5px;color:#6f7a94">灵田成熟需自然流逝时间；试炼塔与秘境在「探索」中开启；离线期间可挂机修行（上限 12 小时）。</p>');
 }
 /* 11 洞府房间化：各房间强化对应玩法 */
@@ -395,9 +398,11 @@ function cultivateArt(i){
   log('<p>你于洞府中摊开《'+a.name+'》的玉简，心神沉入字里行间：'+rollBadge(R.r,R.mod,R.t,R.dc)+'</p>');
   if(R.hit){
     a.level=lv+1;
-    log('<p class="good">灵光一闪，你将《'+a.name+'》参悟至<b>第 '+(lv+1)+' 重</b>（修炼效率 ×'+((a.mult+lv*0.05)).toFixed(2)+'）。</p>');
+    addWis(1);
+    log('<p class="good">灵光一闪，你将《'+a.name+'》参悟至<b>第 '+(lv+1)+' 重</b>（修炼效率 ×'+((a.mult+lv*0.05)).toFixed(2)+'，悟性 +1）。</p>');
   }else{
-    log('<p class="danger">功法深奥晦涩，你参悟良久不得其门（灵石已耗）。</p>');
+    addWis(1);
+    log('<p class="sys">功法深奥晦涩，你参悟良久虽未破关，却对道之玄奥多了一分体悟（灵石已耗，悟性 +1）。</p>');
     if(R.fumble&&chance(0.3)){S.heartDemons++;log('<p class="danger">强参功法，你气血逆行，添了一道心魔烙印（心魔+1）。</p>')}
   }
   passTime(30);renderAll();
@@ -410,4 +415,9 @@ function drawSign(){
   const cls=(sg.k==='great'||sg.k==='war'||sg.k==='calm'||sg.k==='wealth'||sg.k==='cult'||sg.k==='luck')?'good':(sg.k==='sorrow'?'danger':'sys');
   log('<p>你于洞府净手焚香，诚心祝祷。签筒轻摇，一支竹签「啪」地落于案上。</p><p class="'+cls+'">【'+sg.n+'】'+sg.d+'</p>');
   panelRest();passTime(1);renderAll();
+  toast('求得【'+sg.n+'】');
+  try{
+    const pb=document.getElementById('panelBody'),sb=document.getElementById('signBox');
+    if(pb&&sb)pb.scrollTop=Math.max(0,sb.offsetTop-12);
+  }catch(e){}
 }

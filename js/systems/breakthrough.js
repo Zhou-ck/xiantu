@@ -76,6 +76,7 @@ function tryBreak(){
   /* 小境界：蓄势→冲关→一举数层 */
   if(!isBigBreak(nxt)){
     const names=[],layerGains=[];
+    const startRealm=S.realm;
     while(nxt<THRESHOLDS.length&&!isBigBreak(nxt)&&S.cult>=THRESHOLDS[nxt]){
       names.push(REALMS[nxt]);
       const la=LAYER_ATTRS[nxt];
@@ -91,10 +92,15 @@ function tryBreak(){
       {t:'<span class="bt-good">✓ 境界提升：'+names.join(' → ')+'</span>',f:'aura',b:100,d:750},
     ],()=>{
       S.realm=target;
+      /* 17 突破后修为重算：扣除已消耗的各层门槛，余量结转，不再累加 */
+      let consumed=0;
+      for(let r=startRealm+1;r<=target;r++)consumed+=THRESHOLDS[r];
+      S.cult=Math.max(0,S.cult-consumed);
+      addWis(1);
       for(const la of layerGains)S.attrs[la]=clamp(S.attrs[la]+1,1,40);
       S.maxHp=calcMaxHp(S);S.hp=Math.max(S.hp,Math.floor(S.maxHp*0.6));
       scene('突破 · '+names.join(' → '));
-      log('<p>体内真气如江河决堤，窍穴逐一洞开。你长身而起，只觉耳目一新，天地灵气更为亲近。</p><p class="good">境界提升：'+names.join(' → ')+'</p>');
+      log('<p>体内真气如江河决堤，窍穴逐一洞开。你长身而起，只觉耳目一新，天地灵气更为亲近。</p><p class="good">境界提升：'+names.join(' → ')+'</p><p class="sys">突破耗去修为 '+consumed+'，余 '+S.cult+' 结转至新境界（悟性 +1）。</p>');
       if(layerGains.length)log('<p class="good">境界攀升，根基渐固（'+layerGains.map(k=>ATTR_NAMES[k]+' +1').join('、')+'）。</p>');
       breakClose();
       if(contBig){tryBreak();return}
@@ -314,9 +320,13 @@ function applyBreakSuccess(nxt,R,kMod,pre){
   for(const x of pre.thunderFails)if(x.fail)S.hp=Math.max(1,S.hp-Math.floor(S.maxHp*0.25));
   if(pre.heartFail)addDemonMark('fear',60);
   S.realm=nxt;S.maxHp=calcMaxHp(S);S.hp=Math.max(S.hp,Math.floor(S.maxHp*0.6));
+  /* 17 突破后修为重算：扣除本次大境界门槛，余量结转 */
+  S.cult=Math.max(0,S.cult-THRESHOLDS[nxt]);
+  addWis(1);
   S.temp.break=0;
   scene('突破 · '+REALMS[nxt]);
   log('<p class="good">道门轰然洞开！你迈入 <b>'+REALMS[nxt]+'</b>，天地为之一阔，寿元增至 <b>'+LIFESPANS[nxt]+' 岁</b>。</p>');
+  log('<p class="sys">突破耗去修为 '+THRESHOLDS[nxt]+'，余 '+S.cult+' 结转至新境界（悟性 +1）。</p>');
   const ul=unlockListAt(nxt);
   if(ul)log('<p class="loot">🎁 本次突破解锁：'+ul+'</p>');
   if(nxt>=9&&S.heartDemons>0){S.heartDemons--;log('<p class="good">天地灵气涤荡心扉，一道心魔烙印随之消去。</p>')}

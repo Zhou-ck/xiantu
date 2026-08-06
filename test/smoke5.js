@@ -44,7 +44,9 @@ assert(vm.runInContext('document.getElementById("cultPartner")._html.indexOf("�
 assert(vm.runInContext('document.getElementById("cultMode")._txt',ctx).indexOf('双人同修')>=0,'模式按钮显示双人同修');
 vm.runInContext(`{ cultToggleMode(); window.__solo=_cult.solo; }`,ctx);
 assert(vm.runInContext('window.__solo===true',ctx),'可切换为独修守心');
-vm.runInContext(`{ cultToggleMode(); var n=0; while(_cult&&!_cult.done&&n<2000){_cultTick(); n++;} window.__f=S.daoPartner.favor; window.__dc=S.flag.dualCount; }`,ctx);
+vm.runInContext(`{ const before=_cult.solo; cultToggleMode(); window.__blocked=_cult.solo===before; }`,ctx);
+assert(vm.runInContext('window.__blocked===true',ctx),'刚切换后 10 日内不可再次切换（防频繁切换）');
+vm.runInContext(`{ _cult.lastSwitchDay=-99; _cult.switches=0; _cult.solo=false; _cult.curMode='dual'; var n=0; while(_cult&&!_cult.done&&n<2000){_cultTick(); n++;} window.__f=S.daoPartner.favor; window.__dc=S.flag.dualCount; }`,ctx);
 assert(vm.runInContext('window.__f===71&&window.__dc===1',ctx),'双修完成后情缘+1、双修次数+1');
 // 6) 独修模式：有道侣时独修不加双修计数
 vm.runInContext(`{ S=newState('测',BACKGROUNDS[0]); S.cult=0; S.cultStreak=0; S.days=0; S.realm=0; PENDING=0; S.daoPartner={name:'苏婉',role:'采药女',stage:3,favor:70,affinity:60}; S.flag.dualCount=0; doCultivate(30,'quiet',{auto:false,noEvents:true,solo:true}); var n=0; while(_cult&&!_cult.done&&n<2000){_cultTick(); n++;} window.__dc2=S.flag.dualCount||0; }`,ctx);

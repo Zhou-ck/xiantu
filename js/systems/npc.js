@@ -62,10 +62,11 @@ function relTags(n){
 }
 function genNPCs(s){
   const list=[];
+  const used=usedNameSet();
   for(const p of NPC_POOL){
     const realm=clamp(bigStage(s.realm)+rand(-1,2),0,9);
     list.push({
-      name:randomName(p.gender),role:p.role,desc:p.desc,style:p.style,gender:p.gender,
+      name:uniqueName(p.gender,used),role:p.role,desc:p.desc,style:p.style,gender:p.gender,
       persona:p.persona,taste:p.taste,chat:p.chat,
       favor:rand(10,45),realm:realm,stage:realm,atk:5+realm*2,hp:25+realm*15,
       teacher:chance(0.25),art:pick(ARTS),mood:rand(50,80),
@@ -73,7 +74,7 @@ function genNPCs(s){
     });
   }
   if(s.bg&&s.bg.traits.some(t=>t.id==='exile')){
-    list.push({name:'秦府执事',role:'仇家',desc:'当年构陷你父辈的秦家执事，仍在暗中搜寻你的下落。',style:'str',gender:'男',persona:'阴鸷',taste:'灵',favor:0,realm:clamp(bigStage(s.realm)+1,1,9),stage:clamp(bigStage(s.realm)+1,1,9),atk:8+bigStage(s.realm)*2,hp:35+bigStage(s.realm)*15,foe:true,mood:30,talks:0,gifts:0,growth:0,met:true,cd:{talk:0,duel:0,gift:0}});
+    list.push({name:uniqueName('男',used),role:'仇家',desc:'当年构陷你父辈的秦家执事，仍在暗中搜寻你的下落。',style:'str',gender:'男',persona:'阴鸷',taste:'灵',favor:0,realm:clamp(bigStage(s.realm)+1,1,9),stage:clamp(bigStage(s.realm)+1,1,9),atk:8+bigStage(s.realm)*2,hp:35+bigStage(s.realm)*15,foe:true,mood:30,talks:0,gifts:0,growth:0,met:true,cd:{talk:0,duel:0,gift:0}});
   }
   /* 开局只与 3 位修士相识，其余须通过游历偶遇解锁 */
   const known=[];

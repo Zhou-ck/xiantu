@@ -31,6 +31,22 @@
 |---|---|---|---|---|---|
 | （暂无） | — | — | — | — | — |
 
+## 三·补、2026-08-06 新增 AI 生成立绘（免署名）
+
+| 图片 | 来源 | 授权 | 水印 | 用途 | 生成日期 |
+|---|---|---|---|---|---|
+| assets/portraits/child_m.jpg | LuckyAPI gpt-image-2（按次，用户授权） | 生成即所有，可商用免署名 | 无（视觉抽查确认） | 子嗣·男童立绘 | 2026-08-06 |
+| assets/portraits/child_f.jpg | LuckyAPI gpt-image-2（按次，用户授权） | 同上 | 无（视觉抽查确认） | 子嗣·女童立绘 | 2026-08-06 |
+| assets/portraits/npc_shengnv.jpg | LuckyAPI gpt-image-2（按次，用户授权） | 同上 | 无（视觉抽查确认） | 魔道圣女立绘 | 2026-08-06 |
+| assets/portraits/npc_binggong.jpg | LuckyAPI gpt-image-2（按次，用户授权） | 同上 | 无 | 冰宫仙子立绘 | 2026-08-06 |
+| assets/portraits/npc_qinshuang.jpg | LuckyAPI gpt-image-2（按次，用户授权） | 同上 | 无 | 琴阁双姝立绘 | 2026-08-06 |
+| assets/portraits/npc_caishen.jpg | LuckyAPI gpt-image-2（按次，用户授权） | 同上 | 无 | 商道女财神立绘 | 2026-08-06 |
+| assets/portraits/npc_jianshi.jpg | LuckyAPI gpt-image-2（按次，用户授权） | 同上 | 无 | 昆仑剑侍立绘 | 2026-08-06 |
+| assets/portraits/npc_baonv.jpg | LuckyAPI gpt-image-2（按次，用户授权） | 同上 | 无 | 妖族豹女立绘 | 2026-08-06 |
+
+> 说明：以上 8 张均由图像生成接口（模型名 `(按次)gpt-image-2`，经 `/v1/models` 校验）生成，
+> 512×512 裁切转 JPG（33-67KB）入仓；生成提示均含「无文字、无水印」，并已用视觉桥抽查 3 张确认干净。
+
 ## 四、无水印规则
 
 1. 优先使用原生无水印渠道（Pixabay / itch.io 包内文件 / OGA / Kenney / summerengine）；

@@ -7,8 +7,12 @@
 function panelCult(){
   const dim=(S.cultStreak||0)>=60?'<p class="danger">⚠️ 你已连续闭关 '+S.cultStreak+' 日，道基渐惰——此后每闭关 30 日收益再降 10%（最低 40%）。外出探索、访友、办事可重置此状态。</p>':'';
   const sg=signNow();
-  openPanel('🧘 闭关修炼','<p>山中无甲子，寒尽不知年。闭关可稳步增长修为，效率受<b>灵根</b>与<b>功法</b>影响'+(S.pillBuff>0?'，聚灵丹之力尚余 '+S.pillBuff+' 日（效率×1.5）':'')+'。</p>'+
+  const realmTxt=S.realm<9?'炼气如溪流，缓缓汇入丹田，正是打根基之时。':S.realm<17?'道基已筑，金丹在望，灵气如潮，须步步为营。':S.realm<29?'元婴既成，念动而天地应，闭关之效远胜从前。':'合体大乘之资，每一分修为，皆是自天地间争来的造化。';
+  const bn=bottleneckInfo(S);
+  const bnHtml=bn.active?'<div class="item-card"><div class="nm">⚓ 瓶颈压制</div><div class="ds">修为已至下一境界 '+(Math.floor(bn.progress*100))+'%，然悟性（'+bn.wis+'/'+bn.wisNeed+'）或历练（'+bn.trail+'/'+bn.trailNeed+'）未足，闭关效率降至 ×0.6。满足二者后瓶颈自解。</div><div class="row"><button class="small" onclick="panelRest()">📖 功法参悟 · 增悟性</button><button class="small" onclick="panelExplore()">🗺️ 探索历练 · 增历练</button></div></div>':(bn.progress>=0.9?'<p style="color:#8fd0a0">⚓ 修为已足，悟性与历练兼备——瓶颈已破，可全力冲关，准备突破。</p>':'');
+  openPanel('🧘 闭关修炼','<p>山中无甲子，寒尽不知年。'+realmTxt+'闭关可稳步增长修为，效率受<b>灵根</b>与<b>功法</b>影响'+(S.pillBuff>0?'，聚灵丹之力尚余 '+S.pillBuff+' 日（效率×1.5）':'')+'。</p>'+
     '<p style="font-size:13px;color:#a99a72">闭关将进入<b>修炼窗口</b>：按真实时间缓缓推进，途中或有异动需当场抉择，可随时「提前出关」按进度结算；若有道侣相伴，可在窗口中切换<b>双人同修</b>。</p>'+
+    bnHtml+
     '<h4>☯️ 静修（稳妥）</h4>'+
     '<div class="row">'+
     '<button onclick="doCultivate(7,\'quiet\')">⏳ 7 日</button>'+
@@ -44,6 +48,8 @@ function cultBreakdown(){
   if(S.daoPartner)parts.push('道侣 ×1.2');
   if(S.realm<=2)parts.push('新人 ×1.2');
   const sg=signNow();if(sg&&sg.cult)parts.push('天机签 ×'+sg.cult.toFixed(2));
+  const bn=bottleneckInfo(S);
+  if(bn.active)parts.push('<b style="color:#e08a8a">⚓ 瓶颈 ×0.6</b>');
   return '<p style="font-size:12.5px;color:#a99a72;margin:4px 0">效率分解：'+parts.join(' · ')+'</p>';
 }
 /* 闭关修炼弹窗：真实时间推进 + 途中异动抉择 + 加成一览 + 道侣双修 */
@@ -59,12 +65,29 @@ const CULT_FLAVOR=[
   '偶有鸟鸣入耳，却不扰半分心神。',
   '你感觉筋骨中传来阵阵暖意。',
 ];
+const CULT_FLAVOR_MID=[
+  '丹田之中灵光流转，隐隐已成气象。',
+  '灵气如溪汇河，经脉中的真元愈发浑厚。',
+  '闭目内视，道基之上浮起一层温润灵光。',
+  '天地灵气随呼吸起伏，与你的功法暗暗相合。',
+  '窗外的云海翻涌不休，你的气息却稳如磐石。',
+];
+const CULT_FLAVOR_HIGH=[
+  '灵潮自地脉涌来，丹田如海纳百川。',
+  '体内真元凝若实质，窍穴间隐有雷音。',
+  '一缕道韵垂落，识海中浮现山河万里的虚影。',
+  '天地灵气如潮汐涨落，你的修为随之起落。',
+  '你隐约触到一线大道真意，又转瞬即逝，似有所悟。',
+];
+/* 14 随修为变化：异动判定难度与收益随境界提升，提示词分境界 */
+function cultDc(base){return Math.min(30,base+Math.floor(S.realm/4)+(bigStage(S.realm)>=5?2:0))}
+function cultGain(base){return Math.floor(base*(1+bigStage(S.realm)*0.25)*(1+S.root/140))}
 let _cult=null,_cultTimer=null;
 function doCultivate(days,mode,opts){
   closePanel();
   mode=mode||'quiet';
   const realMs=Math.max(4000,Math.min(60000,days*350));
-  _cult={days:days,mode:mode,elapsed:0,realMs:realMs,paused:false,done:false,solo:!S.daoPartner,auto:true,tick:0,choices:null,pool:[],fired:0,want:0,trust:false,queued:[]};
+  _cult={days:days,mode:mode,elapsed:0,realMs:realMs,paused:false,done:false,solo:!S.daoPartner,auto:true,tick:0,choices:null,pool:[],fired:0,want:0,trust:false,queued:[],switches:0,lastSwitchDay:-99,curMode:S.daoPartner?'solo':'solo',modeStart:0,modeDays:{solo:0,dual:0}};
   if(opts&&opts.solo!==undefined)_cult.solo=!!opts.solo;
   if(opts&&opts.auto===false)_cult.auto=false;
   if(opts&&opts.trust)_cult.trust=true;
@@ -117,6 +140,8 @@ function _cultChips(){
   const chips=[];
   chips.push('灵根 '+rootTier(S.root)[0]);
   chips.push('功法 ×'+S.arts.reduce((a,x)=>a*(x.mult+((x.level||1)-1)*0.05),1).toFixed(2));
+  const bn=bottleneckInfo(S);
+  if(bn.active)chips.push(['⚓ 瓶颈 ×0.6',true]);
   if(S.pillBuff>0)chips.push('聚灵丹 ×1.5');
   const sg=signNow();if(sg&&sg.cult)chips.push('📜 '+signDesc(sg.k));
   if(S.flag.matrix)chips.push('聚灵阵 ×1.15');
@@ -124,6 +149,7 @@ function _cultChips(){
   if(S.realm<=2)chips.push('✨ 新人 ×1.2');
   if(_cult.mode==='bitter')chips.push('🔥 苦修 ×1.4');
   if(S.daoPartner&&!_cult.solo)chips.push('☯️ 双修 ×1.2');
+  if(S.daoPartner)chips.push('⇄ 切换 '+(_cult.switches||0)+'/3');
   if((S.cultStreak||0)>=60)chips.push(['⚠️ 收益递减',true]);
   return chips.map(c=>Array.isArray(c)?'<span class="cult-chip warn">'+esc(c[0])+'</span>':'<span class="cult-chip">'+esc(c)+'</span>').join('');
 }
@@ -136,7 +162,8 @@ function _cultLogLine(html){
 }
 function _cultFlavor(){
   if(!_cult||_cult.done)return;
-  _cultLogLine('<span class="cult-line">'+pick(CULT_FLAVOR)+'</span>');
+  const pool=S.realm>=17?CULT_FLAVOR_HIGH:S.realm>=9?CULT_FLAVOR_MID:CULT_FLAVOR;
+  _cultLogLine('<span class="cult-line">'+pick(pool)+'</span>');
 }
 function _cultTick(){
   if(!_cult||_cult.done)return;
@@ -254,8 +281,20 @@ function _cultResolve(i){
 }
 function cultToggleMode(){
   if(!_cult||_cult.done||_cult.paused){toast('眼前之事未了');return}
+  if(!S.daoPartner){toast('并无道侣相伴');return}
+  const curDay=_cult.days*(_cult.elapsed/_cult.realMs);
+  if((_cult.switches||0)>=3){toast('本次闭关已切换三次，道侣轻声道：「专心修炼吧。」');return}
+  if(curDay-(_cult.lastSwitchDay||-99)<10){toast('刚切换过同修方式，需再同修至少 10 日方可切换');return}
+  /* 切换须双方同时收功调息，耗去 3 日，且计入统计 */
+  const spent=Math.min(3,_cult.days-curDay);
+  const md=_cult.modeDays;md[_cult.curMode||'solo']+=Math.max(0,curDay-(_cult.modeStart||0));
+  _cult.switches=(_cult.switches||0)+1;
+  _cult.lastSwitchDay=curDay+spent;
+  _cult.curMode=_cult.solo?'dual':'solo';
+  _cult.modeStart=curDay+spent;
+  _cult.elapsed=Math.min(_cult.realMs,_cult.elapsed+spent/_cult.days*_cult.realMs);
   _cult.solo=!_cult.solo;
-  _cultLogLine(_cult.solo?'<p class="sys">你与道侣相视点头，各自静坐，独修守心。</p>':'<p class="good">道侣与你双掌相抵，灵气交融，同修共进。</p>');
+  _cultLogLine((_cult.solo?'<p class="sys">你与道侣相视点头，各自静坐，独修守心。':'<p class="good">道侣与你双掌相抵，灵气交融，同修共进。')+'（切换耗时 3 日 · 本次已切换 '+_cult.switches+'/3 次）</p>');
   _cultRenderBuffs();
 }
 function cultAbort(){
@@ -269,48 +308,48 @@ function _cultEvents(){
   const evs=[];
   evs.push(()=>({txt:'灵气潮汐忽然涌动，如江河倒灌、经脉胀痛！',opts:[
     {txt:'⚔️ 运功强行疏导（心性判定）',cls:'primary',fn:()=>{
-      const R=doRoll('wil',16);
+      const R=doRoll('wil',cultDc(16));
       _cultLogLine('灵气入体如潮：'+rollBadge(R.r,R.mod,R.t,R.dc));
-      if(R.hit){const g=Math.floor(40+S.root/3);S.cult+=g;_cultLogLine('<p class="good">你以道心为堤，借潮汐之力炼化真元（修为 +'+g+'）。</p>')}
+      if(R.hit){const g=cultGain(40+S.root/3);S.cult+=g;_cultLogLine('<p class="good">你以道心为堤，借潮汐之力炼化真元（修为 +'+g+'）。</p>')}
       else{S.hp=Math.max(1,S.hp-Math.floor(S.maxHp*0.15));if(_cult.mode==='bitter'&&chance(0.4)){S.heartDemons++;_cultLogLine('<p class="danger">灵气逆行，气血受损，心魔烙下（气血-15%，心魔+1）。</p>')}else _cultLogLine('<p class="danger">灵气逆行，你吐出一口淤血（气血-15%）。</p>')}
     }},
     {txt:'🛡️ 抱元守一，任其来去',fn:()=>{_cultLogLine('你守住灵台，潮汐自身侧流过，毫发无伤。')}}
   ]}));
   evs.push(()=>({txt:'恍惚间，似有白须仙人抚顶而笑：「小子，可识得道为何物？」',opts:[
     {txt:'🙏 静心受教（智慧判定）',cls:'primary',fn:()=>{
-      const R=doRoll('int',15);
+      const R=doRoll('int',cultDc(15));
       _cultLogLine('仙音入耳：'+rollBadge(R.r,R.mod,R.t,R.dc));
-      if(R.hit){const g=Math.floor(60+S.root/2);S.cult+=g;_cultLogLine('<p class="good">一语惊醒梦中人，你悟得一线天机（修为 +'+g+'）。</p>');const gw=growWil(0.08,'闻道而悟');if(gw)_cultLogLine(gw)}
+      if(R.hit){const g=cultGain(60+S.root/2);S.cult+=g;_cultLogLine('<p class="good">一语惊醒梦中人，你悟得一线天机（修为 +'+g+'）。</p>');const gw=growWil(0.08,'闻道而悟');if(gw)_cultLogLine(gw)}
       else{S.hp=Math.max(1,S.hp-Math.floor(S.maxHp*0.1));_cultLogLine('<p class="danger">道音太深，你心神震荡，气血微亏（气血-10%）。</p>')}
     }},
-    {txt:'🌬️ 不为所动，继续运功',fn:()=>{const g=Math.floor(20+S.root/6);S.cult+=g;_cultLogLine('你心如止水，将幻象化去（修为 +'+g+'）。')}}
+    {txt:'🌬️ 不为所动，继续运功',fn:()=>{const g=cultGain(20+S.root/6);S.cult+=g;_cultLogLine('你心如止水，将幻象化去（修为 +'+g+'）。')}}
   ]}));
   evs.push(()=>({txt:'洞壁裂开一道灵光，一条漏网灵脉正喷吐灵气！',opts:[
     {txt:'⛏️ 分神采掘（身法判定）',cls:'primary',fn:()=>{
-      const R=doRoll('agi',15);
+      const R=doRoll('agi',cultDc(15));
       _cultLogLine('灵光飞溅：'+rollBadge(R.r,R.mod,R.t,R.dc));
       if(R.hit){const st=rand(40,90);S.mats.iron=(S.mats.iron||0)+1;S.stones+=st;_cultLogLine('<p class="good">你截下一段灵脉精华：铁矿石 ×1，灵石 +'+st+'。</p>')}
       else{S.hp=Math.max(1,S.hp-Math.floor(S.maxHp*0.08));_cultLogLine('<p class="danger">灵脉炸裂，你被气流掀了个跟头（气血-8%）。</p>')}
     }},
-    {txt:'💧 引灵入体，化为修为',fn:()=>{const g=Math.floor(50+S.root/4);S.cult+=g;_cultLogLine('你引导灵脉灵气直入丹田（修为 +'+g+'）。')}}
+    {txt:'💧 引灵入体，化为修为',fn:()=>{const g=cultGain(50+S.root/4);S.cult+=g;_cultLogLine('你引导灵脉灵气直入丹田（修为 +'+g+'）。')}}
   ]}));
   evs.push(()=>({txt:'心魔低语自识海深处响起：「你修这仙，到底为了什么？」',opts:[
     {txt:'🧘 守心不动（心性判定）',cls:'primary',fn:()=>{
-      const R=doRoll('wil',16);
+      const R=doRoll('wil',cultDc(16));
       _cultLogLine('魔音贯耳：'+rollBadge(R.r,R.mod,R.t,R.dc));
-      if(R.hit){const g=Math.floor(30+S.root/5);S.cult+=g;_cultLogLine('<p class="good">你一声断喝，魔音尽散，道心反而更坚（修为 +'+g+'）。</p>');const gw=growWil(0.1,'直面心魔');if(gw)_cultLogLine(gw)}
+      if(R.hit){const g=cultGain(30+S.root/5);S.cult+=g;_cultLogLine('<p class="good">你一声断喝，魔音尽散，道心反而更坚（修为 +'+g+'）。</p>');const gw=growWil(0.1,'直面心魔');if(gw)_cultLogLine(gw)}
       else{if(chance(0.5)){S.heartDemons++;_cultLogLine('<p class="danger">魔音趁隙而入，你添了一道心魔烙印（心魔+1）。</p>')}else _cultLogLine('<p class="danger">你惊出一身冷汗，气息微乱。</p>')}
     }},
-    {txt:'📿 诵念清心诀',fn:()=>{if(S.heartDemons>0){S.heartDemons--;_cultLogLine('<p class="good">清心诀流转，一道心魔悄然消散（心魔-1）。</p>')}else{const g=Math.floor(15+S.root/8);S.cult+=g;_cultLogLine('经文入心，灵台愈发明澈（修为 +'+g+'）。')}}}
+    {txt:'📿 诵念清心诀',fn:()=>{if(S.heartDemons>0){S.heartDemons--;_cultLogLine('<p class="good">清心诀流转，一道心魔悄然消散（心魔-1）。</p>')}else{const g=cultGain(15+S.root/8);S.cult+=g;_cultLogLine('经文入心，灵台愈发明澈（修为 +'+g+'）。')}}}
   ]}));
   evs.push(()=>({txt:'一只灵鹤衔着朱红灵果落在洞前，歪头看你。',opts:[
-    {txt:'🪶 接下灵果，含笑致意',cls:'primary',fn:()=>{S.mats.sherb=(S.mats.sherb||0)+1;const g=Math.floor(30+S.root/6);S.cult+=g;_cultLogLine('<p class="good">灵果入手温热，灵气四溢（灵草 ×1，修为 +'+g+'）。</p>');if(chance(0.3)){const gw=growWil(0.08,'与灵鹤对望，心有所感');if(gw)_cultLogLine(gw)}}},
-    {txt:'🕊️ 还果与鹤，结一段善缘',fn:()=>{addMerit(1);const g=Math.floor(20+S.root/6);S.cult+=g;_cultLogLine('<p class="good">灵鹤长鸣一声，振翅而去（功德+1，修为 +'+g+'）。</p>')}}
+    {txt:'🪶 接下灵果，含笑致意',cls:'primary',fn:()=>{S.mats.sherb=(S.mats.sherb||0)+1;const g=cultGain(30+S.root/6);S.cult+=g;_cultLogLine('<p class="good">灵果入手温热，灵气四溢（灵草 ×1，修为 +'+g+'）。</p>');if(chance(0.3)){const gw=growWil(0.08,'与灵鹤对望，心有所感');if(gw)_cultLogLine(gw)}}},
+    {txt:'🕊️ 还果与鹤，结一段善缘',fn:()=>{addMerit(1);const g=cultGain(20+S.root/6);S.cult+=g;_cultLogLine('<p class="good">灵鹤长鸣一声，振翅而去（功德+1，修为 +'+g+'）。</p>')}}
   ]}));
   if(S.daoPartner&&!_cult.solo){
     evs.push(()=>({txt:S.daoPartner.name+'睁开眼，轻轻将一盏热茶推到你面前：「歇一歇，莫要熬坏了身子。」',opts:[
-      {txt:'🍵 接过茶盏，相视一笑',cls:'primary',fn:()=>{const p=S.daoPartner;p.favor=clamp(p.favor+2,0,100);p.affinity=clamp((p.affinity||60)+2,0,100);const g=Math.floor(40+S.root/5);S.cult+=g;_cultLogLine('<p class="good">茶香袅袅，情意暗涌（情缘+2，修为 +'+g+'）。</p>')}},
-      {txt:'🙏 谢过道侣，继续闭关',fn:()=>{const g=Math.floor(25+S.root/6);S.cult+=g;_cultLogLine('你接过茶一饮而尽，复又入定（修为 +'+g+'）。')}}
+      {txt:'🍵 接过茶盏，相视一笑',cls:'primary',fn:()=>{const p=S.daoPartner;p.favor=clamp(p.favor+2,0,100);p.affinity=clamp((p.affinity||60)+2,0,100);const g=cultGain(40+S.root/5);S.cult+=g;_cultLogLine('<p class="good">茶香袅袅，情意暗涌（情缘+2，修为 +'+g+'）。</p>')}},
+      {txt:'🙏 谢过道侣，继续闭关',fn:()=>{const g=cultGain(25+S.root/6);S.cult+=g;_cultLogLine('你接过茶一饮而尽，复又入定（修为 +'+g+'）。')}}
     ]}));
     evs.push(()=>({txt:'修炼至深处，'+S.daoPartner.name+'的指尖悄悄勾住你的小指，又飞快松开。',opts:[
       {txt:'💞 顺势握住，继续同修',cls:'primary',fn:()=>{const p=S.daoPartner;p.favor=clamp(p.favor+2,0,100);p.affinity=clamp((p.affinity||60)+3,0,200);_cultLogLine('<p class="good">指尖相扣，灵气相融，这一轮修炼格外顺畅（情缘+2，心动+3）。</p>')}},
@@ -327,6 +366,14 @@ function _cultResult(days,mode,solo){
   let boostLog='';
   if(S.flag.boostNext){mult*=1.5;S.flag.boostNext=false;boostLog='<p class="good">灵潮之力尚未消退，此番修炼事半功倍！</p>'}
   if(bitter)mult*=1.4;
+  let bnLog='';
+  const bn=bottleneckInfo(S);
+  if(bn.active){
+    mult*=0.6;
+    bnLog='<p class="sys">⚓ 瓶颈压制：修为已至下一境界 '+(Math.floor(bn.progress*100))+'%，然悟性（'+bn.wis+'/'+bn.wisNeed+'）或历练（'+bn.trail+'/'+bn.trailNeed+'）未足，修炼事倍功半。可去洞府<b>功法参悟</b>增悟性，或<b>探索/试炼塔</b>增历练。</p>';
+  }else if(bn.progress>=0.9){
+    bnLog='<p class="good">⚓ 悟性与历练兼备，瓶颈已破——你只觉得灵台通明，冲关之路再无滞碍！</p>';
+  }
   const base=Math.floor((8+S.root/6)*mult);
   let gain=Math.floor(base*days/10*rand(8,12)/10);
   const dmult=streakDiminMult(S.cultStreak||0,days);
@@ -338,7 +385,7 @@ function _cultResult(days,mode,solo){
   if(t>=30){gain*=3;extra='<p><span class="roll crit">🎲 大机缘</span> 你于物我两忘之际窥见天地玄机，修为暴涨，道心亦受淬炼。</p>';}
   else if(t>=22){gain=Math.floor(gain*1.5);extra='<p>这一日你福至心灵，隐隐触及了一丝大道真意，修炼事半功倍。</p>';}
   else if(t<=5){gain=Math.floor(gain*0.5);extra='<p><span class="roll fumble">🎲 心浮气躁</span> 你急于求成，气息紊乱，修为增长大打折扣。</p>';}
-  return {gain:gain,bitter:bitter,boostLog:boostLog,dimLog:dimLog,extra:extra};
+  return {gain:gain,bitter:bitter,boostLog:boostLog,dimLog:dimLog,bnLog:bnLog,extra:extra};
 }
 function _cultFinish(frac){
   if(!_cult||_cult.done)return;
@@ -378,6 +425,11 @@ function _cultFinish(frac){
   }else if(_cult.solo&&partner){
     pre+=growWil(0.06,'独修守心，道心愈发沉稳');
   }
+  /* 15 双修/独修天数统计 */
+  const md=_cult.modeDays||{solo:0,dual:0};
+  md[_cult.curMode||'solo']+=Math.max(0,days-(_cult.modeStart||0));
+  S.flag.soloDays=(S.flag.soloDays||0)+Math.round(md.solo);
+  S.flag.dualDays=(S.flag.dualDays||0)+Math.round(md.dual);
   S.cultStreak=(S.cultStreak||0)+days;
   dC().c.cultDays+=days;
   S.flag.cultDaysTotal=(S.flag.cultDaysTotal||0)+days;
@@ -390,7 +442,7 @@ function _cultFinish(frac){
   }
   const dual=_cult.solo?'独修':'与'+esc(partner?partner.name:'道侣')+'同修';
   scene('闭关'+(frac<1?' · 提前出关':''));
-  log('<p>你于洞府中运转'+esc(S.arts[0].name)+'，引天地灵气入体'+(partner&&!_cult.solo?'，与道侣双掌相抵、气息交融':'')+'。'+(r.bitter?'此为苦修之道，气血与灵元俱在燃烧。':'灵台空明，日月静好。')+'</p>'+r.boostLog+r.dimLog+pre+r.extra+targetLog+'<p class="good">修为 +'+r.gain+'。'+(frac<1?'（提前出关，仅计 '+days+' 日收益）':'')+'</p>');
+  log('<p>你于洞府中运转'+esc(S.arts[0].name)+'，引天地灵气入体'+(partner&&!_cult.solo?'，与道侣双掌相抵、气息交融':'')+'。'+(r.bitter?'此为苦修之道，气血与灵元俱在燃烧。':'灵台空明，日月静好。')+'</p>'+r.boostLog+r.dimLog+r.bnLog+pre+r.extra+targetLog+'<p class="good">修为 +'+r.gain+'。'+(frac<1?'（提前出关，仅计 '+days+' 日收益）':'')+(md.dual>0?'<span class="sys">（双修 '+Math.round(md.dual)+' 日 / 独修 '+Math.round(md.solo)+' 日）</span>':'')+'</p>');
   $('cultivate').style.display='none';
   PENDING=Math.max(0,PENDING-1);
   _cultTimer=null;_cult=null;
@@ -413,9 +465,9 @@ function heavenlyDisturbance(days,gain){
     log('<p>闭关至第 <b>'+at+'</b> 日，洞府灵气忽然暴走，如江河倒灌，经脉胀痛欲裂！灵气狂潮之中，你必须立刻做出决断。</p>');
     logChoices([
       {txt:'⚔️ 运功强行疏导（心性判定）',cls:'primary',fn:()=>{
-        const R=doRoll('wil',18);
+        const R=doRoll('wil',cultDc(18));
         log('<p>灵气入体如潮：'+rollBadge(R.r,R.mod,R.t,R.dc)+'</p>');
-        if(R.hit){const g=Math.floor(60+S.root/3);S.cult+=g;log('<p class="good">你以道心为堤，强行疏导，反而借暴走灵气炼化出一缕精纯真元（修为 +'+g+'）。</p>')}
+        if(R.hit){const g=cultGain(60+S.root/3);S.cult+=g;log('<p class="good">你以道心为堤，强行疏导，反而借暴走灵气炼化出一缕精纯真元（修为 +'+g+'）。</p>')}
         else{S.hp=Math.max(1,S.hp-Math.floor(S.maxHp*0.25));if(chance(0.4)){S.heartDemons++;log('<p class="danger">灵气逆行冲脉，你气血大损，道心亦受震荡（气血-25%，心魔+1）。</p>')}else log('<p class="danger">灵气逆行冲脉，你吐出一口淤血，气血大损（气血-25%）。</p>')}
         finishCultivation(rest);}},
       {txt:'🛡️ 收功暂避，待其平息',fn:()=>{
@@ -429,9 +481,9 @@ function heavenlyDisturbance(days,gain){
     log('<p>第 <b>'+at+'</b> 日深夜，一缕上古残魂自洞府深处浮现，目光灼灼地望着你：「小辈，可愿听老夫讲一段道？」</p>');
     logChoices([
       {txt:'📖 恭聆残魂讲道（智慧判定）',cls:'primary',fn:()=>{
-        const R=doRoll('int',17);
+        const R=doRoll('int',cultDc(17));
         log('<p>残魂开口，字字如雷：'+rollBadge(R.r,R.mod,R.t,R.dc)+'</p>');
-        if(R.hit){const g=Math.floor(100+S.root/2);S.cult+=g;log('<p class="good">一段道音入耳，你醍醐灌顶（修为 +'+g+'）。</p>');if(chance(0.35)&&!S.arts.some(x=>x.mult>=1.15)){const a=Object.assign({},pick(ARTS.filter(x=>x.mult>=1.15)));S.arts.push(a);log('<p class="loot">残魂还赠你一篇功法：《'+a.name+'》。</p>')}}
+        if(R.hit){const g=cultGain(100+S.root/2);S.cult+=g;log('<p class="good">一段道音入耳，你醍醐灌顶（修为 +'+g+'）。</p>');if(chance(0.35)&&!S.arts.some(x=>x.mult>=1.15)){const a=Object.assign({},pick(ARTS.filter(x=>x.mult>=1.15)));S.arts.push(a);log('<p class="loot">残魂还赠你一篇功法：《'+a.name+'》。</p>')}}
         else{S.hp=Math.max(1,S.hp-Math.floor(S.maxHp*0.2));log('<p class="danger">残魂道音太深，你气血翻涌，呕出一口血来（气血-20%）。</p>')}
         finishCultivation(rest);}},
       {txt:'🙏 长揖告退，敬而远之',fn:()=>{
@@ -442,7 +494,7 @@ function heavenlyDisturbance(days,gain){
     log('<p>第 <b>'+at+'</b> 日，地底忽有闷雷滚过，一道灵脉恰在你洞府下方改道，天地灵气如沸水翻涌，地面裂开道道灵光缝隙！</p>');
     logChoices([
       {txt:'⛏️ 趁势采掘灵脉（身法判定）',cls:'primary',fn:()=>{
-        const R=doRoll('agi',16);
+        const R=doRoll('agi',cultDc(16));
         log('<p>你纵身跃入灵光裂缝：'+rollBadge(R.r,R.mod,R.t,R.dc)+'</p>');
         if(R.hit){
           const m=pick(['jade','iron','demonCore','sherb']);const n=rand(1,2);S.mats[m]=(S.mats[m]||0)+n;
@@ -455,7 +507,7 @@ function heavenlyDisturbance(days,gain){
         }
         finishCultivation(rest);}},
       {txt:'🧘 抱元守一，任其来去',fn:()=>{
-        const g=Math.floor(30+S.root/4);S.cult+=g;
+        const g=cultGain(30+S.root/4);S.cult+=g;
         log('<p>你不动如山，任地脉灵潮从身侧涌过。狂潮既去，你反而沾得一丝余泽（修为 +'+g+'）。</p>');
         finishCultivation(rest);}}
     ]);
@@ -520,7 +572,8 @@ function settleMind(){
       removeDemonMark(m.type);
       log('<p class="good">静极生慧，「'+DEMON_TYPES[m.type].n+'」亦随之化去。</p>');
     }
-    log('<p class="good">三十日静坐，灵台清明（修为 +'+g+'）。</p>');
+    addWis(1);
+    log('<p class="good">三十日静坐，灵台清明（修为 +'+g+'，悟性 +1）。</p>');
     const sw=growWil(0.22,'静极养神，道心愈发沉凝');
     if(sw)log(sw);
   }else{

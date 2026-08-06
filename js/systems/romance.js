@@ -68,11 +68,13 @@ function partnerPanel(){
     '<button class="small" onclick="daoChat()">💬 聊天</button>',
     '<button class="small" onclick="daoDate()">🏞️ 约会</button>',
     '<button class="small" onclick="daoTravel()">🗺️ 同游</button>',
+    '<button class="small" onclick="daoDaily()">🌟 相处</button>',
     '<button class="small" onclick="daoGift()">🎁 赠礼</button>',
     '<button class="small primary" onclick="doDualCultivate()">☯️ 双修</button>',
     '<button class="small" onclick="daoPropose()">'+(p.married?'👰 大典':'💍 提亲')+'</button>',
     (p.married&&!(S.flag.childPreg&&S.flag.childPreg.left>0)?'<button class="small" onclick="askChild()">👶 共商子嗣</button>':'')+
     ((S.flag.childPreg&&S.flag.childPreg.left>0)?'<button class="small primary" onclick="childCheck()">🤰 胎息检查（'+(Math.ceil((S.flag.childPreg.left||90)/30))+' 月）</button>':''),
+    '<button class="small" onclick="panelFamily()">👨‍👩‍👧 家族</button>',
     '<button class="small" onclick="daoPart()">✂️ 缘尽</button>',
   ].filter(Boolean).join(' ');
   return '<div class="item-card">'+artImg(NPC_ART[p.role]||(p.gender==='男'?ART.daoist:ART.lady),56,56,'avatar')+
@@ -80,6 +82,63 @@ function partnerPanel(){
     '<div class="ds">'+esc(p.desc||'')+'<br>关系：<b>'+st.name+'</b>（'+st.desc+'）<br>情缘：<b>'+affectionLabel(p.favor)+'</b>（'+(p.favor||0)+'/100） · 心动 '+(p.affinity||0)+' · 境界 '+stageName(p.stage||0)+firstDate+'<br>道侣加成：修炼效率 ×1.2 · 双修增益 ×'+dualCultMult(p).toFixed(2)+(p.married?'（结缡加成已计入）':'')+'</div>'+
     '<div class="ds" style="margin-top:4px">'+mems+anniv+'</div>'+
     '<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">'+btns+'</div></div>';
+}
+function panelPartner(){
+  const p=S.daoPartner;
+  if(!p){toast('尚无道侣');return}
+  openPanel('💞 道侣 · '+esc(p.name),partnerPanel());
+}
+/* 道侣日常相处：更丰富的琐碎生活感（新互动，13） */
+function daoDaily(){
+  const p=S.daoPartner;
+  if(!p){toast('无道侣');return}
+  closePanel();
+  if(maybeShura())return;
+  pC(p);
+  if((p.cd.daily||0)>0){log('<p class="sys">'+p.name+'靠在你肩头，懒懒道：「今日这般闲适，已经很好啦。」</p>');passTime(1);renderAll();return}
+  const g=he(p);
+  const scenes=[
+    {t:'山中新雨，'+p.name+'在廊下煮茶，见你来，'+g+'把茶盏往你面前推了推。',opts:[
+      {txt:'🍵 接过茶盏，并肩听雨',fn:()=>{daoAff(p,2,2,'');addMemory(p,'雨后共饮');log('<p>雨声如织，茶香袅袅。你们谁也没说话，雨却好像替你们把话都说完了。</p>')}},
+      {txt:'🌧️ 撑伞踏雨，去山涧看水',fn:()=>{const gg=Math.floor(15+bigStage(S.realm)*8);S.cult+=gg;daoAff(p,2,2,'');log('<p>你们共撑一把伞走进雨里，山涧涨水，白练如瀑。你借机讲了一回「水德」，'+p.name+'听得入神（修为 +'+gg+'）。</p>')}},
+      {txt:'😴 蜷在榻上，赖一上午',fn:()=>{daoAff(p,3,3,'');addMemory(p,'雨日赖床');log('<p>你们难得赖了一上午。'+p.name+'睡醒时头发乱蓬蓬的，'+g+'也不恼，只笑着看你：「今日的道，就是偷懒么？」</p>')}},
+    ]},
+    {t:'洞府灵田里，'+p.name+'正蹲着给灵草松土，指尖沾着泥。',opts:[
+      {txt:'🌱 卷起袖子一起忙',fn:()=>{daoAff(p,2,1,'');if(chance(0.5)){S.mats.sherb=(S.mats.sherb||0)+1;log('<p>你们忙活半日，竟从土里翻出一株野生的灵参（灵草 ×1）。</p>')}else log('<p>两个人一起忙，活儿竟比一个人还慢——因为总有人停下来笑。</p>')}},
+      {txt:'💧 以灵力替'+g+'净手',fn:()=>{const R=doRoll('cha',13);log('<p>你牵过'+p.name+'的手，以水灵之气细细冲洗：'+rollBadge(R.r,R.mod,R.t,R.dc)+'</p>');daoAff(p,R.hit?3:1,R.hit?3:0,'')}},
+    ]},
+    {t:'入夜，'+p.name+'在灯下缝补一件旧袍，针脚细密。',opts:[
+      {txt:'🧵 接过针线替'+g+'缝',fn:()=>{const R=doRoll('agi',13);daoAff(p,R.hit?3:-1,R.hit?2:0,'');log('<p>你接过针线：'+rollBadge(R.r,R.mod,R.t,R.dc)+'</p>'+(R.hit?'<p>你针脚虽笨，却缝得认真。'+p.name+'看了半晌，轻声道：「……以后我的袍子，都给你补。」</p>':'<p>你一针下去扎了手，'+p.name+'又心疼又好笑，把针抢了回去。</p>'))}},
+      {txt:'🕯️ 在一旁添灯油，静静陪着',fn:()=>{daoAff(p,2,3,'');addMemory(p,'灯下伴读');log('<p>你添了灯油，坐在'+g+'身边翻书。烛火摇摇晃晃，把两道影子叠在了一起。</p>')}},
+    ]},
+    {t:'山门外飘来一阵烤红薯的香气，'+p.name+'眼睛一亮。',opts:[
+      {txt:'🍠 买两个烤红薯，一人一个',fn:()=>{S.stones=Math.max(0,(S.stones||0)-10);daoAff(p,2,2,'');log('<p>热乎乎的烤红薯捧在手里，'+p.name+'咬了一口，眉眼弯弯：「比灵石还甜。」</p>')}},
+      {txt:'🔥 亲自生火烤一个',fn:()=>{const R=doRoll('int',12);daoAff(p,R.hit?3:1,R.hit?2:0,'');log('<p>你忙活半晌：'+rollBadge(R.r,R.mod,R.t,R.dc)+'</p>'+(R.hit?'<p>红薯烤得恰到好处，'+p.name+'连皮都舍不得剥：「你烤的，格外香。」</p>':'<p>红薯被你烤成了炭，'+p.name+'笑得直不起腰，还是把「炭」掰开吃了。</p>'))}},
+    ]},
+    {t:'清晨练剑，'+p.name+'在旁看了一会儿，忽然开口：「我教你怎么出剑。」',opts:[
+      {txt:'🗡️ 虚心受教（身法判定）',fn:()=>{const R=doRoll('agi',14);log('<p>你按'+p.name+'的指点重新出剑：'+rollBadge(R.r,R.mod,R.t,R.dc)+'</p>');if(R.hit){const gg=Math.floor(25+bigStage(S.realm)*10);S.cult+=gg;daoAff(p,2,2,'');log('<p class="good">剑光一凛，竟比先前快了几分（修为 +'+gg+'）。</p>')}else{daoAff(p,1,1,'');log('<p>你手忙脚乱，'+p.name+'笑得捂嘴：「没事，多练练就好。」</p>')}}},
+      {txt:'😏 反手以「懒人剑」逗'+g+'',fn:()=>{daoAff(p,-1,1,'');addMemory(p,'懒人剑法');log('<p>你故意把剑舞得歪歪扭扭，'+p.name+'追着你满院子跑，最后两人都笑倒在草地上。</p>')}},
+    ]},
+    {t:'夕阳西下，'+p.name+'坐在崖边看云，晚风把'+g+'的发梢吹起来。',opts:[
+      {txt:'🌄 并肩坐下，一起看云',fn:()=>{daoAff(p,2,3,'');addMemory(p,'崖畔看云');log('<p>你们一直坐到星子浮上来。'+p.name+'忽然说：「要是仙途有尽头，我想尽头就是这样的黄昏。」</p>')}},
+      {txt:'🌙 提议今夜去山顶看月',fn:()=>{daoAff(p,3,3,'');log('<p>月上中天时你们才下山。山路窄，'+p.name+'的手不知何时被你牵住，谁也没松开。</p>')}},
+    ]},
+  ];
+  const ev=pick(scenes);
+  pC(p).daily=rand(10,15);
+  openEventModal('🌟 相处 · 日常','<p>'+artImg(NPC_ART[p.role]||ART.lady,56,56,'avatar')+ev.t+'</p>',ev.opts.map(o=>({txt:o.txt,fn:()=>{o.fn();passTime(1);renderAll()}})));
+}
+/* 独立家族系统页：子嗣培养、血脉与转生（12） */
+function panelFamily(){
+  const cs=S.children||[];
+  openPanel('👨‍👩‍👧 家族',
+    '<p>血脉相承，香火不绝。子嗣的培养、传承与转世皆在此处，不必再去仙途录里翻找。</p>'+
+    '<h4>👶 子嗣（'+(cs.length||0)+'）</h4>'+(childrenHtml())+
+    '<h4>🌳 血脉</h4>'+
+    '<p>'+(cs.length
+      ?'已有 <b>'+cs.length+'</b> 位子嗣，家名：<b>'+esc(S.name)+'</b>。可常以「传功」「历练」养育，养至三阶（少年）可承接家业；身陨之时可「转生为子嗣」，血脉与家名得以延续。'
+      :'尚无子嗣。与结缡道侣在道侣面板「共商子嗣」，可诞下血脉。')+'</p>'+
+    '<p style="font-size:12px;color:#6f7a94">子嗣继承父母的灵根与性格，先天胎息越足，成长越快。</p>');
 }
 
 /* ================= 聊天：多轮对话 + 情话判定 + 小剧场 ================= */
@@ -295,6 +354,7 @@ function endDate(p,spot,line,f,a){
 function daoTravel(){
   const p=S.daoPartner;
   closePanel();
+  if(!p){toast('无道侣');return}
   if(maybeShura())return;
   pC(p);
   if((p.cd.date||0)>0){log('<p class="sys">'+p.name+'挽着你的手臂：「才同游过不久，先歇歇罢。」</p>');passTime(1);renderAll();return}
@@ -642,7 +702,7 @@ function childBorn(){
   const p=S.daoPartner;
   const nm=p?p.name:'道侣';
   const gender=chance(0.5)?'男':'女';
-  const name=randomName(gender);
+  const name=uniqueName(gender);
   const root=clamp(Math.floor((S.root+((p&&p.root)||50))/2)+rand(-8,8),20,95);
   const elem=chance(0.3)?S.rootElem:((p&&p.rootElem)||pickRootElem());
   const child={name:name,gender:gender,root:root,rootElem:elem,stage:0,progress:0,favor:rand(60,80),bornAt:S.days,parent:S.name,mom:nm,strength:pg.strength||0};
@@ -674,8 +734,9 @@ function childrenHtml(){
   if(!cs.length)return '<p style="color:#6f7a94">尚无子嗣。结缡道侣后可在道侣面板「共商子嗣」。</p>';
   return cs.map((c,i)=>{
     const need=Math.floor(80+c.stage*120);
-    return '<div class="item-card"><div class="nm">'+artImg(c.gender==='女'?ART.lady:ART.daoist,40,40,'avatar')+'<b>'+esc(c.name)+'</b> <span class="tag">'+(c.gender==='女'?'♀':'♂')+'</span> <span class="tag">'+stageName(c.stage)+'</span></div>'+
-      '<div class="ds">灵根 '+c.root+'（'+elemInfo(c.rootElem).n+'） · 成长 '+Math.floor(c.progress||0)+'/'+need+(c.parent?' · 血脉：'+esc(c.parent)+'×'+esc(c.mom):'')+'</div>'+
+    const avatar=artImg('assets/portraits/child_'+(c.gender==='女'?'f':'m')+'.jpg',40,40,'avatar')||childAvatar(c.gender,c.stage);
+    return '<div class="item-card"><div class="nm child-card">'+avatar+'<b>'+esc(c.name)+'</b> <span class="tag">'+(c.gender==='女'?'♀':'♂')+'</span> <span class="tag">'+stageName(c.stage)+'</span></div>'+
+      '<div class="ds">灵根 '+c.root+'（'+elemInfo(c.rootElem).n+'） · 成长 '+Math.floor(c.progress||0)+'/'+need+(c.parent?' · 血脉：'+esc(c.parent)+'×'+esc(c.mom):'')+(c.growthBonus?' · 胎息充裕 +10%':'')+'</div>'+
       '<div style="margin-top:6px"><button class="small" onclick="childAct('+i+',\'art\')">📖 传功</button> <button class="small" onclick="childAct('+i+',\'train\')">🗡️ 历练</button> <button class="small" onclick="childAct('+i+',\'grow\')">🌱 长大</button></div></div>';
   }).join('');
 }

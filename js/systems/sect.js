@@ -34,7 +34,7 @@ function panelSect(){
       (p.role==='掌门'&&rIdx>=2?' <button class="small" onclick="sectMeet('+i+')">拜见</button>':'')+
       (S.master===p?' <span class="tag" style="color:#d8b45a">师尊</span>':'');
     return '<div class="item-card">'+artImg(p.artKey||SECT_PERSON_ART[p.role+(p.gender==='女'?'女':'男')],52,52,'avatar')+
-      '<div class="nm">'+esc(p.name)+' <span class="tag">'+esc(p.title)+'</span></div>'+
+      '<div class="nm">'+esc(p.name||'无名弟子')+' <span class="tag">'+esc(p.title||p.role||'宗门弟子')+'</span></div>'+
       '<div class="ds">'+esc(p.desc)+' · '+stageName(p.stage)+' · 好感 '+p.favor+'</div>'+
       '<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">'+btns+'</div></div>';
   }).join('');
@@ -266,6 +266,7 @@ function genSectPeople(sec){
     {role:'巡山执事',gender:'男',desc:'常年巡山除妖的执事，江湖经验老到。',style:'str',taste:'兵',chat:['妖兽','江湖']},
     {role:'杂务弟子',gender:'女',desc:'入门不久的小师妹，天真烂漫。',style:'cha',taste:'灵',chat:['见闻','风月']},
   ];
+  const used=usedNameSet();
   const list=(sec.people||[]).map(p=>Object.assign({},p,{
     favor:sec.dark?rand(20,45):rand(30,60),mood:rand(50,80),talks:0,gifts:0,
     artKey:SECT_PERSON_ART[p.role+(p.gender==='女'?'女':'男')]||'',
@@ -278,11 +279,12 @@ function genSectPeople(sec){
     if(extras.some(x=>x.role+ x.gender===p.role+p.gender))continue;
     const stage=clamp(rand(1,3),1,4);
     extras.push(Object.assign({},p,{
+      name:uniqueName(p.gender,used),
       title:(sec.dark?'魔道':'正道')+p.role,
       stage:stage,realm:stage,atk:5+stage*2,hp:25+stage*15,
       teacher:false,art:Object.assign({},sec.art),
       favor:sec.dark?rand(15,40):rand(25,55),mood:rand(50,80),talks:0,gifts:0,
-      artKey:SECT_PERSON_ART['传功弟子'+(p.gender==='女'?'女':'男')]||'',
+      artKey:SECT_PERSON_ART[p.role+(p.gender==='女'?'女':'男')]||SECT_PERSON_ART['传功弟子'+(p.gender==='女'?'女':'男')]||'',
     }));
   }
   return list.concat(extras);
@@ -529,6 +531,7 @@ function bigCompetition(){
   closePanel();
   if(!S.sect){toast('无门无派，何以比试');return}
   if(S.sectStage==='probation'){toast('记名弟子无缘大比');return}
+  if(S.bigCd>0){toast('大比尚需 '+S.bigCd+' 日方可再启');renderAll();return}
   scene('宗门大比');
   log('<p>演武场万人空巷。你一路过关斩将……</p>');
   const rounds=3;
