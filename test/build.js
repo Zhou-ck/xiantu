@@ -13,6 +13,6 @@ for(const rel of order){
   if(!fs.existsSync(p)){console.error('missing '+p);process.exit(1)}
   parts.push('/* ===== '+rel+' ===== */\n'+fs.readFileSync(p,'utf8'));
 }
-const out=path.join(process.env.TEMP,'xiantu_game.js');
+const out=path.join(process.env.TEMP||process.env.TMPDIR||require('os').tmpdir(),'xiantu_game.js');
 fs.writeFileSync(out,parts.join('\n'),'utf8');
 console.log('built',out,'bytes',fs.statSync(out).size,'scripts',order.length);

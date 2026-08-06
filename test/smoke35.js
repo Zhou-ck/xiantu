@@ -1,6 +1,6 @@
 /* App 化基础冒烟：版本 / 原生检测降级 / 更新检查 / 设置页 App 区 */
 const fs=require('fs'),path=require('path'),vm=require('vm');
-const js=fs.readFileSync(process.env.TEMP+'\\xiantu_game.js','utf8');
+const js=fs.readFileSync(require('path').join(process.env.TEMP||process.env.TMPDIR||require('os').tmpdir(),'xiantu_game.js'),'utf8');
 function makeEl(){
   const el={_html:'',_txt:'',style:{},disabled:false,children:[],scrollTop:0,value:'',className:'',id:'',onclick:null,
     classList:{add(){},remove(){},toggle(){}},

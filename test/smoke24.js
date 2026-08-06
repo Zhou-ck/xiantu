@@ -1,6 +1,6 @@
 /* 深化 Phase 1/2 冒烟：角色档案/卡面 / 存档迁移 / 瓶颈 / 突破感悟 / 修炼档案与熟练度 */
 const fs=require('fs'),vm=require('vm');
-const js=fs.readFileSync(process.env.TEMP+'\\xiantu_game.js','utf8');
+const js=fs.readFileSync(require('path').join(process.env.TEMP||process.env.TMPDIR||require('os').tmpdir(),'xiantu_game.js'),'utf8');
 function makeEl(){
   const el={_html:'',_txt:'',style:{},disabled:false,children:[],scrollTop:0,value:'',className:'',id:'',onclick:null,
     classList:{add(){},remove(){},toggle(){}},

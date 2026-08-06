@@ -1,6 +1,6 @@
 /* 周期大事件深化 Phase 2g 冒烟：妖潮守卫战（三波守城 / 备战 / 奖励 / 胜负 / 图鉴联动） */
 const fs=require('fs'),vm=require('vm');
-const js=fs.readFileSync(process.env.TEMP+'\\xiantu_game.js','utf8');
+const js=fs.readFileSync(require('path').join(process.env.TEMP||process.env.TMPDIR||require('os').tmpdir(),'xiantu_game.js'),'utf8');
 function makeEl(){
   const el={_html:'',_txt:'',style:{},disabled:false,children:[],scrollTop:0,value:'',className:'',id:'',onclick:null,
     classList:{add(){},remove(){},toggle(){}},

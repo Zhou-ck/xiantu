@@ -1,6 +1,6 @@
 /* AI 意图路由冒烟：新系统命令可经 AI 路径路由 */
 const fs=require('fs'),vm=require('vm');
-const js=fs.readFileSync(process.env.TEMP+'\\xiantu_game.js','utf8');
+const js=fs.readFileSync(require('path').join(process.env.TEMP||process.env.TMPDIR||require('os').tmpdir(),'xiantu_game.js'),'utf8');
 function makeEl(){
   const el={_html:'',_txt:'',style:{},disabled:false,children:[],scrollTop:0,value:'',className:'',id:'',onclick:null,
     classList:{add(){},remove(){},toggle(){}},

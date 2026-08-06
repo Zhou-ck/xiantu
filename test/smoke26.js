@@ -1,6 +1,6 @@
 /* 副业深化 Phase 2c 冒烟：配方门槛 / 丹方手札 / 造诣加成 / 炼制记录 / 材料来源 */
 const fs=require('fs'),vm=require('vm');
-const js=fs.readFileSync(process.env.TEMP+'\\xiantu_game.js','utf8');
+const js=fs.readFileSync(require('path').join(process.env.TEMP||process.env.TMPDIR||require('os').tmpdir(),'xiantu_game.js'),'utf8');
 function makeEl(){
   const el={_html:'',_txt:'',style:{},disabled:false,children:[],scrollTop:0,value:'',className:'',id:'',onclick:null,
     classList:{add(){},remove(){},toggle(){}},

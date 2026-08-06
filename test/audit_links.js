@@ -2,7 +2,7 @@
    核对每个被引用的函数名是否在全局有定义；同时检查 HTML 中 id 是否被 JS 使用。 */
 const fs=require('fs'),path=require('path');
 const root=path.join(__dirname,'..');
-const js=fs.readFileSync(path.join(process.env.TEMP,'xiantu_game.js'),'utf8');
+const js=fs.readFileSync(path.join(process.env.TEMP||process.env.TMPDIR||require('os').tmpdir(),'xiantu_game.js'),'utf8');
 const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
 const defs=new Set();
 for(const m of js.matchAll(/function\s+([A-Za-z_$][\w$]*)\s*\(/g))defs.add(m[1]);
