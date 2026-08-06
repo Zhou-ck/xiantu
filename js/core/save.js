@@ -146,6 +146,10 @@ function load(){
       if(s.daoPartner.stage===undefined)s.daoPartner.stage=s.daoPartner.realm||0;
       if(s.daoPartner.cd===undefined)s.daoPartner.cd={};
       if(s.daoPartner.memories===undefined)s.daoPartner.memories=[];
+      /* 存档读回后同一角色可能分裂成两个对象：把与道侣同名的暧昧对象移除（防修罗场「同一个人」） */
+      if(s.affairs&&s.daoPartner.name){
+        s.affairs=s.affairs.filter(a=>!(a&&a.name===s.daoPartner.name));
+      }
     }
     if(s.master&&s.master.gender===undefined)s.master.gender='男';
     /* 旧档境界迁移：v1 大境界 → 新 42 档体系（大境前期） */

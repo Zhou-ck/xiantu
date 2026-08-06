@@ -8,6 +8,8 @@
 
 /* ---------- 小工具 ---------- */
 function he(p){return p&&p.gender==='女'?'她':'他'}
+/* 视角差异化：道侣恒为异性，按主角性别给文本（男修视角 / 女修视角） */
+function pov(maleTxt,femaleTxt){return S&&S.gender==='女'?femaleTxt:maleTxt}
 function pC(p){p.cd=p.cd||{};return p.cd}
 function daoAff(p,f,a,line){
   if(!p)return;
@@ -71,7 +73,7 @@ function partnerPanel(){
     '<button class="small" onclick="daoDaily()">🌟 相处</button>',
     '<button class="small" onclick="daoGift()">🎁 赠礼</button>',
     '<button class="small primary" onclick="doDualCultivate()">☯️ 双修</button>',
-    '<button class="small" onclick="daoPropose()">'+(p.married?'👰 大典':'💍 提亲')+'</button>',
+    '<button class="small" onclick="daoPropose()">'+(p.married?'👰 大典':pov('💍 提亲','💍 求娶'))+'</button>',
     (p.married&&!(S.flag.childPreg&&S.flag.childPreg.left>0)?'<button class="small" onclick="askChild()">👶 共商子嗣</button>':'')+
     ((S.flag.childPreg&&S.flag.childPreg.left>0)?'<button class="small primary" onclick="childCheck()">🤰 胎息检查（'+(Math.ceil((S.flag.childPreg.left||90)/30))+' 月）</button>':''),
     '<button class="small" onclick="panelFamily()">👨‍👩‍👧 家族</button>',
@@ -123,8 +125,13 @@ function daoDaily(){
       {txt:'🌄 并肩坐下，一起看云',fn:()=>{daoAff(p,2,3,'');addMemory(p,'崖畔看云');log('<p>你们一直坐到星子浮上来。'+p.name+'忽然说：「要是仙途有尽头，我想尽头就是这样的黄昏。」</p>')}},
       {txt:'🌙 提议今夜去山顶看月',fn:()=>{daoAff(p,3,3,'');log('<p>月上中天时你们才下山。山路窄，'+p.name+'的手不知何时被你牵住，谁也没松开。</p>')}},
     ]},
+    {pov:true,mt:'她今日练剑险些失手，你一把扶住她的腰，她仰头看你，耳根通红：「……谢了。」',ft:'他今日练剑险些失手，你伸手去扶，却被他反手稳稳护住，你撞进他怀里，他低头看你：「小心些。」',opts:[
+      {txt:'💞 顺口道一句「有我在」',fn:()=>{daoAff(p,3,2,'');addMemory(p,'练剑时的惊魂一瞬');log(pov('<p>她低下头，声音闷闷的：「嗯……有你在，总不会有事。」</p>','<p>他低低应了一声，却把你的手牵得更紧了些：「嗯，有你在，我总不会有事。」</p>'))}},
+      {txt:'🍵 收了剑，一起去煮壶茶',fn:()=>{daoAff(p,2,2,'');log('<p>你们收了剑，并肩坐下煮茶。晚风拂过，谁也没再提刚才那一瞬的心跳。</p>')}},
+    ]},
   ];
   const ev=pick(scenes);
+  if(ev.pov)ev.t=pov(ev.mt,ev.ft);
   pC(p).daily=rand(10,15);
   openEventModal('🌟 相处 · 日常','<p>'+artImg(NPC_ART[p.role]||ART.lady,56,56,'avatar')+ev.t+'</p>',ev.opts.map(o=>({txt:o.txt,fn:()=>{o.fn();passTime(1);renderAll()}})));
 }
@@ -206,7 +213,7 @@ function daoChatResolve(kind){
       '初入仙门时连火球都点不着，被师兄笑了半年',
       '头一回下山历练就遇见妖兽，拔腿就跑，结果摔进泥坑',
     ])+'。</p>');
-    log('<p>'+g+'听得入神，末了轻轻道：「原来你也有这样狼狈的时候。」你看着她眼里的笑意，忽然觉得那段旧事也没那么难堪了。</p>');
+    log('<p>'+g+'听得入神，末了轻轻道：「原来你也有这样狼狈的时候。」你看着'+g+'眼里的笑意，忽然觉得那段旧事也没那么难堪了。</p>');
     f=2;a=2;
     if(!p.storyTold){p.storyTold=true;addMemory(p,'讲了一桩从前的旧事');f++}
   }else if(kind==='tea'){
@@ -214,7 +221,7 @@ function daoChatResolve(kind){
     const gn=Math.floor(15+S.root/6);
     S.cult+=gn;
     log('<p>你们就着灵茶论起一段道法：'+rollBadge(R.r,R.mod,R.t,R.dc)+'</p>');
-    log('<p>茶烟袅袅，'+(R.hit?'她眼中亮晶晶的，与你辩到兴处，忽然停住，抿唇一笑：「光顾着论道，都忘了茶要凉了。」':'你们各执一词，谁也说服不了谁，最后相视一笑，把茶干了。')+'（修为 +'+gn+'）</p>');
+    log('<p>茶烟袅袅，'+(R.hit?g+'眼中亮晶晶的，与你辩到兴处，忽然停住，抿唇一笑：「光顾着论道，都忘了茶要凉了。」':'你们各执一词，谁也说服不了谁，最后相视一笑，把茶干了。')+'（修为 +'+gn+'）</p>');
     f=R.hit?2:1;a=R.hit?2:1;
   }else if(kind==='heart'){
     const R=doRoll('cha',13);
@@ -223,7 +230,7 @@ function daoChatResolve(kind){
     if(R.hit){
       f=3;a=3;
       log('<p class="good">'+g+'眼眶一热，终于低声说起那桩心事……末了，'+g+'哑声道：「谢谢你，肯听。」</p>');
-      if(R.crit)addMemory(p,'听过她一桩不与人言的心事');
+      if(R.crit)addMemory(p,'听过'+g+'一桩不与人言的心事');
     }else{
       f=-1;a=-1;
       log('<p class="danger">'+g+'欲言又止，最后只是笑了笑：「没事，说了怕你笑话。」</p>');
@@ -295,7 +302,7 @@ function dateResolve(id){
     opts=[
       {txt:'🏮 共放一盏花灯',fn:()=>done('你们在灯面各写一句心愿，推入河中。两盏灯挨挨挤挤，漂向远方。',1,2)},
       {txt:'🧩 猜灯谜（智慧判定）',fn:()=>{const r=R('int',13);done(r.hit?'你连猜三题，赢下一盏琉璃灯。'+g+'提着灯，灯光映进'+he(p)+'眼底，比你见过的所有灵火都亮。':'你连错三题，被摊主打趣。'+g+'护着你落荒而逃，笑了一路。',r.hit?3:1,r.hit?3:1)}},
-      {txt:'🍡 买一串糖葫芦',fn:()=>done('你买了两串糖葫芦，第一串递给她。'+g+'咬了一口，眉眼弯弯：「甜。」',2,2)},
+      {txt:'🍡 买一串糖葫芦',fn:()=>done('你买了两串糖葫芦，第一串递给'+g+'。'+g+'咬了一口，眉眼弯弯：「甜。」',2,2)},
     ];
   }else if(id==='river'){
     intro='<p>溪水潺潺，晚风送来草木香。河面上漂着零星的许愿灯，明明灭灭。</p>';
@@ -315,7 +322,7 @@ function dateResolve(id){
     intro='<p>灵谷花海漫过山腰，风一吹，整片山坡都在起伏。'+g+'蹲下去，小心翼翼碰了碰一朵花的花瓣。</p>';
     opts=[
       {txt:'🌸 编一只花环替'+g+'戴上（魅力判定）',fn:()=>{const r=R('cha',13);done(r.hit?'你笨手笨脚编好一只花环，轻轻戴在'+g+'发间。'+g+'抬手摸了摸，忽然别过脸：「……丑死了。」耳朵却红透了。':'花环散架，你手忙脚乱，'+g+'蹲下来和你一起捡花瓣，笑得比花还好看。',r.hit?3:1,r.hit?3:1)}},
-      {txt:'💐 采一株开得最好的花相赠',fn:()=>{if(!p.firstGift){p.firstGift={name:'花海中的一株灵花',at:S.days};addMemory(p,'第一份礼物：花海中的一株灵花')}done('你在花海里挑了半日，采下一株最精神的灵花递给她。'+g+'接过去，仔仔细细别在衣襟上：「这是我收过最好的礼。」',3,3)}},
+      {txt:'💐 采一株开得最好的花相赠',fn:()=>{if(!p.firstGift){p.firstGift={name:'花海中的一株灵花',at:S.days};addMemory(p,'第一份礼物：花海中的一株灵花')}done('你在花海里挑了半日，采下一株最精神的灵花递给'+g+'。'+g+'接过去，仔仔细细别在衣襟上：「这是我收过最好的礼。」',3,3)}},
       {txt:'📿 以花喻人，念一句诗（智慧判定）',fn:()=>{const r=R('int',13);done(r.hit?'你道：「人面桃花相映红。」'+g+'啐你一口：「就你会说话。」嘴角却压不住。':'你吟了半句就卡壳，'+g+'替你接了下半句，反过来笑话你。',r.hit?2:1,r.hit?2:1)}},
     ];
   }else if(id==='snow'){
@@ -390,6 +397,7 @@ function daoGift(){
 function daoGiftResolve(kind){
   const p=S.daoPartner;
   if(!p)return;
+  const g=he(p);
   let giftName='';
   if(kind==='jewel'){
     if(S.stones<100){toast('灵石不足');return}
@@ -400,7 +408,7 @@ function daoGiftResolve(kind){
     const mk=['herb','sherb'].find(k=>(S.mats[k]||0)>0);
     if(!mk){log('<p>你翻了翻储物袋，没有找到合意的灵草，只好作罢。</p>');passTime(1);renderAll();return}
     S.mats[mk]--;giftName='一株'+MAT_NAMES[mk];
-    log('<p>你取出一株<b>'+MAT_NAMES[mk]+'</b>递过去。'+(p.taste==='材'?'她眼睛一亮，小心捧过去，翻来覆去地看：「你怎么知道我想要这个？」':'她接过去，凑近闻了闻，眉眼弯弯：「药香很正。」')+'</p>');
+    log('<p>你取出一株<b>'+MAT_NAMES[mk]+'</b>递过去。'+(p.taste==='材'?g+'眼睛一亮，小心捧过去，翻来覆去地看：「你怎么知道我想要这个？」':g+'接过去，凑近闻了闻，眉眼弯弯：「药香很正。」')+'</p>');
     daoAff(p,3,3,'');
   }else if(kind==='pill'){
     const it=S.items.find(x=>x.type==='consumable'&&/丹/.test(x.name));
@@ -479,13 +487,13 @@ function dualStage(st){
       opts=[
         {txt:'🛡️ 同心护道（心性判定）',fn:()=>{const R=doRoll('wil',15);log('<p>'+rollBadge(R.r,R.mod,R.t,R.dc)+'</p>');if(R.hit){if(S.heartDemons>0)S.heartDemons--;log('<p class="good">你稳住心神，将'+g+'护在身后。魔音嘶鸣着消散，你睁眼时，'+g+'正紧紧攥着你的手，指尖发白：「……有你在，我不怕。」</p>');daoAff(p,1,4,'');_dual.mood+=2;const gw=growWil(0.15,'同心抗魔，道心愈坚');if(gw)log(gw)}else{S.hp=Math.max(1,S.hp-Math.floor(S.maxHp*0.1));log('<p class="danger">魔音趁隙而入，你们同时惊出一身冷汗。'+g+'脸色微白，你连忙扶住'+he(p)+'。</p>');daoAff(p,-1,-2,'')}dualFinal()}},
         {txt:'🕊️ 独自镇守，让'+g+'安心入定',fn:()=>{log('<p>你以心神筑起屏障，将魔音尽数挡下。'+g+'安然入定，你却在魔音中熬得面色发白——天亮时，'+g+'把一枚温热的丹药塞进你手心：「……傻子。」</p>');daoAff(p,3,2,'');_dual.mood++;const gw=growWil(0.2,'以己身镇魔，道心大进');if(gw)log(gw);dualFinal()}},
-        {txt:'😴 相拥而卧，以体温相护',fn:()=>{log('<p>你索性将'+g+'揽入怀中，以体温隔绝魔音。'+g+'起初挣了一下，后来便安静下来，在你怀里轻声说：「……若是永远这样，倒也值得。」</p>');daoAff(p,1,4,'');_dual.mood+=2;addMemory(p,'同心相护，渡过一夜魔音');dualFinal()}},
+        {txt:'😴 相拥而卧，以体温相护',fn:()=>{log('<p>'+pov('你索性将'+g+'揽入怀中，以体温隔绝魔音。'+g+'起初挣了一下，后来便安静下来，在你怀里轻声说：「……若是永远这样，倒也值得。」',g+'索性将你揽入怀中，以体温隔绝魔音。你起初挣了一下，后来便安静下来，在他怀里轻声说：「……若是永远这样，倒也值得。」')+'</p>');daoAff(p,1,4,'');_dual.mood+=2;addMemory(p,'同心相护，渡过一夜魔音');dualFinal()}},
       ];
     }else{
       title='☯️ 双修 · 相依入定';
       intro='<p>灵气渐息，夜风从窗外涌进来。你们的气息纠缠在一起，谁也没有先睁眼。</p>';
       opts=[
-        {txt:'💞 相拥而眠',fn:()=>{log('<p>'+g+'靠进你怀里，发丝蹭过你的颈侧。你听见'+he(p)+'极轻极轻地说：「……今夜，不做修士，只做你的人。」</p>');daoAff(p,1,5,'');_dual.mood+=2;addMemory(p,'双修夜，相依而眠');dualFinal()}},
+        {txt:'💞 相拥而眠',fn:()=>{log('<p>'+pov(g+'靠进你怀里，发丝蹭过你的颈侧。你听见'+g+'极轻极轻地说：「……今夜，不做修士，只做你的人。」','你靠进'+g+'怀里，'+g+'低头抵着你的发顶。你听见'+g+'极轻极轻地说：「……今夜，不做修士，只做你的人。」')+'</p>');daoAff(p,1,5,'');_dual.mood+=2;addMemory(p,'双修夜，相依而眠');dualFinal()}},
         {txt:'🧘 静坐相对，直至天明',fn:()=>{log('<p>你们就这样静静坐着，从月升坐到月落。灵台澄明，比任何一次闭关都安稳。</p>');daoAff(p,2,2,'');const gw=growWil(0.15,'静坐同心，道心愈坚');if(gw)log(gw);dualFinal()}},
         {txt:'🍵 煮一壶茶，说一会话',fn:()=>{log('<p>你们披着月光煮茶闲话，不知不觉说到了天明。</p>');daoAff(p,2,2,'');dualFinal()}},
       ];
@@ -525,7 +533,7 @@ function daoPropose(){
   closePanel();
   if(p.married){
     openEventModal('👰 结缡道侣','<p>你与'+p.name+'早已结缡。'+(p.ceremonyDate!==undefined?'那是第 '+Math.floor(p.ceremonyDate/365)+' 年的事。':'')+'如今想来，仍觉满心欢喜。</p>',[
-      {txt:'💞 握住'+he(p)+'的手，相视一笑',fn:()=>{log('<p>'+p.name+'回握住你的手，眼里有温柔的光：「嫁/娶了你，是我这辈子的运气。」</p>');daoAff(p,1,1,'');passTime(1);renderAll()}},
+      {txt:'💞 握住'+he(p)+'的手，相视一笑',fn:()=>{log('<p>'+p.name+'回握住你的手，眼里有温柔的光：「'+pov('嫁了你','娶了你')+'，是我这辈子的运气。」</p>');daoAff(p,1,1,'');passTime(1);renderAll()}},
       {txt:'🌙 提起大典那日的热闹',fn:()=>{addMemory(p,'又提起双修大典那日');log('<p>你说起大典那日十里红绸、宾朋满座，'+he(p)+'听得弯起眼睛：「那时的你，比宗门大比还紧张呢。」</p>');daoAff(p,2,2,'');passTime(1);renderAll()}},
     ]);
     return;
@@ -533,21 +541,21 @@ function daoPropose(){
   if((p.favor||0)<90||(p.affinity||0)<90){log('<p class="sys">你话到嘴边又咽了回去——情缘未到深处，此刻提亲，未免唐突。（需好感与心动均 ≥90）</p>');passTime(1);renderAll();return}
   const canPay=(S.stones>=500&&(S.mats.demonCore||0)>=1&&(S.mats.jade||0)>=1);
   const canSect=!!S.sect&&(S.contrib||0)>=200;
-  if(!canPay&&!canSect){log('<p class="sys">你忽然想起，提亲总得备一份像样的彩礼。'+p.name+'含笑望着你，等你开口，你却一时语塞。（需 500灵石 + 妖丹×1 + 寒玉×1，或宗门贡献 ≥200）</p>');passTime(1);renderAll();return}
+  if(!canPay&&!canSect){log('<p class="sys">你忽然想起，'+pov('提亲总得备一份像样的彩礼','求娶总得备一份像样的聘礼')+'。'+p.name+'含笑望着你，等你开口，你却一时语塞。（需 500灵石 + 妖丹×1 + 寒玉×1，或宗门贡献 ≥200）</p>');passTime(1);renderAll();return}
   openEventModal('💍 提亲 · 双修大典','<p>月色正好。你深吸一口气，牵起'+p.name+'的手，认真道：「仙途漫长，我想与你结为道侣，从此风雨同舟，生死与共。你……愿意么？」</p><p class="sys">'+p.name+'怔怔望着你，眼里慢慢蓄起水光。</p>',[
-    {txt:'💍 正式提亲（彩礼：500灵石 + 妖丹×1 + 寒玉×1）',cls:'primary',fn:()=>{
+    {txt:pov('💍 正式提亲（彩礼：500灵石 + 妖丹×1 + 寒玉×1）','💍 郑重求娶（聘礼：500灵石 + 妖丹×1 + 寒玉×1）'),cls:'primary',fn:()=>{
       if(canPay){S.stones-=500;S.mats.demonCore--;S.mats.jade--}
       else{S.contrib=Math.max(0,(S.contrib||0)-200);S.contribVal=Math.max(0,(S.contribVal||0)-200)}
       p.married=true;p.ceremonyDate=S.days;
       addMemory(p,'双修大典，天地为证');
       if(!S.titles.includes('married')){S.titles.push('married');log('<p class="loot">🏅 获得称号「结缡同心」——自此双修增益永久提升。</p>')}
       scene('双修大典');
-      log('<p>你取出彩礼，郑重下聘。三日之后，宗门内外，宾朋满座，红绸铺了十里山道。</p>');
+      log('<p>'+pov('你取出彩礼，郑重下聘','你备下聘礼，郑重求娶')+'。三日之后，宗门内外，宾朋满座，红绸铺了十里山道。</p>');
       log('<p class="good">大典之上，你们对天地起誓：『生生世世，同赴仙途。』'+p.name+'为你别上一枚同心结，'+(p.gender==='女'?'她':'他')+'眼底映着烛火，比任何一场流星都亮。</p>');
       daoAff(p,8,8,'');
       passTime(3);renderAll();
     }},
-    {txt:'🚶 再等等，想给她更好的承诺',fn:()=>{log('<p>你终究没有说出口，只握了握她的手。'+(p.gender==='女'?'她':'他')+'似有所觉，轻轻「嗯」了一声：「不急，我等得起。」</p>');passTime(1);renderAll()}},
+    {txt:'🚶 再等等，想给'+he(p)+'更好的承诺',fn:()=>{log('<p>你终究没有说出口，只握了握'+he(p)+'的手。'+(p.gender==='女'?'她':'他')+'似有所觉，轻轻「嗯」了一声：「不急，我等得起。」</p>');passTime(1);renderAll()}},
   ]);
 }
 
@@ -556,13 +564,14 @@ function daoAnniv(){
   const p=S.daoPartner;
   if(!p)return;
   closePanel();
+  const g=he(p);
   const y=Math.floor((S.days-(p.anniv||S.days))/365)+1;
   if(!p.nickname){
     openEventModal('🎂 结缘纪念 · 第 '+y+' 年','<p>这一日，'+p.name+'早早等在洞府外，手里攥着一条新编的绳结。'+he(p)+'低头绞着绳结，声音轻轻：「今儿……是我们初遇的一整年。」</p><p>'+he(p)+'顿了顿，耳根微红：「我、我一直想……给你起一个只有我叫的名字。你若应了，我就告诉你。」</p>',[
       {txt:'💕 应'+he(p)+'，听'+he(p)+'唤你一声',fn:()=>{
-        const nn=pick(['阿道','木头','冤家','傻子','心上人']);
+        const nn=pick(pov(['阿道','木头','冤家','傻子','心上人'],['阿道','冤家','傻丫头','心上人','我的道侣']));
         p.nickname=nn;
-        addMemory(p,'她给我起了昵称「'+nn+'」');
+        addMemory(p,g+'给我起了昵称「'+nn+'」');
         log('<p>'+p.name+'抿着唇，终于唤了一声：「……'+nn+'。」声音又轻又软，像是怕被风听了去。</p>');
         log('<p class="good">你应了一声。'+he(p)+'的眼睛一下子亮起来，又红着脸别过头去，把那条绳结系在你腕上：「……那你就是我的人了。」</p>');
         daoAff(p,4,4,'');
@@ -589,6 +598,9 @@ function confessLove(n){
   if(R.hit){
     if(S.companion===n)S.companion=null;
     n.affinity=70;S.daoPartner=n;
+    /* 成为道侣后不再算「暧昧对象」，从红颜/蓝颜列表移除（防修罗场出现同一人） */
+    const _ai=(S.affairs||[]).indexOf(n);
+    if(_ai>=0)S.affairs.splice(_ai,1);
     S.flag.partnerCount=(S.flag.partnerCount||0)+1;
     n.anniv=S.days;n.memories=n.memories||[];n.cd=n.cd||{};
     log('<p class="good">'+(n.role==='妖族狐女'||n.role==='狐仙苏苏'?'狐女眼波流转，轻笑一声：「你倒是个有趣的人。」':'对方怔怔望你许久，终是红着脸点了点头。')+'</p>');
@@ -756,7 +768,7 @@ function partnerEvent(){
       {txt:'😏 打趣'+g+'剑法不精',fn:()=>{log('<p>你笑'+g+'剑法不精，'+g+'恼羞成怒，抄起剑鞘作势要敲你。你抱头鼠窜，满院子鸡飞狗跳。</p>');favorChange(p,-1,'打趣剑法，惹得道侣恼羞成怒')}},
     ]},
     {t:'有人当众给'+g+'送了一匣灵玉，'+g+'扭头看向你。',opts:[
-      {txt:'😌 大度一笑，替'+g+'谢过对方',fn:()=>{log('<p>你含笑上前，替'+g+'谢绝了那匣灵玉：「她的心意，自有我来给。」'+g+'耳朵微红，却挺直了腰。</p>');daoAff(p,4,3,'')}},
+      {txt:'😌 大度一笑，替'+g+'谢过对方',fn:()=>{log('<p>你含笑上前，替'+g+'谢绝了那匣灵玉：「'+g+'的心意，自有我来给。」'+g+'耳朵微红，却挺直了腰。</p>');daoAff(p,4,3,'')}},
       {txt:'😤 吃醋，牵着'+g+'就走',fn:()=>{log('<p>你一把牵起'+g+'的手，大步离开。'+g+'被你拽得踉跄，却弯着眼睛笑了：「醋坛子。」</p>');daoAff(p,2,2,'')}},
     ]},
     {t:''+g+'忽然问：「若有一日，我不在了，你会如何？」',opts:[
@@ -768,7 +780,7 @@ function partnerEvent(){
       {txt:'🧣 解下围巾替'+g+'系上',fn:()=>{log('<p>你解下自己的围巾，替'+g+'一圈圈系好。'+g+'整张脸埋在围巾里，只露出一双亮晶晶的眼睛。</p>');daoAff(p,4,4,'')}},
     ]},
     {t:''+g+'偷偷在你枕下放了一枚护身符，被你发现了。',opts:[
-      {txt:'💞 收下，贴身佩戴',fn:()=>{S.flag.tongxin=true;addMemory(p,'她偷偷给我求了护身符');log('<p class="good">你郑重收下那枚护身符，贴身佩戴。'+g+'别过脸去：「寺里的老和尚说，能挡一次灾……你别笑我。」</p>');daoAff(p,5,5,'')}},
+      {txt:'💞 收下，贴身佩戴',fn:()=>{S.flag.tongxin=true;addMemory(p,g+'偷偷给我求了护身符');log('<p class="good">你郑重收下那枚护身符，贴身佩戴。'+g+'别过脸去：「寺里的老和尚说，能挡一次灾……你别笑我。」</p>');daoAff(p,5,5,'')}},
       {txt:'🙏 认真道谢，又替'+g+'求了一枚',fn:()=>{log('<p>你谢过'+g+'，隔日悄悄去了同一座山寺，替'+g+'也求了一枚。'+g+'捏着那枚符，看了你很久。</p>');daoAff(p,4,4,'')}},
     ]},
   ];

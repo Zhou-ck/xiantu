@@ -430,6 +430,9 @@ function confessLove(n){
   if(R.hit){
     if(S.companion===n)S.companion=null;
     n.affinity=70;S.daoPartner=n;
+    /* 成为道侣后不再算「暧昧对象」，从红颜/蓝颜列表移除（防修罗场出现同一人） */
+    const _ai=(S.affairs||[]).indexOf(n);
+    if(_ai>=0)S.affairs.splice(_ai,1);
     log('<p class="good">'+(n.role==='妖族狐女'||n.role==='狐仙苏苏'?'狐女眼波流转，轻笑一声：「你倒是个有趣的人。」':'对方怔怔望你许久，终是红着脸点了点头。')+'自此，你二人结为道侣，双修共进。</p>');
     for(const a of (S.affairs||[])){
       if(a&&a!==n)favorChange(a,-6,'闻君结缡，黯然神伤');
@@ -478,22 +481,23 @@ function shuraRisk(){
 function maybeShura(){
   if(!S)return false;
   if(!chance(shuraRisk()*100))return false;
-  shuraField();
-  return true;
+  return shuraField();
 }
 function shuraPool(){
-  const pool=[];
-  if(S.daoPartner&&!S.daoPartner.foe)pool.push(S.daoPartner);
-  for(const a of (S.affairs||[]))if(a&&!a.foe&&pool.indexOf(a)<0)pool.push(a);
+  /* 按名字去重：存档读回后同一角色可能分裂成两个对象（JSON 序列化），须防「苏岚与苏岚」 */
+  const pool=[],seen={};
+  const add=p=>{if(p&&!p.foe&&p.name&&!seen[p.name]){seen[p.name]=1;pool.push(p)}};
+  if(S.daoPartner)add(S.daoPartner);
+  for(const a of (S.affairs||[]))add(a);
   return pool;
 }
 function shuraField(){
   const pool=shuraPool();
-  if(pool.length<2)return;
+  if(pool.length<2)return false;
   const a=pick(pool);
-  let b=pick(pool);
-  if(b===a)b=pick(pool.filter(x=>x!==a));
-  if(!a||!b)return;
+  const rest=pool.filter(x=>x!==a&&x.name!==a.name);
+  if(!rest.length)return false;
+  const b=pick(rest);
   const qixi=(S.flag.qixiLeft||0)>0;
   const r=qixi?4:rand(1,4);
   const he=s=>s.gender==='女'?'她':'他';
@@ -522,6 +526,7 @@ function shuraField(){
       {txt:'🏃 趁月色遁走',fn:()=>{favorChange(a,-5,'七夕失约');favorChange(b,-5,'七夕失约');log('<p class="danger">你借着月色溜走，留下两人对着鹊桥无语凝噎。</p>')}},
     ]);
   }
+  return true;
 }
 function npcMaster(i){
   const n=S.npcs[i];

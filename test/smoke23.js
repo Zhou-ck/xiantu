@@ -47,4 +47,18 @@ vm.runInContext(`S.prof='talisman'; S.mats={paper:2,cinnabar:2,demonCore:2}; con
 assert(vm.runInContext('window.__p3>=4&&window.__p4>=4&&window.__bonus===3',ctx),'符箓：调墨（妖丹点睛 +3）+连笔两段交互');
 vm.runInContext(`S.prof='array'; S.mats={iron:2,paper:1,jade:2,demonCore:2}; const r3=RECIPES.array[0]; craftPrep(r3,0); window.__p5=window._eventModalOpts?window._eventModalOpts.length:0; window._eventModalOpts[0].fn(); window.__p6=window._eventModalOpts?window._eventModalOpts.length:0;`,ctx);
 assert(vm.runInContext('window.__p5>=4&&window.__p6>=4',ctx),'布阵：选基+引灵两段交互');
+// 9) 表白结为道侣后，从暧昧列表移除（防修罗场出现同一个人）
+vm.runInContext(`S=newState('测',BACKGROUNDS[0]); S.attrs.cha=40; const n=S.npcs[0]; n.favor=95; S.affairs=[n]; PENDING=0; confessLove(n); window.__inAffairs=(S.affairs||[]).indexOf(n)>=0; window.__partner=S.daoPartner===n;`,ctx);
+assert(vm.runInContext('window.__inAffairs===false&&window.__partner===true',ctx),'结为道侣后从暧昧列表移除');
+// 10) 修罗场按名字去重：存档分裂出的同名对象不会同台出现
+vm.runInContext(`S=newState('测',BACKGROUNDS[0]); const su={name:'苏岚',role:'采药女',gender:'女',favor:100,affinity:90,cd:{}}; const su2={name:'苏岚',role:'采药女',gender:'女',favor:100,affinity:90,cd:{}}; const li={name:'李婉',role:'丹房女修',gender:'女',favor:80,affinity:70,cd:{}}; S.daoPartner=su; S.affairs=[su2,li]; S.flag.qixiLeft=1; window.__fired=shuraField(); window.__body=document.getElementById('panelBody')._html;`,ctx);
+assert(vm.runInContext('window.__fired===true&&window.__body.indexOf("苏岚与苏岚")<0&&window.__body.indexOf("李婉")>=0',ctx),'修罗场不再出现「苏岚与苏岚」');
+// 11) 旧档迁移：读档后自动清除与道侣同名的暧昧对象
+vm.runInContext(`S=newState('测',BACKGROUNDS[0]); S.daoPartner={name:'苏岚',role:'采药女',gender:'女',favor:100,affinity:90,cd:{},memories:[]}; S.affairs=[{name:'苏岚',role:'采药女',gender:'女',favor:80,affinity:70,cd:{}},{name:'李婉',role:'丹房女修',gender:'女',favor:80,affinity:70,cd:{}}]; localStorage.setItem('xiantu_save_0',JSON.stringify(S)); const L=load(); window.__names=(L.affairs||[]).map(a=>a.name).join('|');`,ctx);
+assert(vm.runInContext('window.__names==="李婉"',ctx),'旧档迁移清除与道侣同名的暧昧对象');
+// 12) 女修视角：pov 助手 + 求娶/聘礼措辞
+vm.runInContext(`S={gender:'女'}; window.__p=pov('男','女');`,ctx);
+assert(vm.runInContext('window.__p==="女"',ctx),'pov 助手按主角性别取词');
+vm.runInContext(`S=newState('测',BACKGROUNDS[0]); S.gender='女'; S.daoPartner={name:'韩青',role:'散修剑客',gender:'男',favor:95,affinity:95,cd:{}}; S.stones=1000; S.mats={demonCore:2,jade:2}; PENDING=0; daoPropose(); window.__opt=(window._eventModalOpts||[]).map(o=>o.txt).join('|');`,ctx);
+assert(vm.runInContext('window.__opt.indexOf("郑重求娶")>=0&&window.__opt.indexOf("聘礼")>=0',ctx),'女修视角：求娶/聘礼措辞');
 console.log(fails===0?'ALL PASS':'FAILURES: '+fails);process.exit(fails?1:0);
