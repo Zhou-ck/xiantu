@@ -41,13 +41,16 @@ function consume(i){
       S.flag.pillResist=Math.min(3,(S.flag.pillResist||0)+1);
       const r=[1,0.7,0.5,0.3][S.flag.pillResist-1];
       S.pillBuff+=Math.floor(pillDays*r);
+      if(typeof addDanTox==='function')addDanTox(pillTox('聚灵丹')*2,'聚灵丹（7 日内连服）');
       log('<p class="sys">药力耐受：7 日内再服聚灵丹，效果降至 ×'+(r*1.5).toFixed(2)+'（剩余 '+Math.floor(pillDays*r)+' 日）。欲速不达，且待药力化尽。</p>');
     }else{
       S.flag.pillResist=0;
       S.pillBuff+=pillDays;
+      if(typeof addDanTox==='function')addDanTox(pillTox('聚灵丹'),'聚灵丹');
       log('<p class="good">聚灵丹入腹，丹田暖意融融，30 日内修炼效率 ×1.5。</p>');
     }
     S.flag.pillTaken=true;S.flag.pillTakenDay=now;
+    it._toxDone=true;
   }else if(it.use==='clear'){
     S.heartDemons=0;
     S.demonMarks=[];
@@ -103,6 +106,34 @@ function consume(i){
   }else if(it.use==='fruit'){
     const g=rand(300,600);S.cult+=g;
     log('<p class="good">朱果入口化作甘泉，直灌丹田，修为 +'+g+'！</p>');
+  }else if(it.use==='detox'){
+    if(typeof addDanTox==='function')addDanTox(-15,'排毒丹');
+    log('<p class="good">排毒丹入腹，药力裹挟着丹毒自毛孔丝丝渗出（丹毒 -15）。</p>');
+    addMood(5);
+    it._toxDone=true;
+  }else if(it.use==='mood2'){
+    addMood(20);
+    S.temp.break=(S.temp.break||0)+2;
+    log('<p class="good">凝神丹化作一道清凉灵流，心境澄明（心境 +20，下一次突破判定 +2）。</p>');
+  }else if(it.use==='blood'){
+    S.flag.bloodBuff=6;
+    log('<p class="danger">暴血丹入腹，气血翻涌如沸——下一场战斗攻击 +6！</p>');
+    S.hp=Math.max(1,S.hp-Math.floor(S.maxHp*0.05));
+  }else if(it.use==='guben'){
+    S.flag.guben=true;
+    log('<p class="good">固本丹力沉入丹田，化作一层无形的护膜——下一次突破失败不损修为。</p>');
+  }else if(it.use==='wuxing'){
+    S.flag.wuxingBuff=60;
+    log('<p class="good">五行丹入腹，五行之力在经脉中轮转不息（60 日内五行克敌伤害 +10%）。</p>');
+  }else if(it.use==='essence2'){
+    const g=rand(300,500);
+    S.cult+=g;
+    log('<p class="good">聚气散化开，灵气如百川归海汇入丹田（修为 +'+g+'）。</p>');
+  }else if(it.use==='huitian'){
+    S.hp=S.maxHp;
+    S.injuries=[];
+    addMood(10);
+    log('<p class="loot">回天丹入口，一股磅礴生机洗刷全身——气血尽复，百伤俱愈！</p>');
   }else if(it.use==='hatch'){
     if(S.pet){toast('已有灵兽相伴');return}
     S.pet=rollPet();
@@ -110,6 +141,10 @@ function consume(i){
     chainStart('lingshou');
   }else{
     toast('此物不可用');return;
+  }
+  if(!it._toxDone&&typeof pillTox==='function'){
+    const tx=pillTox(it.name);
+    if(tx&&typeof addDanTox==='function')addDanTox(tx,it.name);
   }
   S.items.splice(i,1);
   panelInventory();
@@ -129,6 +164,12 @@ function restHeal(days){
   const rc=restCure(days);
   const heal=Math.floor(S.maxHp*(0.08+days/60));
   S.hp=Math.min(S.maxHp,S.hp+heal);
+  /* v50 静养排毒：每 10 日 -3，丹房再减 1 */
+  if((S.flag.danTox||0)>0&&days>=10){
+    let detox=Math.floor(days/10)*3;
+    if(S.flag.caveRooms&&S.flag.caveRooms.dan)detox+=Math.floor(days/30);
+    if(typeof addDanTox==='function')addDanTox(-detox,'静养排毒');
+  }
   scene('洞府静养');
   log('<p>你在洞府中静养 <b>'+days+' 日</b>，运功调息，药石温养。</p>'+
     (rc.cured>0?'<p class="good">静养有成，'+rc.cured+' 处伤势痊愈。</p>':'<p class="sys">伤势略有起色（气血 +'+heal+'）。</p>'));
@@ -252,18 +293,24 @@ function startTrustTo(target,tier){
 function panelRest(){
   const sg=signNow();
   const canSign=!sg;
-  const farm=S.flag.farm||{crop:null};
-  let farmHtml;
-  if(!farm.crop){
-    farmHtml='<p>灵田空置。种下种子，静待时日，成熟后自会通知你。</p><div class="row">'+
-      '<button class="small" onclick="plantCrop(\'herb\')">🌿 种灵草（30灵石·7日）</button>'+
-      '<button class="small" onclick="plantCrop(\'sherb\')">💠 种灵参（80灵石·15日）</button>'+
-      '<button class="small" onclick="plantCrop(\'fruit\')">🍒 种朱果（200灵石·30日）</button></div>';
-  }else{
-    const left=(farm.planted||0)+(farm.days||0)-S.days;
-    const ready=left<=0;
-    farmHtml='<p>'+(ready?'<span class="good">灵田中的<b>'+CROP_NAMES[farm.crop]+'</b>已经成熟！</span>':'灵田中的<b>'+CROP_NAMES[farm.crop]+'</b>还需 <b>'+Math.max(0,left)+'</b> 日成熟。')+'</p>'+
-      (ready?'<div class="row"><button class="small primary" onclick="harvestCrop()">🌾 收获</button></div>':'');
+  const farm=ensureFarm();
+  const slots=farmSlots();
+  let farmHtml='<p>灵田共 <b>'+slots+'</b> 块（洞府扩建 / 自建宗门灵田可加块）。种下种子，静待成熟；途中或有虫害、灵雨、妖兽滋扰。</p>';
+  for(let i=0;i<slots;i++){
+    const p=farm.plots[i]||null;
+    if(!p||!p.crop){
+      farmHtml+='<div class="bd-row"><span>🌱 第 '+(i+1)+' 块（空置）</span><b>'+
+        '<button class="small" onclick="plantCrop(\'herb\','+i+')">灵草 30·7日</button> '+
+        '<button class="small" onclick="plantCrop(\'sherb\','+i+')">灵参 80·15日</button> '+
+        '<button class="small" onclick="plantCrop(\'fruit\','+i+')">朱果 200·30日</button> '+
+        '<button class="small" onclick="plantCrop(\'xucan\','+i+')">玄参 120·20日</button> '+
+        '<button class="small" onclick="plantCrop(\'zizhi\','+i+')">紫芝 260·40日</button></b></div>';
+    }else{
+      const left=(p.planted||0)+(p.days||0)-S.days;
+      const ready=left<=0;
+      farmHtml+='<div class="bd-row'+(ready?' ok':'')+'"><span>🌾 第 '+(i+1)+' 块 · <b>'+CROP_NAMES[p.crop]+'</b>'+(p.evt?' <span class="tag" style="color:#e08a6a">⚠️ '+({pest:'虫害',rain:'灵雨',thief:'妖兽出没'})[p.evt]+'</span>':'')+'</span><b>'+
+        (ready?'<button class="small primary" onclick="harvestCrop('+i+')">收获</button>':'还需 '+Math.max(0,left)+' 日')+'</b></div>';
+    }
   }
   const artsHtml=S.arts.map((a,i)=>{
     const lv=a.level||1;
@@ -274,7 +321,7 @@ function panelRest(){
   openPanel('🏡 洞府',
     '<p>山中方一日，世上已千年。此处是你的道场：歇息、种药、参悟功法、求问天机。</p>'+
     '<h4>📜 天机签（每季一签）</h4><div id="signBox">'+
-    '<p>'+(canSign?'焚香祝祷，可窥本季天机——吉凶由命，签意自现，亦可凭此趋吉避凶。':'<span style="color:#e8c86a">本季已求：'+signDesc(sg.k)+'</span>')+'</p>'+
+    '<p>'+(canSign?'焚香祝祷，可窥本季天机——吉凶由命，签意自现，亦可凭此趋吉避凶。':'<span style="color:#e8c86a">本季已求：'+signDesc(sg.k)+'</span>'+(S.flag.signChain?'<br><span style="color:#e08a6a">⚠️ 凶签未解：宜尽快应劫化运。</span>':''))+'</p>'+
     (canSign?'<div class="row"><button class="small primary" onclick="drawSign()">🪷 焚香求签（一日）</button></div>':'')+
     '</div>'+
     '<h4>😴 歇息</h4><div class="row"><button onclick="doRest()">休整一日（恢复气血 35%）</button></div>'+
@@ -395,30 +442,85 @@ function buyDecor(id){
   log('<p class="loot">🪞 你在洞府陈设了「'+d.name+'」：'+d.desc+'（灵石 -'+d.cost+'）。</p>');
   panelRest();renderAll();
 }
-function plantCrop(k){
-  const cfg={herb:{cost:30,days:7},sherb:{cost:80,days:15},fruit:{cost:200,days:30}}[k];
+/* v51 灵田多块：基础 1 + 洞府扩建 1 + 自建宗门灵田 1 */
+const CROPS={
+  herb:{name:'灵草',cost:30,days:7},
+  sherb:{name:'灵参',cost:80,days:15},
+  fruit:{name:'朱果',cost:200,days:30},
+  xucan:{name:'玄参',cost:120,days:20},
+  zizhi:{name:'紫芝',cost:260,days:40},
+};
+function ensureFarm(){
+  if(!S.flag.farm||!Array.isArray(S.flag.farm.plots)){
+    const old=S.flag.farm;
+    S.flag.farm={plots:[]};
+    if(old&&old.crop)S.flag.farm.plots.push({crop:old.crop,planted:old.planted||0,days:old.days||7,notified:!!old.notified,evt:null});
+  }
+  while(S.flag.farm.plots.length<farmSlots())S.flag.farm.plots.push(null);
+  while(S.flag.farm.plots.length>farmSlots())S.flag.farm.plots.pop();
+  return S.flag.farm;
+}
+function farmSlots(){
+  let n=1;
+  if(S.flag.caveRooms&&S.flag.caveRooms.tian)n+=1;
+  if(typeof ownSectHarvestBonus==='function'&&ownSectHarvestBonus()>0)n+=1;
+  return n;
+}
+function plantCrop(k,slot){
+  const cfg=CROPS[k];
   if(!cfg)return;
+  const farm=ensureFarm();
+  if(slot===undefined)slot=farm.plots.findIndex(p=>!p||!p.crop);
+  if(slot<0||slot>=farm.plots.length||(farm.plots[slot]&&farm.plots[slot].crop)){toast('该块灵田已被占用');return}
   if(S.stones<cfg.cost){toast('灵石不足');return}
   S.stones-=cfg.cost;
-  S.flag.farm={crop:k,planted:S.days,days:cfg.days,notified:false};
+  farm.plots[slot]={crop:k,planted:S.days,days:cfg.days,notified:false,evt:null};
   scene('灵田耕种');
-  log('<p>你翻开灵田沃土，播下'+CROP_NAMES[k]+'种子，浇上灵泉水。此后每过一日，田中都多一分生机。</p>');
+  log('<p>你翻开第 '+(slot+1)+' 块灵田沃土，播下'+cfg.name+'种子，浇上灵泉水。此后每过一日，田中都多一分生机。</p>');
   panelRest();renderAll();
 }
-function harvestCrop(){
-  const f=S.flag.farm||{};
-  if(!f.crop||(f.planted||0)+(f.days||0)>S.days){toast('尚未成熟');panelRest();return}
-  const c=f.crop;
-  let loot='';
-  const bonus=(S.flag.caveRooms&&S.flag.caveRooms.tian)?1:0; /* 11 灵田扩建 */
-  const ownL=(typeof ownSectHarvestBonus==='function')?ownSectHarvestBonus():0; /* 自建宗门 · 灵田 */
+function farmHarvest(c){
+  const bonus=(S.flag.caveRooms&&S.flag.caveRooms.tian)?1:0;
+  const ownL=(typeof ownSectHarvestBonus==='function')?ownSectHarvestBonus():0;
   const total=bonus+ownL;
+  let loot='';
   if(c==='herb'){const n=rand(3,5)+total;S.mats.herb=(S.mats.herb||0)+n;loot='草药 ×'+n}
   else if(c==='sherb'){const n=rand(2,3)+total;S.mats.sherb=(S.mats.sherb||0)+n;loot='灵草 ×'+n;if(chance(0.3)){S.mats.demonCore=(S.mats.demonCore||0)+1;loot+='、妖丹 ×1'}}
-  else{addItem({name:'朱果',type:'consumable',quality:3,count:1,desc:'灵田所育朱果，服之修为大进（修为 +300~600）。',use:'fruit',sell:500});loot='朱果 ×1'}
-  S.flag.farm={crop:null};
+  else if(c==='fruit'){addItem({name:'朱果',type:'consumable',quality:3,count:1,desc:'灵田所育朱果，服之修为大进（修为 +300~600）。',use:'fruit',sell:500});loot='朱果 ×1'}
+  else if(c==='xucan'){const n=rand(2,3)+total;S.mats.sherb=(S.mats.sherb||0)+n;loot='玄参（灵草 ×'+n+'）';if(chance(0.25)){S.mats.jade=(S.mats.jade||0)+1;loot+='、寒玉 ×1'}}
+  else if(c==='zizhi'){const n=rand(2,3)+total;S.mats.sherb=(S.mats.sherb||0)+n;S.mats.demonCore=(S.mats.demonCore||0)+1;loot='紫芝（灵草 ×'+n+'、妖丹 ×1）'}
+  else{loot='无'}
+  return loot;
+}
+function harvestCrop(slot){
+  const farm=ensureFarm();
+  if(slot===undefined)slot=farm.plots.findIndex(p=>p&&p.crop&&(p.planted||0)+(p.days||0)<=S.days);
+  const p=farm.plots[slot];
+  if(!p||!p.crop||(p.planted||0)+(p.days||0)>S.days){toast('尚未成熟');panelRest();return}
+  if(p.evt==='pest'){
+    openEventModal('🐛 灵田虫害','<p>灵田间爬满噬灵虫，正啃噬即将成熟的'+CROP_NAMES[p.crop]+'！</p>',[
+      {txt:'🧠 布药驱虫（智慧判定）',cls:'primary',fn:()=>{const R=doRoll('int',14);log('<p>你洒下药粉：'+rollBadge(R.r,R.mod,R.t,R.dc)+'</p>');if(R.hit){const loot=farmHarvest(p.crop);log('<p class="good">虫害尽除，收成无损（'+loot+'）。</p>')}else{const loot=farmHarvest(p.crop);const half=Math.max(0,(S.mats.herb||0)-Math.floor(S.mats.herb/3));log('<p class="danger">药力不足，仍损了三成（'+loot+'）。</p>')}p.crop=null;p.evt=null;passTime(1);renderAll();panelRest();}},
+      {txt:'🔥 一把灵火焚虫（凶险）',fn:()=>{const R=doRoll('str',14);log('<p>你引动丹火：'+rollBadge(R.r,R.mod,R.t,R.dc)+'</p>');if(R.hit){const loot=farmHarvest(p.crop);log('<p class="loot">火势精准，虫害尽灭，收成无损（'+loot+'）。</p>')}else{const loot=farmHarvest(p.crop);log('<p class="danger">火势失控，烧焦了一半（'+loot+'）。</p>');S.hp=Math.max(1,S.hp-Math.floor(S.maxHp*0.05));}p.crop=null;p.evt=null;passTime(1);renderAll();panelRest();}},
+    ]);
+    return;
+  }
+  if(p.evt==='thief'){
+    openEventModal('🐗 妖兽偷吃','<p>一头贪吃的山魈正蹲在田里，大口嚼着你的'+CROP_NAMES[p.crop]+'！</p>',[
+      {txt:'⚔️ 驱赶妖兽',cls:'primary',fn:()=>{startCombat({name:'偷食山魈',atk:4+rl()*2,def:2+rl(),hp:26+rl()*10,style:'rapid'},res=>{if(res.win){const loot=farmHarvest(p.crop);log('<p class="good">山魈落荒而逃，收成保住（'+loot+'）。</p>')}else{log('<p class="danger">你被山魈掀了个跟头，它叼着灵药跑了。</p>')}p.crop=null;p.evt=null;renderAll()},true)}},
+      {txt:'🪙 丢几枚灵果引开它',fn:()=>{if(S.stones>=20){S.stones-=20;const loot=farmHarvest(p.crop);log('<p class="sys">你抛出一把灵果，山魈追着跑了（灵石-20，'+loot+'）。</p>')}else{const loot=farmHarvest(p.crop);log('<p class="danger">你囊中空空，山魈白吃了半亩（'+loot+'）。</p>')}p.crop=null;p.evt=null;passTime(1);renderAll();panelRest();}},
+    ]);
+    return;
+  }
+  if(p.evt==='rain'){
+    const loot=farmHarvest(p.crop);
+    S.mats.herb=(S.mats.herb||0)+1;
+    log('<p class="loot">一场灵雨润泽，收成格外丰硕（'+loot+'、草药 +1）。</p>');
+  }else{
+    const loot=farmHarvest(p.crop);
+    log('<p class="loot">你小心采下成熟的'+CROP_NAMES[p.crop]+'（'+loot+'）。</p>');
+  }
+  p.crop=null;p.evt=null;
   scene('灵田收获');
-  log('<p class="loot">你小心采下成熟的'+CROP_NAMES[c]+'（'+loot+'）。</p>');
   panelRest();renderAll();
 }
 function cultivateArt(i){
@@ -451,10 +553,43 @@ function drawSign(){
   scene('焚香求签');
   const cls=(sg.k==='great'||sg.k==='war'||sg.k==='calm'||sg.k==='wealth'||sg.k==='cult'||sg.k==='luck')?'good':(sg.k==='sorrow'?'danger':'sys');
   log('<p>你于洞府净手焚香，诚心祝祷。签筒轻摇，一支竹签「啪」地落于案上。</p><p class="'+cls+'">【'+sg.n+'】'+sg.d+'</p>');
+  if(sg.k==='trial'||sg.k==='sorrow'){
+    S.flag.signChain=true;
+    S.flag.signChainStep=1;
+    log('<p class="danger">竹签入手的刹那，一阵阴风穿堂而过——凶签有劫，宜早化解。</p>');
+    signChainFlow();
+    return;
+  }
   panelRest();passTime(1);renderAll();
   toast('求得【'+sg.n+'】');
   try{
     const pb=document.getElementById('panelBody'),sb=document.getElementById('signBox');
     if(pb&&sb)pb.scrollTop=Math.max(0,sb.offsetTop-12);
   }catch(e){}
+}
+/* v51 凶签化解奇遇链：避祸 → 应劫 → 转运（三步） */
+function signChainFlow(){
+  if(!S||!S.flag.signChain)return;
+  const st=S.flag.signChainStep||1;
+  if(st===1){
+    openEventModal('🔮 凶签化解 · 避祸','<p>签示此季有劫，先避其锋，再图后计。</p>',[
+      {txt:'🏔️ 封山闭户，静观其变（心性判定）',cls:'primary',fn:()=>{const R=doRoll('wil',14);log('<p>你封了洞门，于静室盘坐：'+rollBadge(R.r,R.mod,R.t,R.dc)+'</p>');S.flag.signChainStep=2;if(R.hit)log('<p class="good">心静如水，劫气难侵。</p>');signChainFlow();}},
+      {txt:'🧭 主动出击，抢占先机（身法判定）',fn:()=>{const R=doRoll('agi',15);log('<p>你御风而起，先行查探：'+rollBadge(R.r,R.mod,R.t,R.dc)+'</p>');S.flag.signChainStep=2;if(R.hit)log('<p class="good">你窥破劫气来路，心中已有计较。</p>');signChainFlow();}},
+    ]);
+  }else if(st===2){
+    openEventModal('🔮 凶签化解 · 应劫','<p>劫气如期而至——一道阴风卷着残叶扑向你，心口随之发紧。</p>',[
+      {txt:'🛡️ 以道心硬撼此劫（心性判定）',cls:'primary',fn:()=>{const R=doRoll('wil',16);log('<p>你阖目而立，任劫气冲刷：'+rollBadge(R.r,R.mod,R.t,R.dc)+'</p>');if(R.hit){S.flag.signChainStep=3;log('<p class="good">劫气轰然散开，你毫发无伤！</p>');signChainFlow()}else{S.hp=Math.max(1,S.hp-Math.floor(S.maxHp*0.15));S.flag.signChainStep=3;log('<p class="danger">劫气入体，你闷哼一声（气血 -15%），却终究挺了过来。</p>');signChainFlow()}}},
+      {txt:'⚔️ 拔剑斩劫，以攻代守（力量判定）',fn:()=>{const R=doRoll('str',16);log('<p>你拔剑斩向那道阴风：'+rollBadge(R.r,R.mod,R.t,R.dc)+'</p>');if(R.hit){S.flag.signChainStep=3;log('<p class="loot">剑光过处，劫气应声而断！</p>');signChainFlow()}else{S.flag.signChainStep=3;log('<p class="danger">剑势落空，你被阴风掀了个趔趄（气血 -10%）。</p>');S.hp=Math.max(1,S.hp-Math.floor(S.maxHp*0.1));signChainFlow()}}},
+    ]);
+  }else if(st>=3){
+    S.flag.signChain=false;
+    S.flag.signChains=(S.flag.signChains||0)+1;
+    const g=Math.floor(120+rl()*15);
+    S.cult+=g;
+    S.luck=clamp(S.luck+1,1,100);
+    log('<p class="loot">劫消运转——你于险中证得一线天机（修为 +'+g+'，气运 +1）。此后本季凶险稍减。</p>');
+    S.flag.sign.kind='calm';
+    passTime(1);renderAll();
+    toast('凶签化解，劫后福生');
+  }
 }

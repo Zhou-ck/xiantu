@@ -124,19 +124,24 @@ function charRootHtml(pr){
 /* ---------- 战力构成 / 装备 / 修为 / 状态 ---------- */
 function charCombatHtml(pr){
   const c=pr.combat;
+  const extra=c.eqExtra?((' 词条/宝石/套装：攻势 +'+(c.eqExtra.atk||0)+' · 防御 +'+(c.eqExtra.def||0)+' · 身法 +'+(c.eqExtra.dodge||0)+' · 五行克制 +'+(Math.round((c.eqExtra.beat||0)*100))+'%')):'';
   return '<div class="char-sec"><div class="char-sec-t">⚔️ 战力构成</div>'+
     '<div class="char-row"><span>🗡️ 攻势</span><b>'+c.atk+'</b></div>'+
     '<div class="char-row"><span>🛡️ 闪避</span><b>+'+c.dodge+'</b></div>'+
     '<div class="char-row"><span>👁️ 洞察</span><b>+'+c.insight+'</b></div>'+
     '<div class="char-row"><span>🤝 人望</span><b>+'+c.favor+'</b></div>'+
-    '<div class="char-sub">力量→攻势 · 身法→闪避 · 智慧→洞察 · 魅力→人望'+(c.weaponAtk?' · 武器（含相性/熟练）+'+(c.weaponAtk):'')+(c.armorDef?' · 防具 +'+c.armorDef:'')+(c.trinketAll?' · 佩饰 +'+c.trinketAll:'')+'</div></div>';
+    '<div class="char-sub">力量→攻势 · 身法→闪避 · 智慧→洞察 · 魅力→人望'+(c.weaponAtk?' · 武器（含相性/熟练）+'+(c.weaponAtk):'')+(c.armorDef?' · 防具 +'+c.armorDef:'')+(c.trinketAll?' · 佩饰 +'+c.trinketAll:'')+(extra||'')+'</div></div>';
 }
 function charEquipHtml(pr){
   const e=pr.equip;
   const row=(i,n,x)=>'<div class="char-row"><span>'+i+' '+n+'</span><b>'+(x?esc(x.name)+'（+'+(x.bonus||0)+'）':'——')+'</b></div>';
+  const sets=(typeof equipSetText==='function')?equipSetText(S):'';
+  const durWarn=['weapon','armor','trinket'].map(k=>e[k]).filter(Boolean).filter(x=>(x.durability!==undefined&&x.durability<=0)).map(x=>esc(x.name)+' 耐久归零').join('；');
   return '<div class="char-sec"><div class="char-sec-t">🎒 装备</div>'+
     row('🗡️','法器',e.weapon)+row('🛡️','防具',e.armor)+row('💍','佩饰',e.trinket)+
-    '<div class="char-sub">同属法器攻势 +1；兵器熟练随战斗成长（最高 +5 攻势）；强化至 +5 不降级。</div></div>';
+    (durWarn?'<div class="char-row no"><span>⚠️ 耐久</span><b>'+durWarn+'（属性失效）</b></div>':'')+
+    sets+
+    '<div class="char-sub">词条、宝石与套装于「更多 → 装备工坊」淬炼；耐久归零则属性失效。同属法器攻势 +1；强化至 +5 不降级。</div></div>';
 }
 function charCultHtml(pr){
   const c=pr.cult,bn=c.bn;
@@ -167,6 +172,7 @@ function charStatusHtml(s,pr){
   return '<div class="char-sec"><div class="char-sec-t">🩸 状态</div>'+
     '<div class="char-row"><span>气血</span><b>'+Math.floor(st.hp)+' / '+st.maxHp+'</b></div>'+
     '<div class="char-row"><span>🧿 真元</span><b>'+(s.spirit!==undefined?s.spirit:maxSpirit(s))+' / '+maxSpirit(s)+'</b></div>'+
+    (st.danTox>0?'<div class="char-row'+(st.danTox>=60?' no':'')+'"><span>⚠️ 丹毒</span><b>'+st.danTox+'/100'+(st.danTox>=30?'（修炼效率 -'+(5*Math.min(3,Math.floor((st.danTox-30)/30)+1))+'%）':'')+(st.danTox>=60?' · 气血 -10%':'')+'</b></div>':'')+
     '<i class="attr-bar hp"><i style="width:'+hpPct+'%"></i></i>'+
     charStatusBadges(s)+'</div>';
 }

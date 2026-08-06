@@ -26,12 +26,12 @@ const ph=vm.runInContext(`document.getElementById('panelBody').innerHTML`,ctx);
 assert(ph.indexOf('灵田')>=0&&ph.indexOf('功法参悟')>=0&&ph.indexOf('天机签')>=0,'洞府面板含灵田/参悟/天机签');
 // T2 灵田种植→成熟通知→收获
 vm.runInContext(`plantCrop('herb')`,ctx);
-assert(vm.runInContext(`S.flag.farm&&S.flag.farm.crop==='herb'&&S.stones===1970`,ctx),'种灵草扣灵石并记录农事');
+assert(vm.runInContext(`S.flag.farm&&S.flag.farm.plots[0]&&S.flag.farm.plots[0].crop==='herb'&&S.stones===1970`,ctx),'种灵草扣灵石并记录农事');
 vm.runInContext(`S.days+=8; passTime(0)`,ctx);
-assert(vm.runInContext(`S.flag.farm.notified===true`,ctx),'成熟自动通知');
+assert(vm.runInContext(`S.flag.farm.plots[0].notified===true`,ctx),'成熟自动通知');
 const herbBefore=vm.runInContext(`S.mats.herb||0`,ctx);
-vm.runInContext(`harvestCrop()`,ctx);
-assert(vm.runInContext(`(S.mats.herb||0)>=${herbBefore}+3&&!S.flag.farm.crop`,ctx),'收获灵草并清空灵田');
+vm.runInContext(`S.flag.farm.plots[0].evt=null; harvestCrop()`,ctx);
+assert(vm.runInContext(`(S.mats.herb||0)>=${herbBefore}+3&&!S.flag.farm.plots[0].crop`,ctx),'收获灵草并清空灵田');
 // T3 功法参悟
 vm.runInContext(`S.realm=9; S.root=50; S.arts=[{name:'基础吐纳诀',mult:1.0}]; S.stones=1000; S.days=0; {const m=Math.random; Math.random=()=>0.99; cultivateArt(0); Math.random=m;}`,ctx);
 assert(vm.runInContext(`S.arts[0].level===2`,ctx),'功法参悟至第 2 重');

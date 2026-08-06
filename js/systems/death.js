@@ -5,6 +5,7 @@
 'use strict';
 /* ================= 死亡 / 结局 / 轮回 ================= */
 function die(reason){
+  if(typeof wearEquip==='function')wearEquip(S,20); /* v49 身陨耐久 -20 */
   /* v43 保命道具：致死时自动消耗，以「重伤濒死」替代身陨（寿元耗尽与自绝不救） */
   if(reason!=='寿元耗尽'&&reason!=='自绝心脉'&&(S.items||[]).some(i=>i.use==='save')){
     const idx=S.items.findIndex(i=>i.use==='save');

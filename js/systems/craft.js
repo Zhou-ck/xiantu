@@ -45,13 +45,13 @@ const RECIPES={
     {name:'洗髓丹',lv:5,need:{sherb:3,demonCore:2},cost:1000,dc:26,q:3,eff:'root',desc:'灵根资质 +5。'},
   ],
   forge:[
-    {name:'精铁剑',lv:1,need:{iron:2},cost:100,dc:15,q:1,eff:'weapon2',desc:'灵品法器，攻击 +2。'},
-    {name:'火云剑',lv:2,need:{iron:3},cost:350,dc:20,q:2,eff:'weapon_fire',desc:'火属性灵剑，攻击 +3，火灵根者用之力增。'},
-    {name:'护心甲',lv:2,need:{iron:2,pelt:1},cost:300,dc:19,q:2,eff:'armor3',desc:'宝品防具，防御 +3。'},
-    {name:'玄冰刃',lv:3,need:{iron:3,jade:1},cost:500,dc:21,q:2,eff:'weapon_ice',desc:'冰属性寒刃，攻击 +3，水灵根者用之力增。'},
-    {name:'玄铁重剑',lv:3,need:{iron:4,demonCore:1},cost:800,dc:23,q:3,eff:'weapon4',desc:'仙品法器，攻击 +4。'},
-    {name:'庚金剑',lv:4,need:{iron:4,demonCore:1},cost:900,dc:25,q:3,eff:'weapon_metal',desc:'金气锋锐，攻击 +4，金灵根者用之力增。'},
-    {name:'灵犀佩',lv:5,need:{jade:1,demonCore:1},cost:1200,dc:26,q:4,eff:'trinket3',desc:'神品佩饰，全属性 +1，气运自聚。'},
+    {name:'精铁剑',lv:1,need:{iron:2},cost:100,dc:15,q:1,eff:'weapon2',setId:'jianxin',desc:'灵品法器，攻击 +2。'},
+    {name:'火云剑',lv:2,need:{iron:3},cost:350,dc:20,q:2,eff:'weapon_fire',setId:'wuxing',desc:'火属性灵剑，攻击 +3，火灵根者用之力增。'},
+    {name:'护心甲',lv:2,need:{iron:2,pelt:1},cost:300,dc:19,q:2,eff:'armor3',setId:'xiaoyao',desc:'宝品防具，防御 +3。'},
+    {name:'玄冰刃',lv:3,need:{iron:3,jade:1},cost:500,dc:21,q:2,eff:'weapon_ice',setId:'wuxing',desc:'冰属性寒刃，攻击 +3，水灵根者用之力增。'},
+    {name:'玄铁重剑',lv:3,need:{iron:4,demonCore:1},cost:800,dc:23,q:3,eff:'weapon4',setId:'jianxin',desc:'仙品法器，攻击 +4。'},
+    {name:'庚金剑',lv:4,need:{iron:4,demonCore:1},cost:900,dc:25,q:3,eff:'weapon_metal',setId:'wuxing',desc:'金气锋锐，攻击 +4，金灵根者用之力增。'},
+    {name:'灵犀佩',lv:5,need:{jade:1,demonCore:1},cost:1200,dc:26,q:4,eff:'trinket3',setId:'wuxing',desc:'神品佩饰，全属性 +1，气运自聚。'},
   ],
   talisman:[
     {name:'火球符',lv:1,need:{paper:1,cinnabar:1},cost:40,dc:13,q:1,eff:'fire',desc:'战斗中掷出，攻击 +6。'},
@@ -65,12 +65,14 @@ const RECIPES={
   ],
 };
 /* 材料来源闭环：每种材料给出最常用出处 */
+/* v50 研创丹方并入炼丹配方表 */
+if(typeof RESEARCH_RECIPES!=='undefined')RESEARCH_RECIPES.forEach(r=>{if(!RECIPES.alchemy.some(x=>x.name===r.name))RECIPES.alchemy.push(r)});
 const MAT_SOURCES={herb:'采药·坊市',sherb:'灵田·秘境',iron:'探索·坊市',pelt:'妖兽掉落',demonCore:'妖丹·强敌',jade:'地脉·坊市',paper:'坊市',cinnabar:'坊市'};
 function matSourceHint(k){return MAT_SOURCES[k]?'<small style="color:#6f7a94">（'+MAT_SOURCES[k]+'）</small>':''}
 /* 副业造诣判定加成：每阶 +1，5 阶宗师 +2 */
 function craftLvBonus(){const l=S.profLevel||1;let b=Math.floor((l-1));if(l>=5)b+=2;return b}
 /* 配方解锁：以造诣阶数为门槛 */
-function recipeKnown(r){return !!r&&(S.profLevel||1)>=((r.lv||1))}
+function recipeKnown(r){return !!r&&(S.profLevel||1)>=((r.lv||1))&&(!r.research||(S.flag&&S.flag.researchDone&&S.flag.researchDone[r.name]))}
 function panelCraft(){
   if(!S.prof){
     const learn='<p>副职业需拜师学艺，或于坊市购得传承玉简（800 灵石）。</p><div class="row">'+
@@ -89,7 +91,8 @@ function panelCraft(){
   const bondHtml='<h4>🔮 本命法宝</h4>'+(S.bond?'<div class="item-card"><div class="nm">'+esc(S.bond.name)+' <span class="tag">Lv.'+S.bond.level+'</span></div><div class="ds">与你的'+elemInfo(S.bond.elem).n+'同根同源 · 战斗攻势 +'+(1+S.bond.level)+'（每破一大境界 +1）</div></div>':(S.realm>=13?'<div class="row"><button class="small primary" onclick="refineBondWeapon()">祭炼本命法宝（妖丹×1 + 寒玉×1 + 500灵）</button></div>':'<p style="color:#6f7a94">金丹期方可祭炼本命法宝。</p>'));
   const ec=elemCraftBonus(S.prof);
   openPanel(PROF_ICON[S.prof]+' '+PROF_NAMES[S.prof]+'（'+S.profLevel+'阶）','<p>⭐ 造诣：'+(S.profLevel*100+S.profExp)+' 经验 · 距下一阶还需 '+(100-S.profExp)+' · 判定加成 +'+craftLvBonus()+(ec?' · <span class="tag" style="color:#8fd0a0">灵根加成 +'+Math.round(ec*100)+'%</span>':'')+'</p>'+
-    '<div class="row"><button class="small primary" onclick="craftTome()">📜 手札 · 配方总览</button></div>'+
+    '<div class="row"><button class="small primary" onclick="craftTome()">📜 手札 · 配方总览</button>'+
+    (S.prof==='alchemy'?'<button class="small primary" onclick="panelResearch()">🧪 丹方研创</button><button class="small" onclick="panelDanJing()">📜 丹经</button>':'')+'</div>'+
     '<p style="font-size:12px;color:#6f7a94">炼制有「选材 → 微操」两段交互：选材可加料提纯（品质 +2 档）或以妖丹引灵（判定 +3）；微操凭本事赚品质。不喜可在设置把「副业微操」切为自动。</p>'+
     bondHtml+'<h4>📜 丹方 / 图纸</h4>'+list+'<h4>⚒️ 装备强化</h4>'+(eqHtml||'<p style="color:#6f7a94">尚未装备法器/防具/佩饰，先去坊市或秘境弄一件吧。</p>'));
 }
@@ -224,6 +227,14 @@ function craftResolve(r,i,mini){
     else if(r.eff==='trinket3')addItem({name:'灵犀佩',type:'trinket',quality:r.q,bonus:3,desc:r.desc,sell:1100});
     else if(r.eff==='cure_neijing')addItem({name:'疗伤丹',type:'consumable',quality:r.q,count:1,desc:r.desc,use:'cure_neijing',sell:240});
     else if(r.eff==='cure_shenhun')addItem({name:'安神丹',type:'consumable',quality:r.q,count:1,desc:r.desc,use:'cure_shenhun',sell:260});
+    else if(r.eff==='detox')addItem({name:'排毒丹',type:'consumable',quality:r.q,count:1,desc:r.desc,use:'detox',sell:160});
+    else if(r.eff==='mood2')addItem({name:'凝神丹',type:'consumable',quality:r.q,count:1,desc:r.desc,use:'mood2',sell:260});
+    else if(r.eff==='blood')addItem({name:'暴血丹',type:'consumable',quality:r.q,count:1,desc:r.desc,use:'blood',sell:320});
+    else if(r.eff==='guben')addItem({name:'固本丹',type:'consumable',quality:r.q,count:1,desc:r.desc,use:'guben',sell:520});
+    else if(r.eff==='wuxing')addItem({name:'五行丹',type:'consumable',quality:r.q,count:1,desc:r.desc,use:'wuxing',sell:500});
+    else if(r.eff==='essence2')addItem({name:'聚气散',type:'consumable',quality:r.q,count:1,desc:r.desc,use:'essence2',sell:180});
+    else if(r.eff==='huitian')addItem({name:'回天丹',type:'consumable',quality:r.q,count:1,desc:r.desc,use:'huitian',sell:900});
+    else if(r.eff==='insight'&&r.research)addItem({name:'悟道丹',type:'consumable',quality:r.q,count:1,desc:r.desc,use:'insight',sell:420});
     else if(r.eff==='fire')addItem({name:'火球符',type:'consumable',quality:r.q,count:1,desc:r.desc,use:'fire',sell:40});
     else if(r.eff==='escape')addItem({name:'遁地符',type:'consumable',quality:r.q,count:1,desc:r.desc,use:'escape',sell:90});
     else if(r.eff==='thunder')addItem({name:'天雷符',type:'consumable',quality:r.q,count:1,desc:r.desc,use:'thunder',sell:300});

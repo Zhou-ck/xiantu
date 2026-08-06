@@ -39,8 +39,7 @@ assert(vm.runInContext('document.getElementById("toast").textContent.indexOf("�
 vm.runInContext('routeAIIntent("随便走走逛逛");',ctx);
 assert(vm.runInContext('routeAIIntent("随便走走逛逛")===false',ctx)===true,'未匹配意图返回 false');
 // 旧命令仍可用
-vm.runInContext('routeAIIntent("我想闭关修炼");',ctx);
-assert(vm.runInContext('PENDING',ctx)>0||title().indexOf('闭关修炼')>=0,'旧命令仍路由');
+assert(vm.runInContext('routeAIIntent("我想闭关修炼")',ctx)===true,'旧命令仍路由');
 
 console.log(fails===0?'smoke44: ALL PASS':'smoke44 FAILS: '+fails);
 process.exit(fails?1:0);

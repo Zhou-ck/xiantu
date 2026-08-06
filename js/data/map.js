@@ -18,6 +18,7 @@ const MAP_LOCS=[
   {id:'tower',name:'试炼塔',icon:'🏔️',kind:'poi',x:124,y:150,minRealm:2,days:0,desc:'古修留下的历练之塔，一层一关，每五层有守塔统领。',action:'tower'},
   {id:'boss',name:'守关试炼',icon:'⛩️',kind:'poi',x:236,y:56,minRealm:0,days:0,desc:'当前境界的守关大妖，击败可得重赏。',action:'boss'},
   {id:'dungeon',name:'秘境入口',icon:'🏛️',kind:'poi',x:66,y:56,minRealm:2,days:0,desc:'剑冢、洞府、遗迹、巢穴、残梦——秘境之门随时辰轮转。',action:'dungeon'},
+  {id:'sword',name:'御剑试炼',icon:'🗡️',kind:'poi',x:282,y:178,minRealm:2,days:0,desc:'剑坪试剑，御剑穿云——三段时机判定，赏修为与战意（30 日一回）。',action:'sword'},
 ];
 /* 地图装饰：水墨山/河/林，确定性伪随机生成（固定种子），保证各端一致 */
 const MAP_SEED=20260806;

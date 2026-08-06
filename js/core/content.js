@@ -142,6 +142,13 @@ const AUCTION_POOL=[
   {name:'悟道茶',type:'consumable',quality:3,cost:600,use:'insight',desc:'一盏清茶涤尽尘心，饮之必有所悟（悟道+1）。',sell:400},
   {name:'洗灵露',type:'consumable',quality:2,cost:600,use:'root3',desc:'灵泉甘露，洗涤灵根（灵根 +3）。',sell:360},
   {name:'无字天书',type:'consumable',quality:4,cost:1200,use:'art',desc:'天书无字，参悟可得一门失传功法。',sell:800},
+  {name:'紫电剑',type:'weapon',quality:3,cost:1500,bonus:4,desc:'剑出紫电随行，上古遗宝。',sell:1200,setId:'jianxin'},
+  {name:'星纹软甲',type:'armor',quality:3,cost:1400,bonus:4,desc:'织星为线，柔韧胜钢。',sell:1100,setId:'jianxin'},
+  {name:'龙凤环',type:'trinket',quality:4,cost:2600,bonus:3,desc:'龙凤交缠，气运自聚。',sell:2000,setId:'xiaoyao'},
+  {name:'星陨石',type:'gem',gemId:'g_star',cost:700,desc:'天外奇珍：镶嵌后气运 +1。',sell:280},
+  {name:'沧海珠',type:'gem',gemId:'g_pearl',cost:600,desc:'深海宝珠：镶嵌后最大气血 +15。',sell:200},
+  {name:'回天丹',type:'consumable',quality:4,cost:1800,use:'huitian',desc:'气血尽复并愈全部伤势（丹药上品）。',sell:900},
+  {name:'五行丹',type:'consumable',quality:3,cost:1000,use:'wuxing',desc:'服后 60 日内五行克敌伤害 +10%。',sell:500},
 ];
 
 function karmaMod(){

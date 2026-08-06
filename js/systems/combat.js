@@ -198,6 +198,9 @@ function battle(enemy,onEnd,spar){
     const es=ENEMY_STYLES[enemy.style]||ENEMY_STYLES[pick(['rapid','guard','poison','burst'])];
     const flow=flowCombatBonus(S,es);
     const techAgg=techLevel('agg'),techAgi=techLevel('agi'),techDef=techLevel('def');
+    const eset=(typeof equipStats==='function')?equipStats(S):{beat:0,beatDef:0,first:0,karmaAtk:0,drain:0,tech:0,cult:0,stones:0};
+    const beatBonus=eset.beat+((S.flag&&S.flag.wuxingBuff>0)?0.1:0);
+    const karmaAtkBonus=Math.floor((S.karma||0)*eset.karmaAtk);
     let pDmg=petAlive()?2+S.pet.bonus*2:0;
     let cDmg=S.companion?2+S.companion.stage*2:0;
     let eh=enemy.hp,ph=S.hp;
@@ -209,10 +212,11 @@ function battle(enemy,onEnd,spar){
       if(finished)return;finished=true;
       st.win=win;st.draw=!!draw;
       S.battleTactic='steady';S.flag.combatBuff=0;
+      if(typeof wearEquip==='function')wearEquip(S,win?-3:(draw?-5:-8));
       scene('遭遇战 · '+esc(enemy.name));
       if(win){
         S.kills++;S.wins++;S.hp=Math.max(1,ph);
-        const tp=enemy.boss?2:1;
+        const tp=(enemy.boss?2:1)+(eset.tech||0);
         addTechPts(tp);
         loot.push('战意 +'+tp);
         dC().c.kill++;
@@ -222,11 +226,12 @@ function battle(enemy,onEnd,spar){
         if(S.flag.pendingMerit){addMerit(S.flag.pendingMerit);loot.push('功德 +'+S.flag.pendingMerit);S.flag.pendingMerit=0}
         if(enemy.name==='荒坟厉鬼'){addMerit(2);loot.push('功德 +2')}
         if(enemy.name==='血魔宗伏杀者'){addMerit(3);loot.push('功德 +3')}
-        const g=rand(20,80)+rl()*8;S.stones+=g;loot.push('灵石 +'+g);
+        const g=Math.floor((rand(20,80)+rl()*8)*(1+(eset.stones||0)));S.stones+=g;loot.push('灵石 +'+g);
         /* 问题 1 v2：战斗胜利修为锚定闭关 2 倍（一场 10 日 ≈ 20 日闭关量），随功法/根骨/境界同步缩放。
            瓶颈压制/连坐递减为闭关专属惩罚，战斗不受其影响——瓶颈期战斗更划算是有意设计（鼓励玩家瓶颈期去探索/战斗而非干等） */
-        const cg=Math.max(5,Math.floor((8+S.root/6)*cultMult(S)*2));S.cult+=cg;loot.push('修为 +'+cg);
+        const cg=Math.max(5,Math.floor((8+S.root/6)*cultMult(S)*2*(1+(eset.cult||0))));S.cult+=cg;loot.push('修为 +'+cg);
         if(chance(0.3)){const m=pick(['herb','iron','pelt','demonCore']);const n=rand(1,2);S.mats[m]=(S.mats[m]||0)+n;loot.push(MAT_NAMES[m]+' ×'+n)}
+        if(chance(0.05)&&typeof GEM_DEFS!=='undefined'){const gm=pick(GEM_DEFS);addItem({name:gm.name,type:'gem',gemId:gm.id,quality:2,desc:gm.desc,sell:150});loot.push(gm.i+' '+gm.name)}
         if(chance(0.12)){const it=randItem(rand(1,3));addItem(it);loot.push(it.name+'（'+QNAMES[it.quality]+'）')}
         if(chance(0.08)){S.luck=clamp(S.luck+1,1,100);loot.push('气运 +1')}
         log('<p class="good">你斩敌于剑下（'+st.rounds+'回合）。</p>');
@@ -278,7 +283,33 @@ function battle(enemy,onEnd,spar){
       window._battleResolve=()=>{const r={win,draw,st};resolve(r);if(onEnd)onEnd(r)};
       renderAll();
     };
-    let rnd=1,finished=false;
+    let rnd=1,finished=false,qteDone=false;
+    const qteRound=()=>{
+      const baseDmg=Math.max(2,Math.floor((rand(4,9)+attrVal(S,'str')+weaponAtk(S))*tac.dmg))+pDmg+cDmg;
+      const finishQte=(mult,ok)=>{
+        if(ok){
+          let dmg=Math.floor(baseDmg*mult)+karmaAtkBonus;
+          const myElem=(S.weapon&&S.weapon.elem)?S.weapon.elem:elemOf(S);
+          if(enemy.elem&&elemBeat(myElem,enemy.elem))dmg=Math.floor(dmg*1.25*(1+beatBonus));
+          eh=Math.max(0,eh-dmg);st.dmgDealt+=dmg;st.crits++;
+          fxShake(2);fxFloatText('-'+dmg,'#ffd76a',true);
+          pushLog('<p class="bl">⚡ 绝杀命中！<b>'+esc(enemy.name)+'</b> 受创 <span class="bhit">-'+dmg+'</span>。</p>');
+          if(eh<=0){renderBars();pushLog('');finish(true,false);return}
+        }else{
+          st.misses++;
+          pushLog('<p class="bdodge">绝杀落空，你身形一滞，错失良机。</p>');
+        }
+        rnd++;
+        setTimeout(step,650);
+      };
+      if(!fxOn()||(S.set&&S.set.autoCombat)){pushLog('<p class="bl">⚡ 绝杀时机！你稳住心神，一击制敌（×1.5）。</p>');finishQte(1.5,true);return}
+      pushLog('<p class="bl">⚡ 绝杀时机！敌方门户大开——选择你的出手方式！</p>');
+      logChoices([
+        {txt:'⚖️ 稳扎稳打（伤害 ×1.5）',fn:()=>finishQte(1.5,true)},
+        {txt:'🌀 疾电一击（身法判定 · ×2.0）',fn:()=>{const R=doRoll('agi',14);log('<p>你于电光石火间出手：'+rollBadge(R.r,R.mod,R.t,R.dc)+'</p>');finishQte(2.0,R.hit)}},
+        {txt:'💥 孤注一掷（智慧判定 · ×2.5，落空反噬）',cls:'danger',fn:()=>{const R=doRoll('int',16);log('<p>你孤注一掷：'+rollBadge(R.r,R.mod,R.t,R.dc)+'</p>');if(R.hit){finishQte(2.5,true)}else{const sd=Math.max(2,Math.floor(S.maxHp*0.08));ph=Math.max(1,ph-sd);st.selfHurt+=sd;pushLog('<p class="bhit">绝杀失手，反噬自身（气血 -'+sd+'）。</p>');if(ph<=0){renderBars();finish(false,false);return}finishQte(1,false)}}},
+      ]);
+    };
     const renderBars=()=>{
       $('bEnemyBar').style.width=Math.max(0,Math.round(eh/enemy.hp*100))+'%';
       $('bEnemyHp').textContent=Math.max(0,eh)+' / '+enemy.hp;
@@ -290,6 +321,8 @@ function battle(enemy,onEnd,spar){
       if(finished)return;
       /* 4b 平局软化：10 回合未分胜负进入加时赛（11-15 回合，伤害 ×1.2），15 回合封顶仍不胜则平局 */
       if(rnd>15){st.rounds=15;finish(false,true);return}
+      /* v51 绝杀 QTE：每 4 回合一次时机（自动/低配走稳） */
+      if(rnd%4===0&&!qteDone){qteDone=true;qteRound();return}
       const ot=rnd>10;
       if(ot&&rnd===11)pushLog('<p class="bl">⚔️ 加时赛开始：双方拼死相搏，伤害 ×1.2！</p>');
       st.rounds=rnd;
@@ -304,7 +337,7 @@ function battle(enemy,onEnd,spar){
       const useSkill=!!skill&&(rnd%skCd===0);
       /* 2C 流派：剑修连击/破防加成 */
       const flowMulti=(flow.multi&&chance(flow.multi))?1:0;
-      const pa=d20()+atkBonus(S)+companionAtk()+(signNow()&&signNow().atk?signNow().atk:0)+(useSkill?3:0)+(flow.atk||0)+(flow.vsGuard||0)+(flowMulti?3:0);
+      const pa=d20()+atkBonus(S)+companionAtk()+(signNow()&&signNow().atk?signNow().atk:0)+(useSkill?3:0)+(flow.atk||0)+(flow.vsGuard||0)+(flowMulti?3:0)+((S.flag&&S.flag.bloodBuff)||0);
       const eStyleAct=chance(0.25)?es:null;
       let eBonus=0,eGuard=false,eSkillTxt='';
       if(eStyleAct){
@@ -318,6 +351,9 @@ function battle(enemy,onEnd,spar){
       if(flow.curse&&chance(flow.curse)){ea=0;html.push('<p class="bdodge">👻 咒术如影随形，敌方动作一滞，攻势落空！</p>')}
       if(pa>=enemy.def+8){
         let dmg=Math.max(2,Math.floor((rand(4,9)+attrVal(S,'str')+weaponAtk(S))*tac.dmg))+pDmg+cDmg;
+        if(rnd===1&&eset.first)dmg=Math.floor(dmg*(1+eset.first));
+        dmg+=karmaAtkBonus;
+        if(enemy.boss&&rnd%5===0&&rnd%4!==0){dmg=Math.floor(dmg*1.5);html.push('<p class="bl">🌀 破绽！你抓住守关大妖的间隙，重创其躯！</p>')}
         if(techAgg)dmg=Math.floor(dmg*(1+0.05*techAgg));
         if(typeof ownSectCombatMult==='function'){const om=ownSectCombatMult();if(om!==1)dmg=Math.floor(dmg*om);} /* 自建宗门 · 演武场 */
         if(flow.skill)dmg=Math.floor(dmg*flow.skill);
@@ -338,7 +374,7 @@ function battle(enemy,onEnd,spar){
           else skTxt='【真元·强攻】';
         }
         /* 12 武器词条：灼烧/破甲/回灵/噬魂 */
-        if(S.weapon&&S.weapon.enchant){
+        if(S.weapon&&equipUsable(S.weapon)&&S.weapon.enchant){
           if(S.weapon.enchant==='灼烧'){burn=Math.max(burn,1);skTxt+='【灼烧】'}
           else if(S.weapon.enchant==='破甲'){dmg=Math.floor(dmg*1.2);skTxt+='【破甲】'}
           else if(S.weapon.enchant==='回灵'){ph=Math.min(S.maxHp,ph+Math.max(1,Math.floor(dmg*0.1)));skTxt+='【回灵】'}
@@ -349,12 +385,13 @@ function battle(enemy,onEnd,spar){
         if(cDmg>0&&chance(0.25)){cDmg*=2;skTxt+='【同伴合击】'}
         const myElem=(S.weapon&&S.weapon.elem)?S.weapon.elem:elemOf(S);
         const beatHit=enemy.elem&&elemBeat(myElem,enemy.elem);
-        if(beatHit){dmg=Math.floor(dmg*1.25);st.beats++}
+        if(beatHit){dmg=Math.floor(dmg*1.25*(1+beatBonus));st.beats++}
         const crit=pa>=enemy.def+16;
         if(crit){dmg*=2;st.crits++}
         if(eGuard)dmg=Math.floor(dmg*0.6);
         if(ot)dmg=Math.floor(dmg*1.2); /* 加时赛：双方伤害 ×1.2 */
         eh-=dmg;st.dmgDealt+=dmg;st.petDmg+=pDmg;st.compDmg+=cDmg;
+        if(eset.drain){const h=Math.max(1,Math.floor(dmg*eset.drain));ph=Math.min(S.maxHp,ph+h);html.push('<p class="bl">🩸 噬血魔纹汲取 '+h+' 点气血！</p>')}
         if(flow.drain){const h=Math.max(1,Math.floor(dmg*flow.drain));ph=Math.min(S.maxHp,ph+h);html.push('<p class="bl">🌑 噬血夺元，你汲取 '+h+' 点气血！</p>')}
         if(crit){fxShake(2);fxBurst(22,'#ffd76a');fxHitstop(110);fxFloatText('暴击 -'+dmg,'#ffd76a',true);fxVibrate([50,40,60])}
         else{fxShake(1);fxFloatText('-'+dmg,'#fff',false)}
@@ -382,7 +419,7 @@ function battle(enemy,onEnd,spar){
           if(guardUp){d=Math.floor(d*0.5);guardUp=false}
           const myElem2=(S.weapon&&S.weapon.elem)?S.weapon.elem:elemOf(S);
           const beatByHit=enemy.elem&&elemBeat(enemy.elem,myElem2);
-          if(beatByHit){d=Math.floor(d*1.15);st.beatBy++}
+          if(beatByHit){d=Math.max(1,Math.floor(d*1.15*(1-(eset.beatDef||0))));st.beatBy++}
           if(ot)d=Math.floor(d*1.2); /* 加时赛：敌方伤害 ×1.2 */
           ph-=d;st.dmgTaken+=d;
           html.push('<p class="bhit">'+rndTxt+'：'+esc(enemy.name)+' 反扑而至'+(beatByHit?'【五行反克 ×1.15】':'')+(ot?'【加时赛 ×1.2】':'')+'，你受创 <span class="bhit">-'+d+'</span>。</p>');
@@ -440,7 +477,8 @@ function bossBattle(stage){
   const e=bossOf(stage);
   const beat=S.flag.bosses;
   scene('守关试炼 · '+e.name);
-  log('<p>'+(beat[stage]?'你再度来到守关之地，守关大妖一声低吼，旧账新算。':'天地之间荡开一圈涟漪，守关大妖 <b>'+esc(e.name)+'</b> 拦在去路上。')+'</p><p class="sys">'+e.desc+'（'+STAGE_NAMES[stage]+'守关 · 重伤后狂暴）</p>');
+  const weakElems=e.elem&&e.elem!=='dark'?Object.keys(ELEMS).filter(x=>ELEMS[x]&&ELEMS[x].beats===e.elem).map(x=>elemInfo(x).i+elemInfo(x).n):[];
+  log('<p>'+(beat[stage]?'你再度来到守关之地，守关大妖一声低吼，旧账新算。':'天地之间荡开一圈涟漪，守关大妖 <b>'+esc(e.name)+'</b> 拦在去路上。')+'</p><p class="sys">'+e.desc+'（'+STAGE_NAMES[stage]+'守关 · 重伤后狂暴）'+(weakElems.length?'<br>🔮 破绽窥探：此妖属 '+elemInfo(e.elem).i+elemInfo(e.elem).n+'，以 <b>'+weakElems.join('/')+'</b> 法器应之，事半功倍。':'')+'</p>');
   logChoices([
     {txt:'⚔️ 挑战守关',cls:'primary',fn:()=>{
       startCombat(e,res=>{

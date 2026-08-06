@@ -241,4 +241,4 @@ const ARTS=[
 ];
 
 const MAT_NAMES={herb:'草药',sherb:'灵草',iron:'铁矿石',pelt:'妖皮',demonCore:'妖丹',jade:'寒玉',paper:'符纸',cinnabar:'朱砂'};
-const CROP_NAMES={herb:'灵草',sherb:'灵参',fruit:'朱果'};
+const CROP_NAMES={herb:'灵草',sherb:'灵参',fruit:'朱果',xucan:'玄参',zizhi:'紫芝'};

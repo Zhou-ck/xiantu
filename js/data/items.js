@@ -9,10 +9,13 @@ function itemCatalog(){
   const cat={};
   const add=it=>{if(it&&it.name&&!cat[it.name])cat[it.name]={type:it.type||'item',quality:it.quality!=null?it.quality:0}};
   (typeof MARKET_ITEMS!=='undefined'?MARKET_ITEMS:[]).forEach(add);
+  if(typeof GEM_DEFS!=='undefined')GEM_DEFS.forEach(g=>add({name:g.name,type:'gem',quality:2}));
   (typeof ITEM_REWARDS!=='undefined'?Object.keys(ITEM_REWARDS).map(k=>ITEM_REWARDS[k]):[]).forEach(add);
   (typeof AUCTION_POOL!=='undefined'?AUCTION_POOL:[]).forEach(add);
   (typeof STARTER_ITEMS!=='undefined'?STARTER_ITEMS:[]).forEach(add);
   if(typeof RECIPES!=='undefined')for(const k in RECIPES)(RECIPES[k]||[]).forEach(r=>{if(r&&r.name)add({name:r.name,type:'craft',quality:r.q})});
+  if(typeof RESEARCH_RECIPES!=='undefined')RESEARCH_RECIPES.forEach(r=>{if(r&&r.name)add({name:r.name,type:'craft',quality:r.q})});
+  add({name:'朱果',type:'consumable',quality:3});
   const fxItems=[];
   const scan=(steps,where)=>{
     (steps||[]).forEach(st=>{

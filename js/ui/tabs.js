@@ -28,12 +28,15 @@ const TABS=[
   ]},
   {k:'social',i:'👥',n:'人际',d:'道侣 · 师尊 · 好友',items:[
     {n:'人际往来',i:'👥',fn:()=>panelSocial(),desc:'交谈、请教、赠礼、切磋、结伴'},
+    {n:'茶会/诗会',i:'🍵',fn:()=>panelTea(),desc:'一年一度雅集，品茶斗诗，交游证道'},
+    {n:'结伴云游',i:'🧭',fn:()=>panelTravel(),desc:'与相熟之人结伴出行，沿途事件链'},
     {n:'道侣',i:'💞',fn:()=>panelPartner(),ok:()=>!!S.daoPartner,need:'需先有道侣（人际→培养好感→表白）',desc:'聊天、约会、同游、相处与双修'},
     {n:'师尊',i:'🎓',fn:()=>panelMaster(),ok:()=>!!S.master,need:'需先拜师（宗门长老或江湖高人）',desc:'请安、请教、传功与出师'},
   ]},
   {k:'more',i:'☰',n:'更多',d:'坊市 · 副业 · 洞府 · 行囊',items:[
     {n:'坊市',i:'🏮',fn:()=>panelMarket(),desc:'买卖丹药法器，奇珍拍卖'},
     {n:'行囊',i:'🎒',fn:()=>panelInventory(),desc:'查看并使用物品、装备'},
+    {n:'装备工坊',i:'⚒️',fn:()=>panelEquipWorkshop(),desc:'修理、洗练词条、镶嵌宝石、套装淬炼'},
     {n:'副业',i:'⚒️',fn:()=>panelCraft(),desc:'炼丹、炼器、制符、布阵'},
     {n:'洞府',i:'🏡',fn:()=>panelRest(),desc:'灵田、参悟、静养、天机签'},
     {n:'家族',i:'👨‍👩‍👧',fn:()=>panelFamily(),desc:'子嗣培养、血脉与转生传承'},

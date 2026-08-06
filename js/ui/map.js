@@ -129,6 +129,7 @@ function travelTo(id){
   if(l.action==='tower'){doTower();return}
   if(l.action==='boss'){bossBattle();return}
   if(l.action==='dungeon'){panelDungeonList();return}
+  if(l.action==='sword'){swordTrial();return}
   if(l.action&&l.action.indexOf('explore:')===0){doExplore(l.action.split(':')[1]);return}
   toast('此处尚无可去之事');
 }

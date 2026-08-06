@@ -13,7 +13,7 @@ let fails=0;function assert(c,m){if(!c){fails++;console.log('FAIL:',m)}else cons
 // T1 地图 10 点：7 区域与 REGIONS 一一对应
 vm.runInContext(`window.__reg=MAP_LOCS.filter(l=>l.kind==='region').map(l=>l.action.split(':')[1]).sort().join(','); window.__all=REGIONS.map(r=>r.id).sort().join(',');`,ctx);
 assert(vm.runInContext('window.__reg===window.__all',ctx),'地图 7 个区域与探索区域表完全一致');
-assert(vm.runInContext('MAP_LOCS.length===10',ctx),'地图共 10 个可交互地点');
+assert(vm.runInContext('MAP_LOCS.length===11',ctx),'地图共 11 个可交互地点');
 
 // T2 事件总量 ≥300 且结构合法
 assert(vm.runInContext('eventTotalCount()>=300',ctx),'事件总量 ≥300（'+vm.runInContext('eventTotalCount()',ctx)+'）');

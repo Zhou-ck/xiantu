@@ -158,7 +158,8 @@ function validateQuests(){
 /* 总校验：事件表 + 任务表 + 区域记忆事件表（0 错误即通过） */
 function validateAll(){
   return validateEvents().concat(validateQuests()).concat(validateRegionEvents())
-    .concat(validateItemRefs()).concat(validateNpcs()).concat(validateWorld());
+    .concat(validateItemRefs()).concat(validateNpcs()).concat(validateWorld())
+    .concat(validateEquip()).concat(validatePills());
 }
 function validateRegionEvents(){
   var errs=[];
@@ -250,4 +251,43 @@ function eventTotalCount(){
   if(typeof YEARLY_EXTRA!=='undefined')n+=YEARLY_EXTRA.length;
   n+=16; /* yearlyEvent 内置年度事件 */
   return n;
+}
+/* ===== v49 装备数据表校验：套装 / 宝石 / 词条 ===== */
+function validateEquip(){
+  var errs=[];
+  if(typeof EQUIP_SETS==='undefined'||!Array.isArray(EQUIP_SETS)||EQUIP_SETS.length<4)errs.push('EQUIP_SETS 至少 4 套');
+  else EQUIP_SETS.forEach(function(s,i){
+    if(!s||!_isStr(s.id)){errs.push('[set#'+i+'] 缺少 id');return}
+    if(!s.pieces||!_isStr(s.pieces['2'])||!_isStr(s.pieces['3']))errs.push('[set:'+s.id+'] 缺少 2/3 件效果文案');
+  });
+  var gemSeen={};
+  if(typeof GEM_DEFS==='undefined'||!Array.isArray(GEM_DEFS)||GEM_DEFS.length<10)errs.push('GEM_DEFS 至少 10 种');
+  else GEM_DEFS.forEach(function(g,i){
+    if(!g||!_isStr(g.id)){errs.push('[gem#'+i+'] 缺少 id');return}
+    if(gemSeen[g.id])errs.push('[gem] id 重复：'+g.id);
+    gemSeen[g.id]=1;
+    if(['atk','def','agi','hp','luck','beat'].indexOf(g.stat)<0)errs.push('[gem:'+g.id+'] stat 非法：'+g.stat);
+  });
+  var affSeen={};
+  if(typeof AFFIX_POOL==='undefined'||!Array.isArray(AFFIX_POOL)||AFFIX_POOL.length<10)errs.push('AFFIX_POOL 至少 10 条');
+  else AFFIX_POOL.forEach(function(a,i){
+    if(!a||!_isStr(a.id)){errs.push('[affix#'+i+'] 缺少 id');return}
+    if(affSeen[a.id])errs.push('[affix] id 重复：'+a.id);
+    affSeen[a.id]=1;
+    if(['atk','def','agi','int','cha','wil','beat','cult','stones','demon'].indexOf(a.stat)<0)errs.push('[affix:'+a.id+'] stat 非法：'+a.stat);
+  });
+  return errs;
+}
+/* ===== v50 丹药数据表校验：研创丹方 / 丹毒表 ===== */
+function validatePills(){
+  var errs=[];
+  if(typeof RESEARCH_RECIPES==='undefined'||!Array.isArray(RESEARCH_RECIPES)||RESEARCH_RECIPES.length<8)errs.push('RESEARCH_RECIPES 至少 8 个研创丹方');
+  var cat=(typeof itemCatalog==='function')?itemCatalog():{};
+  if(typeof RESEARCH_RECIPES!=='undefined'&&Array.isArray(RESEARCH_RECIPES))RESEARCH_RECIPES.forEach(function(r){
+    if(r&&r.name&&!cat[r.name])errs.push('研创丹方未入物品目录：'+r.name);
+  });
+  if(typeof PILL_TOX==='object'&&PILL_TOX)Object.keys(PILL_TOX).forEach(function(nm){
+    if(!cat[nm])errs.push('丹毒表引用物品不存在：'+nm);
+  });
+  return errs;
 }

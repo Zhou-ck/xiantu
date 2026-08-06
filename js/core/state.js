@@ -39,7 +39,7 @@ function newState(name,bg,gender){
   s.arts=[Object.assign({},bg.art)];
   if(bg.traits.some(t=>t.id==='smith'))s.mats.iron=2;
   if(bg.traits.some(t=>t.id==='herb')||bg.traits.some(t=>t.id==='healer'))s.mats.herb=2;
-  const it=Object.assign({},pick(STARTER_ITEMS));
+  const it=ensureEquip(Object.assign({},pick(STARTER_ITEMS)));
   if(it.type==='weapon')s.weapon=it;else if(it.type==='armor')s.armor=it;
   else if(it.type==='trinket')s.trinket=it;else s.items.push(it);
   s.maxHp=calcMaxHp(s);s.hp=s.maxHp;
@@ -55,7 +55,11 @@ function newState(name,bg,gender){
   return s;
 }
 
-function calcMaxHp(s){return Math.max(1,40+s.attrs.str*3+Math.floor(powR(s.realm)*15)-injuryHpPenalty(s))}
+function calcMaxHp(s){
+  const hpBonus=(typeof equipHpBonus==='function')?equipHpBonus(s):0;
+  const toxPen=(typeof danToxHpPenalty==='function')?danToxHpPenalty(s):0;
+  return Math.max(1,40+s.attrs.str*3+Math.floor(powR(s.realm)*15)-injuryHpPenalty(s)+hpBonus-toxPen);
+}
 function attrVal(s,k){return s.attrs[k]+bonusAttr(s,k)+injuryAttrPenalty(s,k)}
 function bonusAttr(s,k){let b=0;for(const a of s.arts)b+=(a.bonus&&a.bonus[k])||0;return b}
 /* ===== 真元系统：法力资源，随休整/静养/时光恢复，淬体与控火消耗 ===== */
@@ -105,12 +109,20 @@ function growWil(base,src){
 /* 属性 → 实际能力换算（数值成长会同步强化这些能力） */
 /* 恐惧烙印：战斗先手 -1/道 */
 function atkBonus(s){return attrVal(s,'str')+weaponAtk(s)+(s.bg&&s.bg.traits.some(t=>t.id==='combat')?2:0)-demonFearAtk(s)+(s.bond?1+s.bond.level:0)}
-function dodgeBonus(s){return Math.floor(attrVal(s,'agi')/4)}
+function dodgeBonus(s){return Math.floor(attrVal(s,'agi')/4)+(typeof equipDodge==='function'?equipDodge(s):0)}
 function insightBonus(s){return Math.floor(attrVal(s,'int')/8)}
 function favorBonus(s){return Math.floor(attrVal(s,'cha')/6)}
-function weaponAtk(s){let b=(s.weapon&&s.weapon.bonus)||0;if(s.flag.combatBuff)b+=s.flag.combatBuff;if(s.flag.tAttack)b+=s.flag.tAttack;b+=elemWeaponBonus(s)+weaponMasterBonus(s);return b}
-function armorDef(s){return (s.armor&&s.armor.bonus)||0}
-function trinketAll(s){return (s.trinket&&s.trinket.bonus)||0}
+function weaponAtk(s){
+  let b=0;
+  if(s.weapon&&equipUsable(s.weapon))b+=(s.weapon.bonus||0);
+  if(s.flag.combatBuff)b+=s.flag.combatBuff;
+  if(s.flag.tAttack)b+=s.flag.tAttack;
+  if(s.weapon&&equipUsable(s.weapon))b+=elemWeaponBonus(s)+weaponMasterBonus(s);
+  if(typeof equipAtk==='function')b+=equipAtk(s);
+  return b;
+}
+function armorDef(s){return ((s.armor&&equipUsable(s.armor))?(s.armor.bonus||0):0)+(typeof equipDef==='function'?equipDef(s):0)}
+function trinketAll(s){return (s.trinket&&equipUsable(s.trinket))?(s.trinket.bonus||0):0}
 function cultMult(s){
   /* 主修（第一门）全额，辅修 50%；品阶与灵根品质修正 */
   let m=1;
@@ -147,6 +159,8 @@ function cultMult(s){
   m*=smallStageMult(s.realm);
   /* v44 择道流派：同流派主修功法效率 +5% */
   if(s.flag&&s.flag.flowChoice&&typeof flowType==='function'&&s.arts&&s.arts[0]&&flowType(s).id===s.flag.flowChoice)m*=1.05;
+  /* v50 丹毒压制：30/60/90 各 -5% 修炼效率 */
+  if(typeof danToxCultPenalty==='function')m*=danToxCultPenalty(s);
   return m;
 }
 /* 展示辅助：当前收益倍率（两位小数），供修炼/闭关面板实时显示，公式本体不动 */
@@ -235,10 +249,21 @@ function passTime(days){
   if(S.flag.trialCd>0)S.flag.trialCd=Math.max(0,S.flag.trialCd-days);
   if(S.flag.sectEventCd>0)S.flag.sectEventCd=Math.max(0,S.flag.sectEventCd-days);
   if(S.flag.blessCd>0)S.flag.blessCd=Math.max(0,S.flag.blessCd-days);
+  if(S.flag.swordCd>0)S.flag.swordCd=Math.max(0,S.flag.swordCd-days);
+  if(S.flag.wuxingBuff>0)S.flag.wuxingBuff=Math.max(0,S.flag.wuxingBuff-days);
+  if(S.flag.teaCd>0)S.flag.teaCd=Math.max(0,S.flag.teaCd-days);
+  if(S.flag.npcVisitCd>0)S.flag.npcVisitCd=Math.max(0,S.flag.npcVisitCd-days);
   if(S.pet&&S.pet.faint>0)S.pet.faint=Math.max(0,S.pet.faint-days);
-  if(S.flag.farm&&S.flag.farm.crop&&S.flag.farm.planted+S.flag.farm.days<=S.days&&!S.flag.farm.notified){
-    S.flag.farm.notified=true;
-    log('<p class="loot">🌾 灵田中飘来阵阵药香——你种下的<b>'+CROP_NAMES[S.flag.farm.crop]+'</b>成熟了，可前往【洞府】收获。</p>');
+  if(S.flag.farm&&Array.isArray(S.flag.farm.plots)){
+    for(const p of S.flag.farm.plots){
+      if(p&&p.crop&&(p.planted||0)+(p.days||0)<=S.days&&!p.notified){
+        p.notified=true;
+        log('<p class="loot">🌾 灵田中飘来阵阵药香——你种下的<b>'+CROP_NAMES[p.crop]+'</b>成熟了，可前往【洞府】收获。</p>');
+      }
+      if(p&&p.crop&&!p.evt&&(p.planted||0)+Math.floor((p.days||0)/2)<=S.days&&chance(0.35)){
+        p.evt=pick(['pest','rain','thief']);
+      }
+    }
   }
   if(S.heartDemons>0&&chance(Math.min(0.14,0.08+S.karma*0.002))){
     const r=d20()+attrVal(S,'wil')*1.5;
@@ -282,6 +307,7 @@ function passTime(days){
     if(chance(0.45))yearlyEvent();
     if(chance(0.35))yearlyExtra();
     if(chance(0.6))eraEvent(newYear);
+    if(typeof maybeTeaParty==='function'&&chance(0.55))maybeTeaParty(); /* v51 一年一度茶会/诗会 */
     resolveForeshadow(newYear);
     if(typeof chainTick==='function'&&chance(0.25))chainTick();
   if(S.realm>=21&&chance(0.4))heavenlyErosion();
@@ -306,6 +332,18 @@ function passTime(days){
   tickInjuries(days);
   tickHates(days);
   if(typeof demonTick==='function')demonTick(days);
+  /* v50 丹毒反噬：≥80 每 30 日一次 */
+  const toxWeek=Math.floor(S.days/30);
+  if((S.flag.danTox||0)>=80&&(S.flag.danToxRageAt||-1)<toxWeek&&typeof danToxRageEvent==='function'){
+    S.flag.danToxRageAt=toxWeek;
+    danToxRageEvent();
+  }
+  /* v51 NPC 来访：约 60-120 日一次，会客厅更频繁 */
+  if(typeof maybeNpcVisit==='function'&&(S.flag.npcVisitCd||0)<=0){
+    S.flag.npcVisitCd=rand(60,120);
+    const keChance=0.45+((S.flag.caveRooms&&S.flag.caveRooms.ke)?0.3:0);
+    if(chance(keChance))maybeNpcVisit();
+  }
   return true;
 }
 /* 2I 天道注视：每年一次的终局准备事件 */
@@ -373,12 +411,16 @@ function beastTideEvent(){
     {txt:'⚔️ 不做布置，正面迎敌',fn:()=>{log('<p>你紧了紧手中兵刃，静候妖潮。</p>');tideWave(1,0)}},
   ]);
 }
-function tideEnemy(n){
+function tideEnemy(n,waveType){
   const r=rl();
   const names=['妖狼群','妖豹群','妖潮首领'];
   const atk=[4,6,8],def=[1,2,3],hp=[25,35,50];
   const i=clamp(n-1,0,2);
-  return {name:names[i],atk:atk[i]+Math.floor(r/2),def:def[i]+Math.floor(r/4),hp:hp[i]+r*6,elem:pick(['wood','water','fire']),style:n>=3?'boss':'burst'};
+  const e={name:names[i],atk:atk[i]+Math.floor(r/2),def:def[i]+Math.floor(r/4),hp:hp[i]+r*6,elem:pick(['wood','water','fire']),style:n>=3?'boss':'burst'};
+  if(waveType==='兽潮'){e.name='兽潮·'+e.name;e.atk+=1;e.def+=1;}
+  else if(waveType==='魔潮'){e.name='魔潮·'+e.name;e.hp+=15;e.elem='dark';}
+  else if(waveType==='妖禽'){e.name='妖禽·'+e.name;e.hp=Math.max(10,e.hp-8);e.style='rapid';}
+  return e;
 }
 function tideWaveReward(n,prepOk){
   const mult=prepOk?1.2:1;
@@ -411,8 +453,15 @@ function tideEnd(complete){
 }
 function tideWave(n,prepOk){
   if(n>3){tideVictory();return}
-  const e=tideEnemy(n);
-  log('<p class="sys">妖潮第 '+n+' 波：'+esc(e.name)+' 压境而来！</p>');
+  const wt=pick(['兽潮','魔潮','妖禽']);
+  const e=tideEnemy(n,wt);
+  log('<p class="sys">妖潮第 '+n+' 波：<b>'+esc(e.name)+'</b>（'+wt+'）压境而来！</p>');
+  openEventModal('🛡️ 妖潮 · 第 '+n+' 波 备战','<p>来者是'+wt+'，如何应对？</p>',[
+    {txt:'⚔️ 直接迎战',cls:'primary',fn:()=>tideFight(n,prepOk,e)},
+    {txt:'🛡️ 布阵备战（智慧判定 · 此波收益 +20%）',fn:()=>{const R=doRoll('int',14);log('<p>你临阵布防：'+rollBadge(R.r,R.mod,R.t,R.dc)+'</p>');tideFight(n,prepOk||R.hit,e)}},
+  ]);
+}
+function tideFight(n,prepOk,e){
   startCombat(e,res=>{
     if(res.win){
       tideWaveReward(n,prepOk);

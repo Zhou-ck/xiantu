@@ -13,7 +13,7 @@ vm.runInContext(`{ S=newState('测',BACKGROUNDS[0]); PENDING=0; tabHome('cult');
 assert(vm.runInContext('window.__h1.indexOf("双修")>=0&&window.__h1.indexOf("需先有道侣")>=0&&window.__h1.indexOf("locked")>=0',ctx),'修炼页双修无伴侣时锁定并提示');
 assert(vm.runInContext('window.__h2.indexOf("道侣")>=0&&window.__h2.indexOf("需先有道侣")>=0',ctx),'人际页道侣无伴侣时锁定并提示');
 // 2) 有道侣后解锁并可进入道侣面板
-vm.runInContext(`{ S.daoPartner={name:'苏婉',role:'采药女',gender:'女',favor:80,affinity:70,stage:2,hp:30,atk:6,desc:'采药为生'}; tabHome('social'); window.__h3=document.getElementById('panelBody')._html; tabGo('social',1); window.__h4=document.getElementById('panelBody')._html; }`,ctx);
+vm.runInContext(`{ S.daoPartner={name:'苏婉',role:'采药女',gender:'女',favor:80,affinity:70,stage:2,hp:30,atk:6,desc:'采药为生'}; tabHome('social'); window.__h3=document.getElementById('panelBody')._html; tabGo('social',3); window.__h4=document.getElementById('panelBody')._html; }`,ctx);
 assert(vm.runInContext('window.__h3.indexOf("需先有道侣")<0',ctx),'有道侣后道侣项解锁');
 assert(vm.runInContext('window.__h4.indexOf("情缘")>=0',ctx),'点击进入道侣面板');
 // 3) 宗门：未入宗锁定大比/月俸；入宗后解锁

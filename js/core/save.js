@@ -140,6 +140,12 @@ function load(){
     if(s.flag.craftLog===undefined)s.flag.craftLog={};
     if(s.flag.tech===undefined)s.flag.tech={pts:0,ups:{}};
     if(s.arts)for(const a of s.arts)if(a&&a.mastery===undefined)a.mastery=0;
+    if(typeof ensureEquip==='function'){for(const k of ['weapon','armor','trinket'])if(s[k])ensureEquip(s[k]);}
+    if(s.flag.danTox===undefined)s.flag.danTox=0;
+    if(!Array.isArray(s.flag.danToxLog))s.flag.danToxLog=[];
+    if(s.flag.farm&&!Array.isArray(s.flag.farm.plots)&&s.flag.farm.crop){
+      s.flag.farm={plots:[{crop:s.flag.farm.crop,planted:s.flag.farm.planted||0,days:s.flag.farm.days||7,notified:!!s.flag.farm.notified,evt:null}]};
+    }
     if(!s.set)s.set={fx:'med',autoTrib:false,autoCraft:false,audio:true,shake:true};
     if(s.gender===undefined)s.gender='男';
     if(s.contribVal===undefined)s.contribVal=0;

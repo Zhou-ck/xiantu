@@ -122,6 +122,35 @@ function doTower(){
     }
   },true);
 }
+/* v51 御剑试炼：地图入口，三段时机判定（身法/智慧），30 日冷却 */
+function swordTrial(){
+  closePanel();
+  if(S.realm<2){toast('炼气三层后开启御剑试炼');return}
+  if((S.flag.swordCd||0)>0){log('<p class="sys">剑坪剑气未散，需 '+S.flag.swordCd+' 日后再来。</p>');renderAll();return}
+  scene('御剑试炼');
+  log('<p>剑坪之上，一柄柄飞剑悬于半空，剑鸣如潮。你踏上剑脊，御剑而起——三关连环，试你的身法与眼力。</p>');
+  S.flag._swordHits=0;
+  swordTrialStage(1);
+}
+function swordTrialStage(st){
+  if(st>3){
+    const hits=S.flag._swordHits||0;
+    const g=Math.floor(60+hits*50+rl()*10);
+    S.cult+=g;
+    addTechPts(hits);
+    if(hits>=2&&chance(0.5)){const m=pick(['iron','jade','demonCore']);S.mats[m]=(S.mats[m]||0)+1;log('<p class="loot">剑坪尽头，你拾得一份'+MAT_NAMES[m]+'。</p>')}
+    log('<p class="good">三段御剑试炼毕：连中 <b>'+hits+'</b> 段（修为 +'+g+'，战意 +'+hits+'）。</p>');
+    S.flag.swordCd=30;
+    if(typeof questTick==='function')questTick();
+    passTime(1);renderAll();
+    return;
+  }
+  const dc=13+st;
+  openEventModal('🗡️ 御剑试炼 · 第 '+st+' 段','<p>'+(st===1?'逆风穿云，剑身微颤——把握节奏！':st===2?'剑气纵横，躲闪不及便是坠剑！':'前方剑阵如林，一息之间定成败！')+'</p>',[
+    {txt:'🌪️ 御剑疾冲（身法判定）',fn:()=>{const R=doRoll('agi',dc);log('<p>你压低身形，御剑疾冲：'+rollBadge(R.r,R.mod,R.t,R.dc)+'</p>');if(R.hit)S.flag._swordHits++;swordTrialStage(st+1)}},
+    {txt:'🧠 观剑辨隙（智慧判定）',fn:()=>{const R=doRoll('int',dc);log('<p>你凝神观剑，寻隙而进：'+rollBadge(R.r,R.mod,R.t,R.dc)+'</p>');if(R.hit)S.flag._swordHits++;swordTrialStage(st+1)}},
+  ]);
+}
 function doExplore(rid){
   closePanel();
   const r=REGIONS.find(x=>x.id===rid);

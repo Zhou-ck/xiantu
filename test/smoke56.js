@@ -18,18 +18,18 @@ const ctx={document,localStorage,window:{},console,setTimeout:fn=>fn(),Math};
 vm.createContext(ctx);vm.runInContext(js,ctx);
 let fails=0;function assert(c,m){if(!c){fails++;console.log('FAIL:',m)}else console.log('ok  :',m)}
 
-// T1 地点数据完整：10 个点，字段齐全
+// T1 地点数据完整：11 个点，字段齐全
 vm.runInContext(`window.__locs=MAP_LOCS; window.__bad=MAP_LOCS.filter(l=>!l.id||!l.name||!l.icon||l.x===undefined||l.y===undefined||l.minRealm===undefined||!l.action);`,ctx);
-assert(vm.runInContext('window.__locs.length===10&&window.__bad.length===0',ctx),'MAP_LOCS 10 个地点且字段完整');
+assert(vm.runInContext('window.__locs.length===11&&window.__bad.length===0',ctx),'MAP_LOCS 11 个地点且字段完整');
 
-// T2 地图渲染：10 个标记 + 地形
+// T2 地图渲染：11 个标记 + 地形
 vm.runInContext(`S=newState('测',BACKGROUNDS[0]); S.flag={}; S.realm=0; window.__svg=mapSvg();`,ctx);
 const svg=vm.runInContext('window.__svg',ctx);
 let all=true;
-for(const id of ['near','valley','hill','forest','cliff','ruin','abyss','tower','boss','dungeon']){
+for(const id of ['near','valley','hill','forest','cliff','ruin','abyss','tower','boss','dungeon','sword']){
   if(svg.indexOf("data-loc='"+id+"'")<0&&svg.indexOf('data-loc="'+id+'"')<0)all=false;
 }
-assert(all,'mapSvg 渲染全部 10 个地点标记');
+assert(all,'mapSvg 渲染全部 11 个地点标记');
 assert(svg.indexOf('<svg')>=0&&svg.indexOf('灵溪幽谷')>=0,'水墨 SVG 地形渲染（含灵溪幽谷名称）');
 
 // T3 锁定迷雾：炼气一层时 7 个点锁定（valley/forest/cliff/ruin/abyss/tower/dungeon）

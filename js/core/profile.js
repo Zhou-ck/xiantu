@@ -64,6 +64,7 @@ function characterProfile(s){
       weaponAtk:(typeof weaponAtk==='function')?weaponAtk(s):0,
       armorDef:(typeof armorDef==='function')?armorDef(s):0,
       trinketAll:(typeof trinketAll==='function')?trinketAll(s):0,
+      eqExtra:(typeof equipStats==='function')?equipStats(s):null,
     }:null,
     equip:isMain?{weapon:s.weapon,armor:s.armor,trinket:s.trinket}:null,
     cult:isMain?{
@@ -74,6 +75,7 @@ function characterProfile(s){
     status:isMain?{
       hp:s.hp||0,maxHp:s.maxHp||0,heartDemons:s.heartDemons||0,injuries:s.injuries||[],
       demonMarks:s.demonMarks||[],tempBreak:(s.temp&&s.temp.break)||0,cultStreak:s.cultStreak||0,mood:s.mood||60,
+      danTox:(s.flag&&s.flag.danTox)||0,
     }:null,
     relations:isMain?{
       daoPartner:s.daoPartner?{name:s.daoPartner.name,role:s.daoPartner.role,stage:typeof partnerStage==='function'?partnerStage(s.daoPartner).name:''}:null,

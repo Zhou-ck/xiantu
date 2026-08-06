@@ -15,7 +15,8 @@ function panelSettings(){
     '<p style="font-size:12px;color:#6f7a94">开启后角色卡以 3D 插槽占位渲染，为未来 3D 角色模型引擎预留接入点；默认关闭，完全不影响当前立绘。</p>'+
     '<h4>🤖 微操小游戏</h4>'+
     '<div class="row"><button class="small'+(s.autoTrib?' primary':'')+'" onclick="setOpt(\'autoTrib\')">渡劫微操：'+(s.autoTrib?'自动':'手动')+'</button>'+
-    '<button class="small'+(s.autoCraft?' primary':'')+'" onclick="setOpt(\'autoCraft\')">副业微操：'+(s.autoCraft?'自动':'手动')+'</button></div>'+
+    '<button class="small'+(s.autoCraft?' primary':'')+'" onclick="setOpt(\'autoCraft\')">副业微操：'+(s.autoCraft?'自动':'手动')+'</button>'+
+    '<button class="small'+(s.autoCombat?' primary':'')+'" onclick="setOpt(\'autoCombat\')">战斗 QTE：'+(s.autoCombat?'自动':'手动')+'</button></div>'+
     '<p style="font-size:12px;color:#6f7a94">微操只在关键节点出现，单次 ≤30 秒，均可在设置里切回自动。</p>'+
     '<h4>🔊 音效与震动</h4><div class="row"><button class="small'+(s.audio===false?'':' primary')+'" onclick="setOpt(\'audio\')">音效：'+(s.audio===false?'关':'开')+'</button>'+
     '<button class="small'+(s.shake===false?'':' primary')+'" onclick="setOpt(\'shake\')">震动：'+(s.shake===false?'关':'开')+'</button></div>'+
@@ -42,6 +43,7 @@ function setOpt(k){
   if(k==='high'||k==='med'||k==='low'){S.set.fx=k;fxSetLevel(k)}
   else if(k==='autoTrib')S.set.autoTrib=!S.set.autoTrib;
   else if(k==='autoCraft')S.set.autoCraft=!S.set.autoCraft;
+  else if(k==='autoCombat')S.set.autoCombat=!S.set.autoCombat;
   else if(k==='audio')S.set.audio=S.set.audio===false?true:false;
   else if(k==='shake')S.set.shake=S.set.shake===false?true:false;
   else if(k==='model3d')S.set.model3d=!S.set.model3d;

@@ -21,12 +21,12 @@ const MARKET_ITEMS=[
   {name:'通慧丹',type:'consumable',quality:2,cost:700,desc:'开窍明心，智慧 +1（永久）。',use:'int'},
   {name:'疗伤丹',type:'consumable',quality:2,cost:300,desc:'通经活络，愈经脉、筋骨之伤。',use:'cure_neijing'},
   {name:'安神丹',type:'consumable',quality:2,cost:320,desc:'安魂定神，愈神魂之创。',use:'cure_shenhun'},
-  {name:'火云剑',type:'weapon',quality:2,cost:520,bonus:3,elem:'fire',desc:'火属性灵剑，攻击 +3，火灵根者用之力增。'},
-  {name:'玄冰刃',type:'weapon',quality:2,cost:520,bonus:3,elem:'ice',desc:'冰属性寒刃，攻击 +3，水灵根者用之力增。'},
-  {name:'庚金剑',type:'weapon',quality:3,cost:900,bonus:4,elem:'metal',desc:'金气锋锐，攻击 +4，金灵根者用之力增。'},
-  {name:'精铁剑',type:'weapon',quality:1,cost:200,bonus:2,desc:'坊市常见的法器，聊胜于无。'},
-  {name:'青鳞甲',type:'armor',quality:1,cost:260,bonus:2,desc:'以青鳞兽皮缝制，可挡刀剑。'},
-  {name:'聚灵玉佩',type:'trinket',quality:2,cost:600,bonus:2,desc:'佩戴者气运微升，修炼时心神安宁。'},
+  {name:'火云剑',type:'weapon',quality:2,cost:520,bonus:3,elem:'fire',setId:'wuxing',desc:'火属性灵剑，攻击 +3，火灵根者用之力增。'},
+  {name:'玄冰刃',type:'weapon',quality:2,cost:520,bonus:3,elem:'ice',setId:'wuxing',desc:'冰属性寒刃，攻击 +3，水灵根者用之力增。'},
+  {name:'庚金剑',type:'weapon',quality:3,cost:900,bonus:4,elem:'metal',setId:'wuxing',desc:'金气锋锐，攻击 +4，金灵根者用之力增。'},
+  {name:'精铁剑',type:'weapon',quality:1,cost:200,bonus:2,setId:'jianxin',desc:'坊市常见的法器，聊胜于无。'},
+  {name:'青鳞甲',type:'armor',quality:1,cost:260,bonus:2,setId:'xiaoyao',desc:'以青鳞兽皮缝制，可挡刀剑。'},
+  {name:'聚灵玉佩',type:'trinket',quality:2,cost:600,bonus:2,setId:'wuxing',desc:'佩戴者气运微升，修炼时心神安宁。'},
   {name:'火球符',type:'consumable',quality:1,cost:60,count:1,desc:'战斗中掷出，攻击 +6。',use:'fire'},
   {name:'遁地符',type:'consumable',quality:1,cost:120,count:1,desc:'遭遇战必定脱身。',use:'escape'},
   {name:'草药',type:'mat',key:'herb',cost:30},
@@ -37,6 +37,11 @@ const MARKET_ITEMS=[
   {name:'寒玉',type:'mat',key:'jade',cost:300},
   {name:'符纸',type:'mat',key:'paper',cost:40},
   {name:'朱砂',type:'mat',key:'cinnabar',cost:45},
+  {name:'火灵石',type:'gem',gemId:'g_fire',cost:300,desc:'五行灵石：镶嵌后五行克敌伤害 +3%。',sell:150},
+  {name:'金灵石',type:'gem',gemId:'g_metal',cost:300,desc:'五行灵石：镶嵌后攻势 +1。',sell:150},
+  {name:'温玉',type:'gem',gemId:'g_jade',cost:300,desc:'灵玉温润：镶嵌后防御 +1。',sell:150},
+  {name:'沧海珠',type:'gem',gemId:'g_pearl',cost:450,desc:'深海宝珠：镶嵌后最大气血 +15。',sell:200},
+  {name:'星陨石',type:'gem',gemId:'g_star',cost:600,desc:'天外奇珍：镶嵌后气运 +1。',sell:280},
 ];
 function panelMarket(){
   const tr=marketTrend();
@@ -53,9 +58,10 @@ function panelMarket(){
     '<div style="margin-top:6px"><button class="small" onclick="sellItem('+j+')">售 · '+sellPrice(it)+' 灵石</button></div></div>').join('');
   const mats=Object.entries(S.mats).map(([k,v])=>'<span class="tag">'+MAT_NAMES[k]+' ×'+v+'</span>').join('')||'<span style="color:#6f7a94">空空如也</span>';
   const auc=getAuction();
-  const aucHtml=auc.sold?'<p style="color:#6f7a94">本届奇珍已售出，来年再会。</p>':'<div class="item-card"><div class="nm"><span class="q'+auc.it.quality+'">'+esc(auc.it.name)+'</span> <span class="tag">奇珍</span></div><div class="ds">'+esc(auc.it.desc)+'</div><div style="margin-top:6px"><button class="small primary" onclick="buyAuction()">💰 拍下 · '+auc.price+' 灵石</button></div></div>';
+  const aucHtml=auc.sold?'<p style="color:#6f7a94">本届奇珍已售出，来年再会。</p>':'<div class="item-card"><div class="nm"><span class="q'+auc.it.quality+'">'+esc(auc.it.name)+'</span> <span class="tag">奇珍</span></div><div class="ds">'+esc(auc.it.desc)+'</div><div style="margin-top:6px"><button class="small primary" onclick="buyAuction()">🏆 进入竞拍 · 当前 '+auc.price+' 灵石（第 '+(auc.rounds+1)+'/'+AUCTION_ROUNDS+' 轮）</button></div></div>';
   openPanel('🏮 坊市','<p>凡尘与修真界交汇之地，商贩吆喝，灵光流转。</p><p class="sys">📈 行情：'+note+'</p><h4>💎 灵石：'+S.stones+'</h4>'+
     '<h4>🌾 善举</h4><div class="row"><button class="small" onclick="giveAlms()">施粥棚 · 50灵石（功德+2）</button></div>'+
+    '<h4>💎 宝石兑换</h4><div class="row"><button class="small" onclick="exchangeGem()">妖丹 ×2 换随机宝石</button></div>'+
     '<h4>🚚 跑商</h4>'+(S.flag.tradePass?'<div class="row"><button class="small primary" onclick="runTrade()">出商跑一趟（5 日）</button></div>':'<div class="row"><button class="small" onclick="buyTradePass()">购商队通行证 · 200 灵石</button></div>')+
     '<h4>🏆 奇珍拍卖（每年一换）</h4>'+aucHtml+
     '<h4>🌿 药材与材料</h4><p>'+mats+'</p><h4>🏪 出售货物</h4>'+items+'<h4>📦 寄售你的物品</h4>'+(inv||'<p style="color:#6f7a94">无</p>'));
@@ -106,36 +112,93 @@ function runTrade(){
   log('<p>你押着货队走了五日，低买高卖（投入 '+invest+'，得 '+g+'，净赚 '+(g-invest)+'）。</p>');
   passTime(5);renderAll();
 }
-function getAuction(){
-  if(!S.flag.auctionItem||S.flag.auctionYear!==Math.floor(S.years)||S.flag.auctionSold===undefined){
+const AUCTION_ROUNDS=3;
+function auctionSetup(){
+  if(!S.flag.auctionItem||S.flag.auctionYear!==Math.floor(S.years)||S.flag.auctionRounds===undefined){
     S.flag.auctionItem=pick(AUCTION_POOL);
     S.flag.auctionYear=Math.floor(S.years);
+    S.flag.auctionRounds=0;
     S.flag.auctionSold=false;
+    S.flag.auctionLead=false;
+    S.flag.auctionBidderName='';
+    S.flag.auctionPrice=Math.floor(S.flag.auctionItem.cost*1.4);
+    const n=clamp(2+Math.floor(totalFame()/150),2,3);
+    const pool=['陈员外','柳大家','云游散修','魔道商贾','丹房执事','西域富商','剑阁弟子'].slice();
+    S.flag.auctionBidders=[];
+    for(let i=0;i<n&&pool.length;i++){
+      const j=rand(0,pool.length-1);
+      S.flag.auctionBidders.push({name:pool.splice(j,1)[0],budget:Math.floor(S.flag.auctionPrice*rand(12,18)/10),passed:false});
+    }
   }
-  return {it:S.flag.auctionItem,price:Math.floor(S.flag.auctionItem.cost*1.6),sold:S.flag.auctionSold};
 }
-function buyAuction(){
+function getAuction(){
+  auctionSetup();
+  return {it:S.flag.auctionItem,price:S.flag.auctionPrice||Math.floor(S.flag.auctionItem.cost*1.4),sold:!!S.flag.auctionSold,lead:!!S.flag.auctionLead,rounds:S.flag.auctionRounds||0};
+}
+function buyAuction(){startAuction()}
+function auctionAiStep(){
   const a=getAuction();
-  if(a.sold){toast('已售出，来年再会');return}
-  /* 10.3 竞拍对手：半数情况有人抬价，需加价或放弃 */
-  if(chance(0.5)){
-    const up=Math.floor(a.price*0.35);
-    logChoices([
-      {txt:'💰 加价拍下（'+(a.price+up)+' 灵石）',cls:'primary',fn:()=>{
-        if(S.stones<a.price+up){toast('灵石不足');return}
-        S.stones-=a.price+up;S.flag.auctionSold=true;addItem(Object.assign({},a.it));
-        log('<p class="loot">竞拍对手咬牙加价，你以 <b>'+(a.price+up)+'</b> 灵石拿下 <b>'+a.it.name+'</b>！</p>');
-        panelMarket();renderAll();
-      }},
-      {txt:'🚶 让与他人',fn:()=>{log('<p>你放弃了竞价，奇珍落入他手。留得青山在，不愁没柴烧。</p>');panelMarket();renderAll()}},
-    ]);
+  const act=(S.flag.auctionBidders||[]).find(b=>!b.passed&&b.budget>a.price*1.1);
+  if(act&&chance(0.7)){
+    const up=Math.max(10,Math.floor(a.price*0.12));
+    S.flag.auctionPrice=a.price+up;
+    S.flag.auctionLead=false;
+    S.flag.auctionBidderName=act.name;
+    log('<p class="sys">🏆 '+esc(act.name)+' 举牌加价至 <b>'+S.flag.auctionPrice+'</b> 灵石。</p>');
+  }else{
+    if(act)act.passed=true;
+    log('<p class="sys">🏆 在场众人沉默，无人再加价。</p>');
+  }
+}
+function auctionNextRound(){
+  S.flag.auctionRounds=(S.flag.auctionRounds||0)+1;
+  if(S.flag.auctionRounds>=AUCTION_ROUNDS){
+    const a=getAuction();
+    if(a.lead){
+      if(S.stones<a.price){
+        log('<p class="danger">落槌时你囊中羞涩，奇珍与财宝双双落空……</p>');
+        S.flag.auctionSold=true;
+      }else{
+        S.stones-=a.price;S.flag.auctionSold=true;
+        addItem(Object.assign({},a.it));
+        log('<p class="loot">三锤落定！你以 <b>'+a.price+'</b> 灵石拍下 <b>'+esc(a.it.name)+'</b>！</p>');
+      }
+    }else{
+      S.flag.auctionSold=true;
+      log('<p class="sys">三锤落定，奇珍被 '+esc(S.flag.auctionBidderName||'一位神秘买家')+' 以 '+a.price+' 灵石拍走。留得青山在，不愁没柴烧。</p>');
+    }
+    panelMarket();renderAll();
     return;
   }
-  if(S.stones<a.price){toast('灵石不足');return}
-  S.stones-=a.price;S.flag.auctionSold=true;
-  addItem(Object.assign({},a.it));
-  log('<p class="loot">无人竞价，你以底价拍下 <b>'+a.it.name+'</b>！</p>');
-  panelMarket();renderAll();
+  startAuction();
+}
+function startAuction(){
+  auctionSetup();
+  const a=getAuction();
+  if(a.sold){toast('已售出，来年再会');return}
+  const up=Math.max(10,Math.floor(a.price*0.1));
+  openEventModal('🏆 奇珍拍卖 · 第 '+(a.rounds+1)+'/'+AUCTION_ROUNDS+' 轮',
+    '<p>拍品：<b>'+esc(a.it.name)+'</b>（'+QNAMES[a.it.quality]+'）<br>当前价 <b>'+a.price+'</b> 灵石'+(a.lead?'（你暂居上风）':'（你尚未出手）')+'</p><p class="sys">共 3 轮，落槌前价高者得。观望则看他人竞价。</p>',[
+      {txt:'💰 加价 '+up+' 灵石',cls:'primary',fn:()=>{
+        if(S.stones<a.price+up){toast('灵石不足（需 '+(a.price+up)+'）');panelMarket();renderAll();return}
+        S.flag.auctionLead=true;
+        S.flag.auctionPrice=a.price+up;
+        S.flag.auctionBidderName=S.name;
+        log('<p class="good">你举牌出价 <b>'+S.flag.auctionPrice+'</b> 灵石。</p>');
+        auctionAiStep();
+        auctionNextRound();
+      }},
+      {txt:'🤝 静观其变',fn:()=>{
+        log('<p>你按下手中灵石，静观众人竞价。</p>');
+        auctionAiStep();
+        auctionNextRound();
+      }},
+      {txt:'🚶 放弃竞价',fn:()=>{
+        S.flag.auctionSold=true;
+        log('<p>你放弃了本轮竞价，奇珍落入他手。留得青山在。</p>');
+        panelMarket();renderAll();
+      }},
+    ]);
 }
 function giveAlms(){
   if(S.stones<50){toast('灵石不足');return}
@@ -163,6 +226,7 @@ function sellItem(j){
   panelMarket();
 }
 function addItem(it){
+  if(it&&(it.type==='weapon'||it.type==='armor'||it.type==='trinket')&&typeof ensureEquip==='function')it=ensureEquip(it);
   if(S)S.flag._lastAdded=it;
   S.seenI[it.name]=(S.seenI[it.name]||0)+1;
   if(typeof checkAtlasMiles==='function')checkAtlasMiles();
@@ -173,13 +237,13 @@ function addItem(it){
 }
 function randItem(q){
   const pool=[
-    {name:'寒铁剑',type:'weapon',quality:1,bonus:2,desc:'以寒铁铸成，剑身透凉。',sell:180},
-    {name:'赤炎刀',type:'weapon',quality:2,bonus:3,desc:'刀身赤红，似有火光流转。',sell:420},
-    {name:'紫电剑',type:'weapon',quality:3,bonus:4,desc:'剑出紫电随行，上古遗宝。',sell:1200},
-    {name:'玄龟甲',type:'armor',quality:2,bonus:3,desc:'玄龟甲壳所制，坚不可摧。',sell:400},
-    {name:'星纹软甲',type:'armor',quality:3,bonus:4,desc:'织星为线，柔韧胜钢。',sell:1100},
-    {name:'聚灵佩',type:'trinket',quality:2,bonus:2,desc:'温养灵台，神思清明。',sell:380},
-    {name:'龙凤环',type:'trinket',quality:4,bonus:3,desc:'龙凤交缠，气运自聚。',sell:2000},
+    {name:'寒铁剑',type:'weapon',quality:1,bonus:2,setId:'jianxin',desc:'以寒铁铸成，剑身透凉。',sell:180},
+    {name:'赤炎刀',type:'weapon',quality:2,bonus:3,setId:'xiexue',desc:'刀身赤红，似有火光流转。',sell:420},
+    {name:'紫电剑',type:'weapon',quality:3,bonus:4,setId:'jianxin',desc:'剑出紫电随行，上古遗宝。',sell:1200},
+    {name:'玄龟甲',type:'armor',quality:2,bonus:3,setId:'xiaoyao',desc:'玄龟甲壳所制，坚不可摧。',sell:400},
+    {name:'星纹软甲',type:'armor',quality:3,bonus:4,setId:'jianxin',desc:'织星为线，柔韧胜钢。',sell:1100},
+    {name:'聚灵佩',type:'trinket',quality:2,bonus:2,setId:'xiaoyao',desc:'温养灵台，神思清明。',sell:380},
+    {name:'龙凤环',type:'trinket',quality:4,bonus:3,setId:'xiaoyao',desc:'龙凤交缠，气运自聚。',sell:2000},
     {name:'筑基丹',type:'consumable',quality:2,count:1,desc:'突破时心性判定 +3（一次有效）。',use:'break',sell:500},
   ].filter(x=>x.quality<=q);
   return Object.assign({},pick(pool));
@@ -187,4 +251,13 @@ function randItem(q){
 function useItem(name){
   const i=S.items.findIndex(x=>x.name===name);
   if(i>=0)S.items.splice(i,1);
+}
+/* v49 宝石兑换：妖丹 ×2 换随机宝石（产出→流通→消耗闭环） */
+function exchangeGem(){
+  if((S.mats.demonCore||0)<2){toast('妖丹不足（需 2）');return}
+  S.mats.demonCore-=2;
+  const g=pick(GEM_DEFS);
+  addItem({name:g.name,type:'gem',gemId:g.id,quality:2,desc:g.desc,sell:150});
+  log('<p class="loot">你将两枚妖丹投入兑换台，灵光一闪，得'+g.i+' '+g.name+'一枚（'+g.desc+'）。</p>');
+  panelMarket();renderAll();
 }

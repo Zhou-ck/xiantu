@@ -4,7 +4,7 @@ const root=path.join(__dirname,'..');
 function loadJs(rel){return fs.readFileSync(path.join(root,rel),'utf8')}
 const ctx={console,window:{}};
 vm.createContext(ctx);
-for(const rel of ['js/core/world.js','js/data/events.js','js/data/items.js','js/core/schema.js','js/data/quests.js','js/data/exploreEvents.js','js/data/storyEvents.js','js/systems/npc.js','js/systems/market.js','js/systems/craft.js','js/systems/explore.js','js/core/state.js']){
+for(const rel of ['js/core/world.js','js/data/events.js','js/data/items.js','js/data/equip.js','js/data/pills.js','js/core/schema.js','js/core/content.js','js/data/quests.js','js/data/exploreEvents.js','js/data/storyEvents.js','js/systems/npc.js','js/systems/market.js','js/systems/craft.js','js/systems/explore.js','js/core/state.js']){
   vm.runInContext(loadJs(rel),ctx);
 }
 let fails=0;
@@ -22,7 +22,7 @@ assert(Object.keys(cover).length>=7&&Object.keys(cover).every(k=>cover[k]>=2),'7
 
 // T3 全量校验 0 错误
 const all=vm.runInContext('validateAll()',ctx);
-assert(Array.isArray(all)&&all.length===0,'validateAll() 0 错误（事件+任务+区域事件）');
+assert(Array.isArray(all)&&all.length===0,'validateAll() 0 错误（'+(all||[]).slice(0,5).join('|')+'）');
 
 // T3b 事件库总量对账：数据驱动事件 ≥300（含新增通用故事事件池与赛季事件包）
 const cnt=vm.runInContext('eventTotalCount()',ctx);

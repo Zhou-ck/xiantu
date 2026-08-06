@@ -43,6 +43,176 @@ function panelSocial(){
     '<div class="row"><button class="small primary" onclick="socialWander()">🌍 出门偶遇（一日）</button><button class="small" onclick="relationWeb()">🕸️ 关系图谱</button></div>'+
     '<h4>💞 道侣</h4>'+partner+'<h4>🧙 师门</h4>'+master+'<h4>🤝 结伴</h4>'+comp+'<h4>🐾 灵兽</h4>'+petSec+'<h4>🧒 道统传承</h4>'+disc+'<h4>👥 相识之人（'+known.length+'）</h4>'+(npcHtml||'<p style="color:#6f7a94">尚无相识之人，先出门游历吧。</p>'));
 }
+/* ===== v51 茶会/诗会：一年一度雅集，与四大节日交错 ===== */
+function panelTea(){
+  if(!S){toast('尚未踏入仙途');return}
+  const known=S.npcs.filter(n=>n.met&&!n.foe);
+  if(!known.length){toast('尚无相识之人，先出门游历吧');return}
+  if((S.flag.teaCd||0)>0){toast('雅集方散，需 '+(S.flag.teaCd||0)+' 日后再聚');return}
+  if(S.flag.teaYear===Math.floor(S.years)){toast('今年雅集已办过');return}
+  closePanel();
+  const guests=known.slice();
+  for(let i=guests.length-1;i>0;i--){const j=rand(0,i);const t=guests[i];guests[i]=guests[j];guests[j]=t;}
+  const gs=guests.slice(0,3);
+  S.flag.teaYear=Math.floor(S.years);
+  S.flag.teaCd=180;
+  scene('茶会雅集');
+  log('<p>这一日，你在坊间设下一席茶会，邀来 '+gs.map(g=>esc(g.name)).join('、')+' 共品灵茶，论诗论道。</p>');
+  teaPartyFlow(gs,0,0);
+}
+function teaPartyFlow(guests,round,score){
+  if(round>=3){
+    for(const g of guests)favorChange(g,rand(2,4),'雅集之谊');
+    const fam=(S.fame=S.fame||{});fam.san=(fam.san||0)+5;
+    if(score>=2){S.flag.insights=(S.flag.insights||0)+1;log('<p class="loot">茶香诗韵皆入道，你于雅集上大放异彩（悟道 +1，散修声望 +5）。</p>')}
+    else log('<p class="sys">众人尽兴而归，你的雅名在坊间流传（散修声望 +5）。</p>');
+    if(typeof questTick==='function')questTick();
+    passTime(1);renderAll();
+    return;
+  }
+  const g=guests[round];
+  const topics=[
+    {t:'品茶论道（心性判定）',dc:14,stat:'wil',txt:'你斟满一盏灵茶，与'+esc(g.name)+'论起茶中道韵。'},
+    {t:'斗诗联句（智慧判定）',dc:14,stat:'int',txt:'墨香氤氲，你与'+esc(g.name)+'以诗会友，联句斗才。'},
+    {t:'抚琴引客（魅力判定）',dc:14,stat:'cha',txt:'席间有人抚琴，你兴致所至，亦吟唱一段。'},
+  ];
+  const tp=pick(topics);
+  openEventModal('🍵 茶会 · 第 '+(round+1)+' 席','<p>'+tp.txt+'</p>',[
+    {txt:tp.t,cls:'primary',fn:()=>{
+      const R=doRoll(tp.stat,tp.dc);
+      log('<p>'+rollBadge(R.r,R.mod,R.t,R.dc)+'</p>');
+      if(R.hit){favorChange(g,4,'雅集投契');log('<p class="good">'+esc(g.name)+'抚掌称妙，宾主尽欢（好感 +4）。</p>');teaPartyFlow(guests,round+1,score+1)}
+      else{favorChange(g,1,'以礼相待');log('<p class="sys">虽不尽兴，亦不失礼数（好感 +1）。</p>');teaPartyFlow(guests,round+1,score)}
+    }},
+    {txt:'🙏 谦逊让贤，只当看客',fn:()=>{favorChange(g,2,'谦谦君子');log('<p>你笑着将话头让给旁人，席间其乐融融（好感 +2）。</p>');teaPartyFlow(guests,round+1,score)}},
+  ]);
+}
+/* ===== v51 结伴云游：选地出行，沿途事件链 ===== */
+function panelTravel(){
+  if(!S){toast('尚未踏入仙途');return}
+  const cands=(S.npcs||[]).filter(n=>n.met&&!n.foe&&(S.companion===n||n.favor>=40));
+  if(!cands.length){toast('需有相熟之人（好感 ≥40）方可结伴云游');return}
+  closePanel();
+  const rows=cands.map((n,i)=>'<div class="item-card"><div class="nm">'+artImg(NPC_ART[n.role],36,36,'avatar')+esc(n.name)+' <span class="tag">'+esc(n.role)+'</span>'+(S.companion===n?' <span class="tag" style="color:#8fd0a0">同行中</span>':'')+'</div><div class="ds">好感 '+(n.favor||0)+' · '+stageName(n.stage)+'</div>'+
+    '<div style="margin-top:6px"><button class="small primary" onclick="travelStart('+i+')">邀其同行</button></div></div>').join('');
+  openPanel('🧭 结伴云游','<p>一人一马是赶路，两人同行才是江湖。邀一位相熟之人，择一处山水，去走一走。</p>'+rows);
+}
+function travelStart(idx){
+  const cands=(S.npcs||[]).filter(n=>n.met&&!n.foe&&(S.companion===n||n.favor>=40));
+  const n=cands[idx];
+  if(!n){toast('人选有变');return}
+  if(n!==S.companion&&n.favor<40){toast('好感不足');return}
+  if(n!==S.companion){const old=S.companion;if(old)old.favor=clamp((old.favor||0)-3,0,100);S.companion=n;}
+  S.flag._travelNpc=n;
+  closePanel();
+  openEventModal('🧭 结伴云游 · 择地','<p>与 <b>'+esc(n.name)+'</b> 商议行程，去往何处？</p>',[
+    {txt:'⛰️ 苍莽山野（采药/遇险）',fn:()=>travelEvent(n,'mountain',1)},
+    {txt:'🌊 灵湖畔（清谈/奇遇）',fn:()=>travelEvent(n,'lake',1)},
+    {txt:'🏮 古城坊市（见识/淘珍）',fn:()=>travelEvent(n,'city',1)},
+  ]);
+}
+function travelEvent(n,dest,step){
+  if(step>2){
+    const f=rand(4,7);
+    favorChange(n,f,'结伴云游');
+    const g=Math.floor(80+rl()*12);
+    S.cult+=g;
+    log('<p class="good">此行归来，你与'+esc(n.name)+'的情谊更深（好感 +'+f+',修为 +'+g+'）。</p>');
+    if(chance(0.3)){const m=pick(['herb','iron','pelt','jade']);S.mats[m]=(S.mats[m]||0)+1;log('<p class="loot">沿途所得：'+MAT_NAMES[m]+' ×1。</p>')}
+    if(typeof questTick==='function')questTick();
+    passTime(3);renderAll();
+    return;
+  }
+  const evs={
+    mountain:[
+      {t:'山道上，一头吊睛妖兽拦路！',opts:[{txt:'⚔️ 并肩迎战',cls:'primary',fn:()=>{startCombat({name:'拦路妖兽',atk:5+rl()*2,def:2+rl(),hp:30+rl()*12},res=>{if(res.win){favorChange(n,4,'并肩作战');log('<p class="good">妖兽伏诛，两人相视一笑。</p>')}else{log('<p class="danger">且战且退，好在无人重伤。</p>')}travelEvent(n,'mountain',2)},true)}},{txt:'🫣 绕道而行',fn:()=>{log('<p>你拉着'+esc(n.name)+'绕道而行，虚惊一场。</p>');travelEvent(n,'mountain',2)}}]},
+      {t:'山谷间灵草丛生，'+esc(n.name)+'眼前一亮：「采些回去？」',opts:[{txt:'🌿 一同采药',fn:()=>{const R=doRoll('int',14);log('<p>两人俯身采药：'+rollBadge(R.r,R.mod,R.t,R.dc)+'</p>');if(R.hit){S.mats.sherb=(S.mats.sherb||0)+1;log('<p class="loot">采得灵草 ×1。</p>')}else{S.mats.herb=(S.mats.herb||0)+1;log('<p class="sys">只采得寻常草药 ×1。</p>')}travelEvent(n,'mountain',3)}},{txt:'🚶 赶路要紧',fn:()=>travelEvent(n,'mountain',3)}]},
+    ],
+    lake:[
+      {t:'湖畔月明，'+esc(n.name)+'望着水面出神。',opts:[{txt:'🌙 并肩赏月，闲谈半宿',cls:'primary',fn:()=>{const R=doRoll('cha',14);log('<p>月下清谈：'+rollBadge(R.r,R.mod,R.t,R.dc)+'</p>');if(R.hit)favorChange(n,5,'月下知己');else favorChange(n,2,'闲谈数语');travelEvent(n,'lake',2)}},{txt:'🎣 垂钓一宿',fn:()=>{const g=rand(30,80);S.stones+=g;log('<p class="loot">两人垂钓一宿，竟得灵石若干（+'+g+'）。</p>');travelEvent(n,'lake',2)}}]},
+      {t:'湖心忽有灵光乍现——是水府遗珍！',opts:[{txt:'🌊 下水一探（身法判定）',cls:'primary',fn:()=>{const R=doRoll('agi',15);log('<p>你跃入湖心：'+rollBadge(R.r,R.mod,R.t,R.dc)+'</p>');if(R.hit){S.mats.jade=(S.mats.jade||0)+1;log('<p class="loot">捞起一枚寒玉！</p>')}else{S.hp=Math.max(1,S.hp-Math.floor(S.maxHp*0.1));log('<p class="danger">水底暗流凶猛，你呛了几口水。</p>')}travelEvent(n,'lake',3)}},{txt:'🙏 君子不夺，静观其变',fn:()=>travelEvent(n,'lake',3)}]},
+    ],
+    city:[
+      {t:'古城茶楼里，说书人正讲着你的故事（添油加醋版）。',opts:[{txt:'😏 现身听书，笑而不语',fn:()=>{favorChange(n,3,'雅趣相投');const g=rand(20,60);S.stones+=g;log('<p>说书人认出你，惊喜不已，执意免了茶钱（灵石 +'+g+'）。</p>');travelEvent(n,'city',2)}},{txt:'🚶 低调路过',fn:()=>travelEvent(n,'city',2)}]},
+      {t:'坊市摊位上，一件古物让'+esc(n.name)+'驻足良久。',opts:[{txt:'💰 买下赠他/她',cls:'primary',fn:()=>{if(S.stones>=200){S.stones-=200;favorChange(n,8,'赠物之谊');log('<p class="good">你买下古物相赠，对方眉眼弯弯（好感 +8，灵石 -200）。</p>')}else{log('<p>你摸了摸口袋，终究作罢。</p>')}travelEvent(n,'city',3)}},{txt:'🚶 各看各的',fn:()=>travelEvent(n,'city',3)}]},
+    ],
+  };
+  const e=evs[dest][Math.min(step-1,evs[dest].length-1)];
+  openEventModal('🧭 云游 · '+(dest==='mountain'?'苍莽山野':dest==='lake'?'灵湖畔':'古城坊市'),'<p>'+e.t+'</p>',e.opts.map(o=>({txt:o.txt,cls:o.cls||'',fn:o.fn})));
+}
+/* ===== v51 NPC 来访：求药/求助/送礼/约游等 10 条 ===== */
+const NPC_VISITS=[
+  {id:'askPill',n:'登门求药',run:n=>{
+    openEventModal('🏮 来访 · 求药','<p>这一日，<b>'+esc(n.name)+'</b>（'+esc(n.role)+'）登门拜访，拱手道：「近来修行伤了经脉，不知道友可有疗伤丹或回春丹相借？」</p>',[
+      {txt:'💊 赠一枚丹药',cls:'primary',fn:()=>{const i=S.items.findIndex(x=>x.use==='heal'||x.use==='cure_neijing');if(i<0){log('<p class="danger">你翻遍行囊并无丹药，只得赧然相告。对方笑道无妨。</p>');favorChange(n,-1,'无力相助');passTime(1);renderAll();return}S.items.splice(i,1);favorChange(n,6,'雪中送炭');log('<p class="good">你赠出一枚丹药，对方千恩万谢（好感 +6）。</p>');passTime(1);renderAll()}},
+      {txt:'🙏 以灵石相赠（100）',fn:()=>{if(S.stones>=100){S.stones-=100;favorChange(n,4,'慷慨解囊');log('<p class="good">你塞去 100 灵石，对方感激不尽（好感 +4）。</p>')}else{log('<p>你囊中羞涩，只能口头安慰几句。</p>')}passTime(1);renderAll()}},
+    ]);
+  }},
+  {id:'askHelp',n:'求助除妖',run:n=>{
+    openEventModal('🏮 来访 · 求助','<p><b>'+esc(n.name)+'</b> 一脸急切：「山脚村落有妖兽作祟，我一人恐难应付，道友可否相助？」</p>',[
+      {txt:'⚔️ 提剑同去',cls:'primary',fn:()=>{startCombat({name:'作祟妖兽',atk:5+rl()*2,def:2+rl(),hp:30+rl()*12},res=>{if(res.win){favorChange(n,6,'拔刀相助');addMerit(3);log('<p class="good">妖兽伏诛，村落得安（好感 +6，功德 +3）。</p>')}else{log('<p class="danger">妖兽遁走，你受了些轻伤。对方连连道歉。</p>')}passTime(2);renderAll()},true)}},
+      {txt:'🙏 指点一处高人去处',fn:()=>{favorChange(n,2,'指路之恩');log('<p>你指点了附近一处散修高人的居所，对方道谢而去（好感 +2）。</p>');passTime(1);renderAll()}},
+    ]);
+  }},
+  {id:'gift',n:'携礼来访',run:n=>{
+    openEventModal('🎁 来访 · 赠礼','<p><b>'+esc(n.name)+'</b> 提着一坛灵酿进门：「前些日子承蒙照拂，特来谢你。」</p>',[
+      {txt:'🎉 收下心意',cls:'primary',fn:()=>{const g=rand(40,100);S.stones+=g;favorChange(n,3,'礼尚往来');log('<p class="loot">对方留下的灵酿与灵石（+'+g+'，好感 +3）。</p>');passTime(1);renderAll()}},
+      {txt:'🍶 开坛共饮',fn:()=>{const R=doRoll('cha',13);log('<p>你摆开酒菜，与对方对饮：'+rollBadge(R.r,R.mod,R.t,R.dc)+'</p>');if(R.hit)favorChange(n,5,'酒逢知己');else favorChange(n,2,'以礼相待');passTime(1);renderAll()}},
+    ]);
+  }},
+  {id:'invite',n:'相约出游',run:n=>{
+    openEventModal('🧭 来访 · 相约','<p><b>'+esc(n.name)+'</b> 兴致勃勃：「近日城外山水正好，道友可愿同游？」</p>',[
+      {txt:'✅ 应约同游',cls:'primary',fn:()=>{favorChange(n,4,'同游之谊');const g=Math.floor(50+rl()*8);S.cult+=g;log('<p class="good">两人游山玩水半日，尽兴而归（好感 +4，修为 +'+g+'）。</p>');passTime(2);renderAll()}},
+      {txt:'😅 婉言推辞',fn:()=>{favorChange(n,-1,'婉拒');log('<p>你以闭关为由婉拒，对方也不恼：「那改日再约。」</p>');passTime(1);renderAll()}},
+    ]);
+  }},
+  {id:'askAdvice',n:'上门请教',run:n=>{
+    openEventModal('📖 来访 · 请教','<p><b>'+esc(n.name)+'</b> 捧着一卷残经上门：「闻说道友于道法颇有见地，可否指点一二？」</p>',[
+      {txt:'🧠 悉心讲解（智慧判定）',cls:'primary',fn:()=>{const R=doRoll('int',14);log('<p>你盘坐讲道：'+rollBadge(R.r,R.mod,R.t,R.dc)+'</p>');if(R.hit){favorChange(n,6,'授业之恩');addWis(1);log('<p class="good">对方豁然开朗（好感 +6，悟性 +1）。</p>')}else{favorChange(n,2,'尽力而为');log('<p class="sys">你讲得浅显，对方谢过而去（好感 +2）。</p>')}passTime(1);renderAll()}},
+      {txt:'🙏 以残经转赠他人',fn:()=>{favorChange(n,1,'牵线之谊');log('<p>你荐了一位更精于此道的高人，对方道谢而去。</p>');passTime(1);renderAll()}},
+    ]);
+  }},
+  {id:'report',n:'带来消息',run:n=>{
+    openEventModal('📜 来访 · 传讯','<p><b>'+esc(n.name)+'</b> 带来一则江湖消息：近来魔道蠢动，坊市药材涨价，多处灵脉异动。</p>',[
+      {txt:'🎁 谢过消息（赠 50 灵石）',cls:'primary',fn:()=>{if(S.stones>=50){S.stones-=50;favorChange(n,3,'礼敬有加');log('<p class="good">你谢过对方（灵石 -50，好感 +3）。</p>')}else{favorChange(n,1,'口头致谢');log('<p>你拱手致谢。</p>')}S.flag.marketShock=Math.floor(S.years);recordWorldEvent('坊市药价波动');passTime(1);renderAll()}},
+      {txt:'🧘 不置可否，送客',fn:()=>{log('<p>你颔首送客，江湖消息真真假假，记下便是。</p>');passTime(1);renderAll()}},
+    ]);
+  }},
+  {id:'feast',n:'宴请赴约',run:n=>{
+    openEventModal('🏮 来访 · 宴请','<p><b>'+esc(n.name)+'</b> 捎来一封请柬：今晚于坊间设宴，务请赏光。</p>',[
+      {txt:'🎉 赴宴',cls:'primary',fn:()=>{addMood(8);favorChange(n,3,'赴宴之谊');log('<p class="good">席间觥筹交错，心境舒畅（心境 +8，好感 +3）。</p>');passTime(1);renderAll()}},
+      {txt:'😴 闭关谢客',fn:()=>{favorChange(n,-2,'扫兴');log('<p>你以闭关为由缺席，对方有些失落。</p>');passTime(1);renderAll()}},
+    ]);
+  }},
+  {id:'duel',n:'上门切磋',run:n=>{
+    openEventModal('⚔️ 来访 · 切磋','<p><b>'+esc(n.name)+'</b> 负剑而来，眼中有战意：「久闻道友身手，今日特来讨教！」</p>',[
+      {txt:'⚔️ 应战（切磋）',cls:'primary',fn:()=>{startCombat({name:n.name+'（切磋）',atk:Math.max(2,(n.atk||5))-1,def:Math.max(1,Math.floor((n.def||2)/2)),hp:Math.max(20,Math.floor((n.hp||30)*0.6))},res=>{if(res.win){favorChange(n,4,'以武会友');log('<p class="good">你技高一筹，对方心服口服（好感 +4）。</p>')}else{log('<p>你来我往，尽兴而止（切磋不分胜负）。</p>')}passTime(1);renderAll()},true)}},
+      {txt:'🙏 谦虚推辞',fn:()=>{favorChange(n,1,'谦和');log('<p>你笑着推辞，对方也不强求，饮茶而去。</p>');passTime(1);renderAll()}},
+    ]);
+  }},
+  {id:'trust',n:'托付兽卵',run:n=>{
+    openEventModal('🥚 来访 · 托付','<p><b>'+esc(n.name)+'</b> 郑重捧出一枚灵光流转的兽卵：「此行凶险，此物托付于你，来日有缘再续。」</p>',[
+      {txt:'🙏 郑重收下',cls:'primary',fn:()=>{addItem({name:'神秘兽卵',type:'egg',quality:3,use:'hatch',desc:'故人所托之卵，灵光流转，可在行囊中使用孵化。',sell:600});favorChange(n,5,'托付之信');log('<p class="loot">你收下兽卵（好感 +5）。</p>');passTime(1);renderAll()}},
+      {txt:'🤝 还予对方，不受所托',fn:()=>{addMerit(2);favorChange(n,2,'持重');log('<p class="good">你婉拒了这份托付，对方肃然起敬（功德 +2，好感 +2）。</p>');passTime(1);renderAll()}},
+    ]);
+  }},
+  {id:'thanks',n:'登门道谢',run:n=>{
+    openEventModal('🙏 来访 · 道谢','<p><b>'+esc(n.name)+'</b> 携礼登门：「当日多亏道友相助，此恩不敢忘。」</p>',[
+      {txt:'🎁 收下谢礼',cls:'primary',fn:()=>{const it=randItem(rand(1,3));addItem(it);favorChange(n,5,'恩义两全');log('<p class="loot">对方奉上「'+it.name+'」（'+QNAMES[it.quality]+'，好感 +5）。</p>');passTime(1);renderAll()}},
+      {txt:'🙏 坚辞不受',fn:()=>{addMerit(3);favorChange(n,6,'高风亮节');log('<p class="good">你坚辞不受，对方愈发敬重（功德 +3，好感 +6）。</p>');passTime(1);renderAll()}},
+    ]);
+  }},
+];
+function maybeNpcVisit(){
+  if(!S)return;
+  const cands=(S.npcs||[]).filter(n=>n.met&&!n.foe&&n.favor>=20);
+  if(!cands.length)return;
+  if(PENDING>0)return;
+  const n=pick(cands);
+  const ev=pick(NPC_VISITS);
+  recordWorldEvent(esc(n.name)+'登门造访');
+  ev.run(n);
+}
 /* 出门游历：偶遇新角色或旧识 */
 function socialWander(){
   closePanel();
