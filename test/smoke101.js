@@ -44,7 +44,7 @@ assert(css.indexOf('html.fx-touch #breakScene.break-scene')>=0,'触屏压暗天�
 
 // T4 版本同步
 const sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
-assert(vm.runInContext('GAME_VERSION',ctx)==='90','版本号 v90');
+assert(vm.runInContext('GAME_VERSION',ctx)==='91','版本号 v91');
 assert(sw.indexOf('xiantu2-v'+vm.runInContext('GAME_VERSION',ctx))>=0,'SW 缓存名与版本号同步');
 
 console.log(fails===0?'smoke101: ALL PASS':'smoke101 FAILS: '+fails);

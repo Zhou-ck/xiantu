@@ -310,3 +310,8 @@ function renderGuide(){
   $('guideDots').textContent=(GUIDE_IDX+1)+' / '+GUIDE_STEPS.length;
 }
 function closeGuide(){$('guide').style.display='none'}
+/* v91 新手指引一键跳过：直接关闭引导，不再逐页点「下一步」 */
+function guideSkip(){
+  closeGuide();
+  try{if(S&&S.flag)S.flag.guideSkipped=true}catch(e){}
+}

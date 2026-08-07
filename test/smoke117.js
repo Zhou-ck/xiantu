@@ -1,4 +1,4 @@
-/* v90 触屏安全动态化（纯透明度动效）冒烟 */
+/* v91 新手指引一键跳过冒烟 */
 const fs=require('fs'),path=require('path'),vm=require('vm');
 const root=path.join(__dirname,'..');
 const js=fs.readFileSync(require('path').join(process.env.TEMP||process.env.TMPDIR||require('os').tmpdir(),'xiantu_game.js'),'utf8');
@@ -19,25 +19,23 @@ const ctx={document,localStorage,window:{},console,setTimeout:fn=>fn(),Math};
 vm.createContext(ctx);vm.runInContext(js,ctx);
 let fails=0;function assert(c,m){if(!c){fails++;console.log('FAIL:',m)}else console.log('ok  :',m)}
 
-vm.runInContext(`S=newState('测试',BACKGROUNDS[0]); PENDING=0;`,ctx);
-const css=fs.readFileSync(path.join(root,'css','main.css'),'utf8');
+vm.runInContext(`S=newState('测试',BACKGROUNDS[0]); S.flag={}; PENDING=0;`,ctx);
 
-// T1 纯透明度动效关键帧（GPU 安全）
-assert(css.indexOf('@keyframes fadeInOnly{from{opacity:0}to{opacity:1}}')>=0,'弹层/日志纯透明度淡入关键帧');
-assert(css.indexOf('@keyframes cardFade{from{opacity:0}to{opacity:1}}')>=0,'卡片纯透明度浮现关键帧');
-assert(css.indexOf('@keyframes barPulse')>=0,'进度条流光呼吸关键帧（仅透明度）');
+// T1 引导页含跳过按钮
+const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
+assert(html.indexOf('id="guideSkip"')>=0&&html.indexOf('onclick="guideSkip()"')>=0,'引导页含「跳过引导」按钮');
+const hj=fs.readFileSync(path.join(root,'js','ui','help.js'),'utf8');
+assert(hj.indexOf('function guideSkip()')>=0,'跳过处理函数存在');
 
-// T2 触屏动态化规则（覆盖 v83 的 animation:none）
-assert(css.indexOf('html.fx-touch .log{animation:fadeInOnly .22s ease-out!important}')>=0,'触屏日志逐条淡入');
-assert(css.indexOf('html.fx-touch .mod-card{animation:cardFade .26s ease-out both!important}')>=0,'触屏模块卡淡入');
-assert(css.indexOf('html.fx-touch #panel.fx-in')>=0&&css.indexOf('animation:fadeInOnly .18s ease-out both!important')>=0,'触屏弹层淡入');
-assert(css.indexOf('html.fx-touch .bar>i::after{display:block!important;transform:none!important')>=0,'触屏进度条流光呼吸（无 transform）');
-assert(css.indexOf('html.fx-touch .qi-ambient{display:block!important;opacity:.65}')>=0,'触屏修炼灵气氛围恢复');
+// T2 跳过即关闭引导
+vm.runInContext(`showGuide(0); window.__b0=document.getElementById('guide').style.display; guideSkip(); window.__b1=document.getElementById('guide').style.display; window.__sk=S.flag.guideSkipped;`,ctx);
+assert(vm.runInContext('window.__b0==="flex"&&window.__b1==="none"',ctx),'跳过引导后引导页关闭');
+assert(vm.runInContext('window.__sk===true',ctx),'跳过状态已记录');
 
 // T3 版本同步
 const sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
 assert(vm.runInContext('GAME_VERSION',ctx)==='91','版本号 v91');
 assert(sw.indexOf('xiantu2-v'+vm.runInContext('GAME_VERSION',ctx))>=0,'SW 缓存名与版本号同步');
 
-console.log(fails===0?'smoke116: ALL PASS':'smoke116 FAILS: '+fails);
+console.log(fails===0?'smoke117: ALL PASS':'smoke117 FAILS: '+fails);
 process.exit(fails?1:0);
