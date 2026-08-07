@@ -18,6 +18,7 @@ var CONTENT_CATALOG = [
   {key:'meditation', name:'顿悟事件',   min:16,  idField:'id', importable:true},
   {key:'partner',    name:'道侣事件',   min:24,  idField:'id', importable:false},
   {key:'sect',       name:'宗门事件',   min:24,  idField:'id', importable:false},
+  {key:'pet',        name:'灵兽事件',   min:10,  idField:'id', importable:false},
   {key:'theme',      name:'赛季主题',   min:16,  idField:'id', importable:false},
   {key:'npc',        name:'NPC 池',     min:26,  idField:'role',importable:false},
   {key:'items',      name:'物品目录',   min:60,  idField:null, importable:false},
@@ -43,6 +44,7 @@ function _contentPool(key){
     case 'meditation': return (typeof MEDITATION_EVENTS!=='undefined'&&Array.isArray(MEDITATION_EVENTS))?MEDITATION_EVENTS:[];
     case 'partner': return (typeof PARTNER_EVENTS!=='undefined'&&Array.isArray(PARTNER_EVENTS))?PARTNER_EVENTS:[];
     case 'sect': return (typeof SECT_EVENTS!=='undefined'&&Array.isArray(SECT_EVENTS))?SECT_EVENTS:[];
+    case 'pet': return (typeof PET_EVENTS!=='undefined'&&Array.isArray(PET_EVENTS))?PET_EVENTS:[];
     case 'theme': return (typeof THEME_EVENTS!=='undefined'&&Array.isArray(THEME_EVENTS))?THEME_EVENTS:[];
     case 'npc': return (typeof NPC_POOL!=='undefined'&&Array.isArray(NPC_POOL))?NPC_POOL:[];
     case 'items': {
@@ -102,7 +104,7 @@ function contentCheck(){
   if(typeof schemaResRefresh==='function')schemaResRefresh();
   var errs=[];
   /* 叙事事件池跨池 id 不得撞车；装备/地图/称号等允许与其它域同名 */
-  var EVENT_CROSS={social:1,story:1,region:1,meditation:1,theme:1,partner:1,sect:1};
+  var EVENT_CROSS={social:1,story:1,region:1,meditation:1,theme:1,partner:1,sect:1,pet:1};
   var crossSeen={};
   CONTENT_CATALOG.forEach(function(c){
     var arr=_contentPool(c.key);

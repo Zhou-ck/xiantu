@@ -200,8 +200,8 @@ function doExplore(rid){
   const trav=attrVal(S,'agi')>=15?Math.max(1,Math.floor(r.days/2)):r.days;
   if(trav<r.days)log('<p class="sys">你身法轻灵，足下生风，此番行程省了一半时日。</p>');
   let trav2=trav;
-  if(S.pet&&petAlive()&&S.pet.talent==='speed')trav2=Math.max(1,Math.floor(trav*0.8)); /* 14.4 迅捷灵兽坐骑 */
-  if(trav2<trav)log('<p class="sys">灵兽驮你而行，日行千里（行程再省两成）。</p>');
+  if(S.pet&&petAlive()&&S.pet.talent==='speed')trav2=Math.max(1,Math.floor(trav*(S.pet.branch==='ji'?0.7:0.8))); /* 14.4 迅捷灵兽坐骑（v98 疾兽再提速） */
+  if(trav2<trav)log('<p class="sys">灵兽驮你而行，日行千里（行程再省'+(S.pet.branch==='ji'?'三成':'两成')+'）。</p>');
   const rIco=(typeof mapLoc==='function'&&mapLoc(r.id))?mapLoc(r.id).icon:'🧭';
   log('<div class="exp-banner"><span class="eb-ico">'+rIco+'</span><div class="eb-tx"><b>'+esc(r.name)+'</b><small>约 '+trav2+' 日 · 凶险 '+d+' · 时令 '+seasonLabel()+'</small></div></div>');
   ra+=insightBonus(S);
@@ -330,7 +330,7 @@ function treasureChain(){
 }
 function maybeInsight(src){
   if(!S)return;
-  let p=0.05+Math.floor(S.luck/30)*0.03+(petAlive()&&S.pet.talent==='luck'?0.04:0);
+  let p=0.05+Math.floor(S.luck/30)*0.03+(petAlive()&&S.pet.talent==='luck'?0.04:0)+(petAlive()&&S.pet.branch==='xuan'?-0.05:0); /* v98 玄兽：探索凶险 -5% */
   p+=insightBonus(S)*0.005;
   if(S.realm>=13)p*=0.85;
   if(demonDoubt(S))p*=0.5; /* 道疑烙印：悟道效率 -50% */
@@ -701,12 +701,21 @@ const DANGER_V=[
     if(S.hp<=1){die('瘴气噬体');return false}
     return '<p class="danger">毒气入体，你挣扎三日方脱困，气血折损过半！</p>'}},
   {run:()=>{log('<p>悬崖边生着一株朱果，娇艳欲滴，崖下深不见底。</p>');
-    logChoices([{txt:'🍒 伸手去摘（暗藏凶险）',fn:()=>{
-      const r=d20();
-      if(r<=2){die('失足坠崖');return}
-      if(r<=8){S.hp=Math.max(1,S.hp-Math.floor(S.maxHp*0.3));log('<p class="danger">指尖堪堪触到朱果，脚下碎石崩落，你坠了数丈，被枯藤挂住，气血大损。</p>')}
-      else{const g=rand(60,150);S.cult+=g;log('<p class="loot">你摘下朱果囫囵吞下，一股暖流直灌丹田，修为 +'+g+'！</p>')}
-      renderAll();}}]);
+    logChoices([
+      {txt:'🍒 伸手去摘（凶险 · 生死判定）',cls:'primary',fn:()=>{
+        const r=d20();
+        if(r<=1){die('失足坠崖');return}
+        if(r<=4){S.hp=Math.max(1,S.hp-Math.floor(S.maxHp*0.35));log('<p class="danger">指尖堪堪触到朱果，脚下碎石崩落，你坠了数丈，被枯藤挂住，气血大损（-35%）。</p>')}
+        else{const g=rand(60,150);S.cult+=g;log('<p class="loot">你摘下朱果囫囵吞下，一股暖流直灌丹田，修为 +'+g+'！</p>')}
+        renderAll();}},
+      {txt:'🧗 系上藤蔓谨慎摘取（身法判定）',fn:()=>{
+        const R=doRoll('agi',15);
+        log('<p>你将藤蔓在腰间缠了三圈，探身崖外：'+rollBadge(R.r,R.mod,R.t,R.dc)+'</p>');
+        if(R.hit){const g=rand(40,100);S.cult+=g;log('<p class="loot">藤蔓绷紧如弓，你稳稳摘下朱果（修为 +'+g+'）。</p>')}
+        else{S.hp=Math.max(1,S.hp-Math.floor(S.maxHp*0.08));log('<p class="danger">藤蔓滑脱，你晃了一晃，惊出一身冷汗，朱果落入崖底（气血-8%）。</p>')}
+        renderAll();}},
+      {txt:'🚶 转身离开，不冒此险',fn:()=>{log('<p>你压下贪念，转身离开。崖下风声呜咽，仿佛在说：命比果贵。</p>');renderAll();}},
+    ]);
     return '<p>你停步崖前。</p>'}},
   {run:()=>{log('<p>你误入一座荒坟，阴风阵阵，一道鬼影扑面而来！</p>');startCombat({name:'荒坟厉鬼',atk:6+rl()*2,def:2+rl(),hp:22+rl()*12});return ''}},
   {run:()=>{log('<p>天色将晚，你借宿一座荒村，村中竟无一人。</p>');const R=doRoll('wil',18);log('<p>心性判定：'+rollBadge(R.r,R.mod,R.t,R.dc)+'</p>');
@@ -766,7 +775,7 @@ const DANGER_V=[
 
 const ENCOUNTERS={
   calm:()=>{const v=pick(CALM_V);const s=v.eff();log('<p>'+v.t+'</p>'+(s?'<p class="good">'+s+'。</p>':''));},
-  herb:()=>{const v=pick(HERB_V);let s=v.eff();if(petAlive()&&S.pet.talent==='herb'){S.mats.herb=(S.mats.herb||0)+1;s+='，灵宠还寻得一株暗藏灵草'};log('<p class="good">'+v.t+' <b>'+s+'</b>。</p>');},
+  herb:()=>{const v=pick(HERB_V);let s=v.eff();if(petAlive()&&S.pet.talent==='herb'){if(S.pet.branch==='yao'){S.mats.herb=(S.mats.herb||0)+2;s+='，药兽掘出两株灵草'}else if(S.pet.branch==='bao'){S.mats.sherb=(S.mats.sherb||0)+1;s+='，宝兽衔来一株灵草'}else{S.mats.herb=(S.mats.herb||0)+1;s+='，灵宠还寻得一株暗藏灵草'}}log('<p class="good">'+v.t+' <b>'+s+'</b>。</p>');},
   beast:()=>{
     if(exHateAmbush())return '';
     const foe=S.npcs.find(n=>n.foe);

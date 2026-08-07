@@ -18,10 +18,10 @@ assert(sn>=24,'宗门池 ≥24（'+sn+'）');
 // 池内 id 去重 + b04 前缀
 const pids=vm.runInContext('PARTNER_EVENTS.map(e=>e.id)',ctx);
 assert(new Set(pids).size===pids.length,'道侣 id 无重复');
-assert(pids.every(id=>/^b(04|10)_/.test(String(id))),'道侣 id 全带 b04_/b10_ 批次前缀');
+assert(pids.every(id=>/^b(04|10|11)_/.test(String(id))),'道侣 id 全带 b04_/b10_ 批次前缀');
 const sids=vm.runInContext('SECT_EVENTS.map(e=>e.id)',ctx);
 assert(new Set(sids).size===sids.length,'宗门 id 无重复');
-assert(sids.every(id=>/^b(04|10)_/.test(String(id))),'宗门 id 全带 b04_/b10_ 批次前缀');
+assert(sids.every(id=>/^b(04|10|11)_/.test(String(id))),'宗门 id 全带 b04_/b10_ 批次前缀');
 
 // stage 分布：结缡后 ≥8、未结 ≥4
 const married=vm.runInContext(`PARTNER_EVENTS.filter(e=>e.stage==='married').length`,ctx);

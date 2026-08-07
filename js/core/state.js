@@ -159,6 +159,8 @@ function cultMult(s){
   if(se===0)m*=1.05;
   if(se===3)m*=0.95;
   if(s.pet&&s.pet.faint<=0&&(s.pet.talent==='root'||s.pet.talent==='speed'))m*=1.05;
+  /* v98 进化分支：风兽/灵兽 修炼 +3% */
+  if(s.pet&&s.pet.faint<=0&&(s.pet.branch==='feng'||s.pet.branch==='ling'))m*=1.03;
   /* 问题 1 v2（产出锚定版）：大境界修炼加成 —— 闭关基线随境界抬升（渡劫 ×3.8），
      使闭关在后期仍是有意义的主产出；所有锚定闭关的奖励（战斗 2×、离线 0.65×）同步缩放 */
   m*=1+0.35*bigStage(s.realm);

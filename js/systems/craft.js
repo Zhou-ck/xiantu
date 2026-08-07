@@ -117,6 +117,8 @@ function craftBonus(){
   if(S.prof==='array'&&S.bg.traits.some(t=>t.id==='scholar'))b+=2;
   if(S.prof==='forge'&&S.bg.traits.some(t=>t.id==='smith'))b+=2;
   if(S.prof==='alchemy'&&S.pet&&S.pet.faint<=0&&S.pet.talent==='alchemy')b+=1;
+  /* v98 进化分支：丹兽炼丹 +2 / 器兽炼器 +2 */
+  if(S.pet&&S.pet.faint<=0){if(S.pet.branch==='dan'&&S.prof==='alchemy')b+=2;if(S.pet.branch==='qi'&&S.prof==='forge')b+=2;}
   if(elemCraftBonus(S.prof))b+=Math.floor(elemCraftBonus(S.prof)*100); /* 8.1 灵根纯度：火炼丹/金炼器/木种药/水制符/土布阵 +15 */
   if(S.flag.dao==='dan')b+=15; /* 丹道问道：炼丹成功率 +15% */
   if(S.flag.caveRooms&&S.flag.caveRooms.dan&&S.prof==='alchemy')b+=4; /* 11 丹房 */

@@ -885,8 +885,39 @@ function petGain(n){
     p.exp-=petLevelNeed(p);p.level++;
     p.bonus=1+Math.floor(p.level/5);
     log('<p class="good">'+p.name+' 升级了（'+p.species+' '+p.level+'级，助战+'+p.bonus+'）。</p>');
-    if(p.level%10===0){p.form++;log('<p class="loot">🎉 '+p.name+' 蜕变进化，化作 '+p.form+' 阶灵兽！</p>')}
+    if(p.level%10===0){
+      p.form++;
+      const st=petFormStage(p);
+      log('<p class="loot">🎉 '+p.name+' 蜕变进化，化作 '+st.n+'（'+p.form+' 阶）！</p>');
+      /* v98 进化分支：首次蜕变（10 级）二选一 */
+      if(p.form===2&&!p.branch){petBranchChoice();return}
+    }
   }
+}
+/* v98 灵兽进化分支：10 级蜕变时按天赋二选一 */
+function petBranchChoice(){
+  const p=S.pet;if(!p)return;
+  const f=petFormStage(p).f;
+  const br=f.branch;
+  if(!br){petPanel();return}
+  const a=br.a,b=br.b;
+  const descA=a[2],descB=b?b[2]:'';
+  openEventModal('🐾 进化分支 · '+a[1]+'/'+(b?b[1]:''),'<p>'+p.name+' 的灵光渐渐凝实，两道进化之路在它眼前展开——此择不可逆。</p>',[
+    {txt:a[1]+'——'+descA,cls:'primary',fn:()=>{
+      p.branch=a[0];
+      if(a[0]==='fu')S.luck=clamp((S.luck||0)+2,1,100);
+      if(a[0]==='gen')S.root=clamp((S.root||0)+2,1,100);
+      log('<p class="loot">'+p.name+' 选择了 <b>'+a[1]+'</b>——'+descA+'。');
+      passTime(1);renderAll();petPanel();
+    }},
+    ...(b?[{txt:b[1]+'——'+descB,fn:()=>{
+      p.branch=b[0];
+      if(b[0]==='fu')S.luck=clamp((S.luck||0)+2,1,100);
+      if(b[0]==='gen')S.root=clamp((S.root||0)+2,1,100);
+      log('<p class="loot">'+p.name+' 选择了 <b>'+b[1]+'</b>——'+descB+'。');
+      passTime(1);renderAll();petPanel();
+    }}]:[]),
+  ]);
 }
 function petPanel(){
   if(!S.pet){openPanel('🐾 灵兽','<p>你尚无灵兽相伴。</p><p>可在<b>坊市·奇珍拍卖</b>或探索机缘中获得兽卵，于<b>行囊</b>中点「使用」孵化。</p>');return}
@@ -894,15 +925,19 @@ function petPanel(){
   const lvNeed=petLevelNeed(p);
   const pct=clamp(Math.floor((p.exp||0)/lvNeed*100),0,100);
   const art=p.species==='灵狐'?ART.foxPet:'';
+  const st=petFormStage(p);
+  const brDesc=petBranchDesc(p);
+  const evoLine=PET_FORMS[p.talent]?(PET_FORMS[p.talent].stages||[]).map((n,i)=>'<span'+(i===Math.min(p.form,PET_FORMS[p.talent].stages.length-1)?' style="color:#e8c86a"':'')+'>'+n+'</span>').join(' → '):'';
   openPanel('🐾 灵兽 · '+esc(p.name),
     '<div class="pet-card"><div class="pet-img">'+(art?'<img class="pet-portrait" src="'+art+'" alt="" loading="lazy">':'<span class="pet-emoji">🐾</span>')+'</div>'+
-    '<div class="pet-info"><div class="nm">'+esc(p.name)+' <span class="tag">'+esc(p.species)+'</span> <span class="tag">'+p.form+' 阶</span></div>'+
-    '<div class="ds">天赋：'+esc(PET_TALENT_DESC[p.talent]||'')+' · 助战加成：+'+petCombatBonus()+'</div>'+
+    '<div class="pet-info"><div class="nm">'+esc(p.name)+' <span class="tag">'+esc(p.species)+'</span> <span class="tag">'+st.n+' · '+p.form+' 阶</span>'+(brDesc?' <span class="tag" style="color:#e8c86a">'+brDesc.split('：')[0]+'</span>':'')+'</div>'+
+    '<div class="ds">天赋：'+esc(PET_TALENT_DESC[p.talent]||'')+' · 助战加成：+'+petCombatBonus()+(brDesc?'<br>进化分支：'+brDesc:'')+'</div>'+
+    (evoLine?'<div class="pet-evo">'+evoLine+'</div>':'')+
     '<div class="bar"><i style="width:'+pct+'%"></i></div>'+
     '<div class="pet-exp">成长 '+p.exp+' / '+lvNeed+'（'+pct+'%）</div>'+
     '<div class="pet-status">'+(p.faint>0?'<span class="danger">重伤休养中，还需 '+p.faint+' 日</span>':'<span class="good">精神抖擞，时刻待命</span>')+'</div>'+
     '<div class="pet-btns"><button onclick="feedPet()">🍖 喂食灵石（50）</button>'+(p.faint<=0?'<button onclick="petTrain()">⚔️ 放养历练 · 15日</button>':'')+'</div></div></div>'+
-    '<p style="font-size:12.5px;color:#6f7a94">喂食与历练可提升灵兽等级；助战加成随等阶提升，战斗与探索时自动生效。</p>');
+    '<p style="font-size:12.5px;color:#6f7a94">喂食与历练可提升灵兽等级；10 级时灵兽将迎来首次蜕变，可择一道进化分支；助战加成随等阶提升，战斗与探索时自动生效。</p>');
 }
 function feedPet(){
   if(!S.pet){toast('没有灵兽');return}
@@ -928,6 +963,8 @@ function petTrain(){
     log('<p class="danger">'+p.name+' 受了重伤，被山民送回。它需要休养 30 日。</p>');
   }
   passTime(15);renderAll();
+  /* v98 灵兽事件池：历练归来后概率触发 */
+  if(R.hit&&chance(0.35)&&typeof runPetEvent==='function')runPetEvent();
 }
 function maybeBreakHint(){
   const nxt=S.realm+1;

@@ -63,7 +63,8 @@ function rollPet(){
 const PET_TALENT_DESC={luck:'通灵 · 机缘+5',combat:'战意 · 战斗+2',herb:'寻药 · 采药+1',speed:'迅捷 · 修炼+5%',alchemy:'丹道 · 炼丹+1',root:'灵根 · 修炼+5%'};
 function petAlive(){return !!(S.pet&&S.pet.faint<=0)}
 function petLevelNeed(p){return p.level*20}
-function petCombatBonus(){return petAlive()?S.pet.bonus:0}
+/* v98 进化分支：狂兽助战 +1 */
+function petCombatBonus(){return petAlive()?(S.pet.bonus||0)+(S.pet.branch==='kuang'?1:0):0}
 
 const TITLES=[
   {id:'kills10',name:'初露锋芒',desc:'累计击杀 10 敌，攻击 +1',check:s=>s.kills>=10,effect:s=>{s.flag.tAttack=(s.flag.tAttack||0)+1}},
@@ -175,7 +176,7 @@ function fameAxis(){
   if(m>=s)return 'mo';
   return 'san';
 }
-function fameDiscount(){return Math.min(15,Math.floor(totalFame()/90))}
+function fameDiscount(){return Math.min(20,Math.floor(totalFame()/90)+(petAlive()&&S.pet.branch==='xiang'?5:0))} /* v98 祥兽：坊市折扣 +5% */
 function fameLabel(){
   const f=S&&S.fame||{};
   const t=totalFame();
