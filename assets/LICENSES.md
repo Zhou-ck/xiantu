@@ -117,5 +117,7 @@
 | assets/scenes/tianmen.jpg | AnyaIGC gpt-image-2（用户授权，备用额度） | 生成即所有，可商用免署名 | 无 | 主线·人间相送（v57） | 2026-08-07 |
 | assets/scenes/swordtomb.jpg | AnyaIGC gpt-image-2（用户授权，备用额度） | 生成即所有，可商用免署名 | 无 | 主线·剑冢回响（v58） | 2026-08-07 |
 | assets/scenes/warcry.jpg | AnyaIGC gpt-image-2（用户授权，备用额度） | 生成即所有，可商用免署名 | 无 | 主线·战魂誓约（v58） | 2026-08-07 |
+| assets/scenes/sectnight.jpg | AnyaIGC gpt-image-2（用户授权，备用额度） | 生成即所有，可商用免署名 | 无 | 主线·山门夜哨（v59） | 2026-08-07 |
+| assets/scenes/seal.jpg | AnyaIGC gpt-image-2（用户授权，备用额度） | 生成即所有，可商用免署名 | 无 | 主线·封魔印成（v59） | 2026-08-07 |
 | assets/modules/world_tower.jpg | AnyaIGC gpt-image-2（用户授权，备用额度） | 生成即所有，可商用免署名 | 无（视觉抽查） | 六页导航·模块图卡 | 2026-08-07 |
 

@@ -96,6 +96,12 @@ const MAIN_STORY=[
         {txt:'🔍 拓印密语，收好证物',cls:'primary',fx:{insight:1,once:'m4s4_a',flag:{scriptRubbing:1}}},
         {txt:'🧘 于藏经阁静坐，参悟片刻',fx:{cult:220}},
       ]},
+     {type:'story',id:'m4s5',title:'山门夜哨',go:'quests',
+      lines:['宗门外松林夜哨，你握着断剑信物守到三更。剑身忽然发烫——那柄偷自剑宗的魔剑，正在靠近。','一名蒙面人自阴影中走出，怀里鼓鼓囊囊。断剑在你掌心低鸣，如认出了旧敌。'],
+      opts:[
+        {txt:'🗡️ 持断剑现身，喝破其行藏',cls:'danger',fx:{fight:{name:'魔道暗桩',atk:11,def:5,hp:55,elem:'dark',style:'rapid',boss:true},winFx:{merit:4,stones:150,flag:{spyCaught:1}}}},
+        {txt:'🤫 尾随其后，摸清接应之人',fx:{insight:1,once:'m4s5_b'}},
+      ]},
    ]},
   {id:'ch5',icon:'⚔️',title:'荒原魔影',summary:'古战场战魂低语，魔潮源头浮出水面。',realm:5,
    steps:[
@@ -137,6 +143,12 @@ const MAIN_STORY=[
         {txt:'💠 以残玉触碰裂隙幻影',cls:'primary',fx:{cultPct:2,flag:{keyFragment:1}}},
         {txt:'🧘 定住心神，默诵天衍经',fx:{insight:1,once:'m6s4_b'}},
       ]},
+     {type:'story',id:'m6s5',title:'封魔印成',go:'quests',
+      lines:['你以真元炼化残玉中的封魔印，印上古文逐一亮起，如群星归位。裂隙的阴风被压回三分。','守关古修的残影郑重一礼：「印成，则裂隙可守百年；印碎，则魔潮无阻。此印与你的命数相连——它认主了。」'],
+      opts:[
+        {txt:'🔏 歃血立契，与印同命',cls:'primary',fx:{flag:{sealBound:1},luck:1,insight:1,once:'m6s5_a'}},
+        {txt:'🤝 以道心立约，不用血契',fx:{merit:4,flag:{sealBound:2}}},
+      ]},
    ]},
   {id:'ch7',icon:'⛩️',title:'天衍祭坛',summary:'祭坛异动，试炼塔顶暗藏天道碎片。',realm:7,
    steps:[
@@ -153,6 +165,12 @@ const MAIN_STORY=[
       opts:[
         {txt:'💠 收下天道碎片',cls:'primary',fx:{luck:1,flag:{heavenShard:1}}},
         {txt:'🧐 先问清碎片来历再取',fx:{insight:1,once:'m7s3_b'}},
+      ]},
+     {type:'story',id:'m7s4',title:'星图刻痕',go:'quests',
+      lines:['碎片与残玉融合后，祭坛地面的刻痕忽然亮起，连成一片星图——三百年前，有人以血为墨，在祭坛上记下了九幽裂隙的九重结构。','星图的尽头指向一处空白，像是被人刻意抹去：「第九重之下……锁着不该存在的东西。」'],
+      opts:[
+        {txt:'🔭 拓下星图，补全空白一角',cls:'primary',fx:{insight:1,flag:{starMap:1},merit:2}},
+        {txt:'🧘 闭目观想星图，静待其变',fx:{cult:120,insight:1,once:'m7s4_b'}},
       ]},
    ]},
   {id:'ch8',icon:'🌪️',title:'九幽裂隙',summary:'裂隙镇压，无面战魂，天机老人道破最后一步。',realm:8,

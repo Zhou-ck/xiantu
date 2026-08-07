@@ -106,6 +106,17 @@ const STORY_EVENTS=[
   {id:'st_v58_8',cat:'danger',weight:2,title:'荒村夜哭',t:'一座荒村，入夜后隐隐传来哭声。村口井边坐着个披发的白衣女子。',opts:[{txt:'🕯️ 秉烛上前探问',cls:'primary',fx:{merit:4}},{txt:'⚔️ 疑为邪祟，拔剑相向',fx:{fight:{name:'井边怨灵',atk:8,def:3,hp:40,elem:'dark',style:'guard'},winFx:{merit:3}}}]},
   {id:'st_v58_9',cat:'danger',weight:2,title:'山火',t:'远处山火蔓延，浓烟滚滚，风向却正朝着一座村庄吹去。',opts:[{txt:'🌊 御水灭火，护村而行',cls:'primary',fx:{merit:6,stones:40}},{txt:'🚶 绕路而行',fx:{hp:-10,karma:3}}]},
   {id:'st_v58_10',cat:'danger',weight:2,title:'断崖裂隙',t:'断崖上裂开一道新缝，缝隙深处传来低沉的呼吸声，仿佛有什么东西在岩层下翻身。',opts:[{txt:'⚔️ 探入裂隙',cls:'danger',fx:{fight:{name:'岩下蛰物',atk:9,def:4,hp:48,elem:'earth',style:'burst'},winFx:{mat:{jade:1}}}},{txt:'🚶 记下方位，从长计议',fx:{insight:1,once:'st_v58_10'}}]},
+  /* —— v59 扩充（10 条）—— */
+  {id:'st_v59_1',cat:'calm',weight:2,title:'晒盐',t:'海边盐田如镜，晒盐人赤脚走在田埂上，身后跟着一串深深浅浅的脚印。',opts:[{txt:'👣 陪他走一段田埂',cls:'primary',fx:{mood:4}},{txt:'🧂 帮忙收一筐盐',fx:{merit:2,stones:20}}]},
+  {id:'st_v59_2',cat:'calm',weight:2,title:'老井',t:'村里老井的水格外甜，打水的人说这井从没枯过——井底有一块刻着「谢」字的青石。',opts:[{txt:'💧 打一瓢尝尝',cls:'primary',fx:{mood:3,cult:40}},{txt:'🪨 看看那块青石',fx:{merit:1,insight:1,once:'st_v59_2'}}]},
+  {id:'st_v59_3',cat:'herb',weight:2,title:'岩蜜',t:'崖壁缝隙里渗出一线金黄蜜浆，甜香混着山岩的气息。',opts:[{txt:'🍯 以竹筒接取',cls:'primary',fx:{mat:{sherb:1}}},{txt:'🐝 循蜜寻蜂巢',fx:{mat:{herb:2}}}]},
+  {id:'st_v59_4',cat:'herb',weight:2,title:'灵草籽',t:'风过处，几粒萤火般的草籽飘落掌心，认得是灵草的种子。',opts:[{txt:'🌱 收下草籽，回洞府种下',cls:'primary',fx:{mat:{sherb:1},mood:2}},{txt:'🌬️ 任其随风去',fx:{merit:1}}]},
+  {id:'st_v59_5',cat:'rare',weight:2,title:'水月镜',t:'湖心倒映着一轮完整的月亮，水面却无一丝风。传言此湖每逢月圆，可见「前尘」。',opts:[{txt:'🌕 静观水月',cls:'primary',fx:{insight:1,luck:1,once:'st_v59_5'}},{txt:'💧 掬一捧湖水',fx:{cult:80}}]},
+  {id:'st_v59_6',cat:'rare',weight:2,title:'古剑鞘',t:'枯藤下露出一段剑鞘，鞘上花纹繁复，非当世之物。',opts:[{txt:'🗡️ 拔出试锋',cls:'primary',fx:{mat:{iron:1},insight:1,once:'st_v59_6'}},{txt:'🙏 埋回原处，留待有缘',fx:{merit:2}}]},
+  {id:'st_v59_7',cat:'epic',weight:1,title:'天外飞石',t:'一颗流星划破夜空，坠在百里外的山坳。天亮前，你或许能赶到。',opts:[{txt:'🧭 连夜赶去',cls:'primary',fx:{mat:{jade:1},luck:1,once:'st_v59_7'}},{txt:'🌠 就地观星，不争此物',fx:{insight:1,cult:100}}]},
+  {id:'st_v59_8',cat:'danger',weight:2,title:'雾中灯',t:'浓雾里亮着一盏惨白的灯，灯下立着一道模糊人影，正朝你招手。',opts:[{txt:'🕯️ 提灯上前探看',cls:'primary',fx:{merit:4}},{txt:'⚔️ 疑为引路邪祟，拍灯示警',fx:{fight:{name:'雾中提灯人',atk:8,def:3,hp:42,elem:'dark',style:'guard'},winFx:{merit:3,stones:50}}}]},
+  {id:'st_v59_9',cat:'danger',weight:2,title:'夜半敲门',t:'夜宿破庙，三更时分，门外响起不紧不慢的敲门声——可这荒山，哪来的过路人？',opts:[{txt:'🧘 装作未闻，守住心神',cls:'primary',fx:{insight:1,once:'st_v59_9'}},{txt:'🚪 开门一探',fx:{fight:{name:'叩门夜影',atk:9,def:4,hp:46,elem:'dark',style:'burst'},winFx:{stones:60}}}]},
+  {id:'st_v59_10',cat:'danger',weight:2,title:'毒瘴谷',t:'谷口立着褪色的木牌：「毒瘴入骨，勿入」。谷中却隐约有灵光闪烁。',opts:[{txt:'🌿 闭息入谷一探',cls:'danger',fx:{fight:{name:'瘴谷毒蟾',atk:8,def:3,hp:40,elem:'wood',style:'poison'},winFx:{mat:{sherb:1}}}},{txt:'🚶 木牌既立，转身便走',fx:{hp:-8}}]},
 ];
 /* v48 赛季主题：风 / 雷 / 火 / 水（每 3 游戏年轮换） */
 const THEMES=[
