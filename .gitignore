@@ -5,6 +5,10 @@ Thumbs.db
 *.log
 .vscode/
 
+# E2E 产物
+test/e2e/test-results/
+test/e2e/playwright-report/
+
 # 开发/修改类文档：仅留在本地，不推送到公开仓库
 接管文档.md
 深化文档.md
@@ -15,3 +19,4 @@ Thumbs.db
 继续开发档案.md
 机制问题与改进建议.md
 开发文档.md
+图形化升级规划.md

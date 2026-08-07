@@ -45,34 +45,69 @@ function aiNpcChat(n){
 }
 
 /* ======================================================
-  v46 AI 扩写流水线（本地模式）
-  生成 → schema 校验 → 人工审核入库（并入 DATA.events）
-  无 AI / 网络失败 / 非法输出 → 本地模板兜底，保证管线离线可用
+  v46/v92 AI 扩写流水线（本地模式）
+  生成 → schema/目录校验 → 人工审核入库
+  池：social / story / meditation；入库走 contentImport
 ====================================================== */
-function aiProduceContent(kind,prompt){
+let _aiDraft=null;
+let _aiPool='social';
+let _aiKind='chat';
+
+function aiProduceContent(poolKey,kind,prompt){
+  const sys={
+    social:'你是《仙途》文字修仙游戏的内容策划。请只输出一个 JSON 对象（不要 markdown），作为一条社交事件。字段：{id,n,type,t,opts:[{txt,cls?}]}。type 仅限 visit/invite/chat；opts 至少 1 项；正文 t 为 30-60 字古典仙侠文风；不写数值奖励。',
+    story:'你是《仙途》内容策划。只输出一个 JSON：{id,cat,weight,title,t,opts:[{txt,cls?,fx?}]}。cat 仅限 calm/herb/rare/epic/danger；weight 为 1 或 2；opts 至少 1 项；fx 仅可用 stones/cult/merit/mood/insight/luck 等简单数值，不要新物品名。',
+    meditation:'你是《仙途》内容策划。只输出一个 JSON：{id,t,opts:[{txt,fx?}]}。t 为闭关顿悟场景 40-80 字；opts 2 项；fx 可用 cult/dao/insight/mood/imp/luck/wil 简单数值。',
+  };
   return aiCall([
-    {role:'system',content:'你是《仙途》文字修仙游戏的内容策划。请只输出一个 JSON 对象（不要 markdown 代码块），作为一条社交事件条目。字段：{id,n,type,t,opts:[{txt,cls?}]}。type 仅限 visit/invite/chat；opts 至少 1 项；正文 t 为 30-60 字古典仙侠文风；不写数值、不写物品奖励、不写超出字段的内容。'},
-    {role:'user',content:'类型：'+kind+'\n要求：'+prompt},
+    {role:'system',content:sys[poolKey]||sys.social},
+    {role:'user',content:'类型/子类：'+(kind||poolKey)+'\n要求：'+(prompt||'随机一条')},
   ],400);
 }
-function parseAiEvent(txt){
+function parseAiEvent(txt,poolKey){
   if(!txt)return {ok:false,err:'AI 无输出'};
   try{
     const m=String(txt).match(/\{[\s\S]*\}/);
     const obj=JSON.parse(m?m[0]:String(txt));
-    return validateAiEvent(obj);
+    return validateAiEntry(obj,poolKey||'social');
   }catch(e){return {ok:false,err:'JSON 解析失败：'+e.message}}
 }
-function validateAiEvent(obj){
+function validateAiEvent(obj){return validateAiEntry(obj,'social')}
+function validateAiEntry(obj,poolKey){
   const errs=[];
   if(!obj||typeof obj!=='object')return {ok:false,err:'不是对象'};
   if(typeof obj.id!=='string'||!obj.id)errs.push('缺 id');
-  if(typeof obj.n!=='string'||!obj.n)errs.push('缺 n');
-  if(['visit','invite','chat'].indexOf(obj.type)<0)errs.push('type 非法');
-  if(!Array.isArray(obj.opts)||!obj.opts.length)errs.push('opts 为空');
+  if(poolKey==='social'){
+    if(typeof obj.n!=='string'||!obj.n)errs.push('缺 n');
+    if(['visit','invite','chat'].indexOf(obj.type)<0)errs.push('type 非法');
+    if(!Array.isArray(obj.opts)||!obj.opts.length)errs.push('opts 为空');
+  }else if(poolKey==='story'){
+    if(['calm','herb','rare','epic','danger'].indexOf(obj.cat)<0)errs.push('cat 非法');
+    if(typeof obj.title!=='string'||!obj.title)errs.push('缺 title');
+    if(typeof obj.t!=='string'||!obj.t)errs.push('缺 t');
+    if(!Array.isArray(obj.opts)||!obj.opts.length)errs.push('opts 为空');
+    if(obj.weight==null)obj.weight=2;
+  }else if(poolKey==='meditation'){
+    if(typeof obj.t!=='string'||!obj.t)errs.push('缺 t');
+    if(!Array.isArray(obj.opts)||!obj.opts.length)errs.push('opts 为空');
+  }else errs.push('未知池 '+poolKey);
   return errs.length?{ok:false,err:errs.join('；')}:{ok:true,entry:obj};
 }
-function localEventDraft(kind,prompt){
+function localEventDraft(poolKey,kind,prompt){
+  /* 兼容旧签名 localEventDraft(kind,prompt)：kind=visit|invite|chat */
+  if(arguments.length<=2&&['visit','invite','chat'].indexOf(poolKey)>=0){
+    prompt=kind;kind=poolKey;poolKey='social';
+  }
+  const id='draft_'+Math.floor(Math.random()*1e8).toString(36);
+  if(poolKey==='story'){
+    const cat=['calm','herb','rare','epic','danger'].indexOf(kind)>=0?kind:'calm';
+    const t=prompt||'山道转角，你遇见一桩小事，心中微有所感。';
+    return {ok:true,entry:{id:id,cat:cat,weight:2,title:'本地草稿·'+cat,t:t,opts:[{txt:'驻足片刻',cls:'primary',fx:{cult:50}},{txt:'继续赶路',fx:{}}]}};
+  }
+  if(poolKey==='meditation'){
+    const t=prompt||'入定中灵光一闪，你捕捉到一线真意。';
+    return {ok:true,entry:{id:id,t:t,opts:[{txt:'静观其变',fx:{insight:1}},{txt:'纳入修为',fx:{cult:80}}]}};
+  }
   const pool=[
     '一位故人捎来口信，约你三日后于山亭相见。',
     '云游道人路过山门，讲了一则上古轶闻，听得你心驰神往。',
@@ -81,38 +116,64 @@ function localEventDraft(kind,prompt){
   ];
   const t=prompt||pick(pool);
   const type=kind==='invite'?'invite':kind==='visit'?'visit':'chat';
-  return {ok:true,entry:{id:'draft_'+Math.floor(Math.random()*1e8).toString(36),n:'本地草稿·'+({visit:'来访',invite:'约见',chat:'闲谈'}[type]||'闲谈'),type:type,t:t,opts:[{txt:'欣然应约',cls:'primary'},{txt:'婉言谢绝'}]}};
+  return {ok:true,entry:{id:id,n:'本地草稿·'+({visit:'来访',invite:'约见',chat:'闲谈'}[type]||'闲谈'),type:type,t:t,opts:[{txt:'欣然应约',cls:'primary'},{txt:'婉言谢绝'}]}};
 }
-function aiContentPipeline(kind,prompt){
-  if(aiEnabled())return aiProduceContent(kind,prompt).then(parseAiEvent).catch(e=>({ok:false,err:String(e&&e.message||e)}));
-  return Promise.resolve(localEventDraft(kind,prompt));
+function aiContentPipeline(poolKey,kind,prompt){
+  /* 兼容旧签名：aiContentPipeline(kind,prompt) */
+  if(arguments.length<=2&&['visit','invite','chat'].indexOf(poolKey)>=0){
+    prompt=kind;kind=poolKey;poolKey='social';
+  }
+  const pk=poolKey||'social';
+  if(aiEnabled())return aiProduceContent(pk,kind,prompt).then(function(txt){return parseAiEvent(txt,pk)}).catch(function(e){return {ok:false,err:String(e&&e.message||e)}});
+  return Promise.resolve(localEventDraft(pk,kind,prompt));
 }
-function aiReviewImport(entry){
+function aiReviewImport(entry,poolKey){
   if(!entry||!entry.id)return {ok:false,err:'空条目'};
-  const v=validateAiEvent(entry);
+  const pk=poolKey||_aiPool||'social';
+  const v=validateAiEntry(entry,pk);
   if(!v.ok)return v;
+  if(typeof contentImport==='function'){
+    const r=contentImport(pk,[entry]);
+    if(r.skipped&&!r.added)return {ok:false,err:'id 重复：'+entry.id};
+    if(!r.ok)return {ok:false,err:(r.errors&&r.errors.join('；'))||r.err||'入库失败'};
+    return {ok:true,count:r.count,id:entry.id,pool:pk,added:r.added};
+  }
   DATA.events=DATA.events||[];
-  if(DATA.events.some(e=>e.id===entry.id))return {ok:false,err:'id 重复：'+entry.id};
+  if(DATA.events.some(function(e){return e.id===entry.id}))return {ok:false,err:'id 重复：'+entry.id};
   DATA.events.push(entry);
-  return {ok:true,count:DATA.events.length,id:entry.id};
+  return {ok:true,count:DATA.events.length,id:entry.id,pool:'social'};
 }
-/* 内容生产面板：类型 + 提示词 → 生成 → 校验 → 入库 */
-let _aiDraft=null;
 function panelAiStudio(){
+  const poolLabel={social:'社交',story:'故事',meditation:'顿悟'}[_aiPool]||_aiPool;
+  const kindRow=_aiPool==='social'
+    ?'<div class="row"><button class="small'+(_aiKind==='chat'?' primary':'')+'" onclick="aiSetKind(\'chat\')">💬 闲谈</button>'+
+      '<button class="small'+(_aiKind==='visit'?' primary':'')+'" onclick="aiSetKind(\'visit\')">🚪 来访</button>'+
+      '<button class="small'+(_aiKind==='invite'?' primary':'')+'" onclick="aiSetKind(\'invite\')">📜 约见</button></div>'
+    :(_aiPool==='story'
+      ?'<div class="row"><button class="small" onclick="aiSetKind(\'calm\')">平静</button><button class="small" onclick="aiSetKind(\'herb\')">采药</button><button class="small" onclick="aiSetKind(\'rare\')">奇遇</button><button class="small" onclick="aiSetKind(\'epic\')">奇缘</button><button class="small" onclick="aiSetKind(\'danger\')">凶险</button></div>'
+      :'<p style="font-size:12px;color:#6f7a94">顿悟池无需子类型。</p>');
+  const sum=(typeof contentSummary==='function')?contentSummary():null;
+  const sumLine=sum?'<p style="font-size:12px;color:#8a94a8">社交 '+(sum.social?sum.social.count:'?')+' · 故事 '+(sum.story?sum.story.count:'?')+' · 顿悟 '+(sum.meditation?sum.meditation.count:'?')+' · 事件总量 '+(sum._totalEvents||'?')+'</p>':'';
   openPanel('🤖 内容生产（AI 扩写）',
-    '<p>生成一条社交事件：AI 出稿 → 校验 → 人工确认入库（本地模式无 AI 时生成模板草稿）。</p>'+
-    '<label style="display:block;font-size:12.5px">事件类型</label>'+
-    '<div class="row"><button class="small primary" onclick="aiSetKind(\'chat\')">💬 闲谈</button>'+
-    '<button class="small" onclick="aiSetKind(\'visit\')">🚪 来访</button>'+
-    '<button class="small" onclick="aiSetKind(\'invite\')">📜 约见</button></div>'+
+    '<p>生成 → 校验 → 人工确认入库。无 AI 时用本地模板。当前池：<b>'+poolLabel+'</b></p>'+sumLine+
+    '<label style="display:block;font-size:12.5px">内容池</label>'+
+    '<div class="row"><button class="small'+(_aiPool==='social'?' primary':'')+'" onclick="aiSetPool(\'social\')">💬 社交</button>'+
+    '<button class="small'+(_aiPool==='story'?' primary':'')+'" onclick="aiSetPool(\'story\')">📖 故事</button>'+
+    '<button class="small'+(_aiPool==='meditation'?' primary':'')+'" onclick="aiSetPool(\'meditation\')">✨ 顿悟</button></div>'+
+    '<label style="display:block;margin-top:8px;font-size:12.5px">子类型</label>'+kindRow+
     '<label style="display:block;margin-top:8px;font-size:12.5px">提示词（可选）</label>'+
     '<input id="aiPrompt" style="width:100%;box-sizing:border-box" placeholder="例如：雨夜借宿荒村，遇白发老妪讲古">'+
     '<div class="row" style="margin-top:8px"><button class="small primary" onclick="aiGenerate()">✨ 生成并校验</button>'+
     '<button class="small" onclick="aiImportDraft()">📥 审核入库</button></div>'+
     '<div id="aiDraft"></div>'+
-    '<p style="font-size:12px;color:#6f7a94">入库即并入社交事件表（DATA.events），任务表/区域事件同理可在后续版本接入同一管线。</p>');
+    '<p style="font-size:12px;color:#6f7a94">入库走 contentImport；批次见 js/data/batches/。称号等函数型数据须手写。</p>');
 }
-let _aiKind='chat';
+function aiSetPool(p){
+  _aiPool=p||'social';
+  if(_aiPool==='social'&&['visit','invite','chat'].indexOf(_aiKind)<0)_aiKind='chat';
+  if(_aiPool==='story'&&['calm','herb','rare','epic','danger'].indexOf(_aiKind)<0)_aiKind='calm';
+  panelAiStudio();
+}
 function aiSetKind(k){_aiKind=k;panelAiStudio()}
 function aiGenerate(){
   const inp=document.getElementById('aiPrompt');
@@ -120,16 +181,19 @@ function aiGenerate(){
   const box=document.getElementById('aiDraft');
   if(!box){toast('面板未就绪');return}
   box.innerHTML='<p class="sys">🤖 生成中…（无 AI 则本地模板）</p>';
-  aiContentPipeline(_aiKind,prompt).then(r=>{
+  aiContentPipeline(_aiPool,_aiKind,prompt).then(function(r){
     _aiDraft=r.ok?r.entry:null;
     box.innerHTML=r.ok
-      ?'<div class="bd-box"><div class="bd-head">✅ 校验通过</div><pre style="white-space:pre-wrap;font-size:12px;color:#c9c2ae">'+esc(JSON.stringify(r.entry,null,1))+'</pre></div>'
+      ?'<div class="bd-box"><div class="bd-head">✅ 校验通过 · '+esc(_aiPool)+'</div><pre style="white-space:pre-wrap;font-size:12px;color:#c9c2ae">'+esc(JSON.stringify(r.entry,null,1))+'</pre></div>'
       :'<p class="danger">❌ 校验未通过：'+esc(r.err)+'</p>';
   });
 }
 function aiImportDraft(){
   if(!_aiDraft){toast('先点击「生成并校验」');return}
-  const r=aiReviewImport(_aiDraft);
-  if(r.ok){toast('已入库（当前 '+r.count+' 条）');log('<p class="loot">🤖 内容入库：「'+esc(_aiDraft.n)+'」（'+_aiDraft.id+'）——已并入社交事件表。</p>');_aiDraft=null;panelAiStudio()}
-  else toast(r.err||'入库失败');
+  const r=aiReviewImport(_aiDraft,_aiPool);
+  if(r.ok){
+    toast('已入库（'+_aiPool+' 现 '+r.count+' 条）');
+    log('<p class="loot">🤖 内容入库：「'+esc(_aiDraft.n||_aiDraft.title||_aiDraft.id)+'」（'+_aiDraft.id+'）→ '+esc(_aiPool)+'</p>');
+    _aiDraft=null;panelAiStudio();
+  }else toast(r.err||'入库失败');
 }

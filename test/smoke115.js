@@ -22,11 +22,12 @@ let fails=0;function assert(c,m){if(!c){fails++;console.log('FAIL:',m)}else cons
 vm.runInContext(`S=newState('测试',BACKGROUNDS[0]); PENDING=0;`,ctx);
 const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
 
-// T1 全部 CSS/JS 带版本号参数（缓存强刷）
-assert(html.indexOf('href="css/main.css?v=91"')>=0,'CSS 带版本号参数');
-const scripts=(html.match(/src="js\/[^"]+\.js\?v=91"/g)||[]).length;
+// T1 全部 CSS/JS 带版本号参数（缓存强刷，版本号随 GAME_VERSION）
+const ver=vm.runInContext('GAME_VERSION',ctx);
+assert(html.indexOf('href="css/main.css?v='+ver+'"')>=0,'CSS 带版本号参数 v'+ver);
+const scripts=(html.match(new RegExp('src="js\\/[^"]+\\.js\\?v='+ver+'"','g'))||[]).length;
 assert(scripts>=50,'全部 '+scripts+' 个 JS 带版本号参数');
-assert(html.indexOf('src="js/app-shell.js?v=91"')>=0&&html.indexOf('src="js/app.js?v=91"')>=0,'首尾脚本均带版本号');
+assert(html.indexOf('src="js/app-shell.js?v='+ver+'"')>=0&&html.indexOf('src="js/app.js?v='+ver+'"')>=0,'首尾脚本均带版本号');
 
 // T2 自检页显示游戏版本（下次截图可核对）
 const sj=fs.readFileSync(path.join(root,'js','ui','settings.js'),'utf8');
@@ -34,8 +35,8 @@ assert(sj.indexOf("chk('游戏版本'")>=0,'自检页显示游戏版本');
 
 // T3 版本同步
 const sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
-assert(vm.runInContext('GAME_VERSION',ctx)==='91','版本号 v91');
-assert(sw.indexOf('xiantu2-v'+vm.runInContext('GAME_VERSION',ctx))>=0,'SW 缓存名与版本号同步');
+assert(typeof ver==='string'&&/^\d+$/.test(ver),'版本号为数字字符串 v'+ver);
+assert(sw.indexOf('xiantu2-v'+ver)>=0,'SW 缓存名与版本号同步');
 
 console.log(fails===0?'smoke115: ALL PASS':'smoke115 FAILS: '+fails);
 process.exit(fails?1:0);

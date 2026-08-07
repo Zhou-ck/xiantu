@@ -17,13 +17,46 @@
 var DATA = (typeof window!=='undefined' && window.DATA) || {};
 if(typeof window!=='undefined' && window){window.DATA=DATA}
 
-/* ===== 资源白名单（对照现有表，勿随意增删） ===== */
+/* ===== 资源白名单（静态兜底；运行期由 schemaResRefresh 从数据表派生） ===== */
 var SCHEMA_RES = {
   npc: ['散修剑客','采药女','酒馆掌柜','妖族狐女','老乞丐','铁匠','书阁执事','神秘道人','古琴乐师','云游医修','丹房女修','佛门行者','猎妖人','行商大贾','狐仙苏苏','剑阁女侠','月下琴姬','灵药仙子','魔道妖女','龙族公主','白衣剑仙','儒雅书仙','魔道圣女','冰宫仙子','琴阁双姝','商道女财神','昆仑剑侍','妖族豹女','仇家'],
   item: ['回春丹','聚灵丹','清心丹','安神香','回溯符','破境丹','洗髓丹','延寿丹','筑基丹','锻体丹','轻身丹','通慧丹','疗伤丹','安神丹','火云剑','玄冰刃','庚金剑','精铁剑','青鳞甲','聚灵玉佩','火球符','遁地符','寒铁剑','赤炎刀','紫电剑','玄龟甲','星纹软甲','聚灵佩','龙凤环','神秘兽卵','天雷符','千年灵乳','悟道茶','洗灵露','无字天书'],
   mat: ['草药','灵草','铁矿石','妖皮','妖丹','寒玉','符纸','朱砂'],
   art: ['清心诀','大衍诀','太乙剑诀','丹火诀','遁光术','龙象体诀','心魔淬体功','熔火真解','玄冰诀','青木长生诀','惊雷诀'],
 };
+/* v92：从运行期数据表惰性重建白名单，扩产不再手改 SCHEMA_RES */
+function schemaResRefresh(){
+  try{
+    if(typeof NPC_POOL!=='undefined'&&Array.isArray(NPC_POOL)&&NPC_POOL.length){
+      var npcs=[];
+      NPC_POOL.forEach(function(n){if(n&&n.role&&npcs.indexOf(n.role)<0)npcs.push(n.role)});
+      if(SCHEMA_RES.npc.indexOf('仇家')<0)npcs.push('仇家');
+      if(npcs.length)SCHEMA_RES.npc=npcs;
+    }
+  }catch(e){}
+  try{
+    if(typeof itemCatalog==='function'){
+      var cat=itemCatalog()||{};
+      var items=Object.keys(cat);
+      if(items.length)SCHEMA_RES.item=items;
+    }
+  }catch(e){}
+  try{
+    if(typeof MAT_NAMES==='object'&&MAT_NAMES){
+      var mats=[];
+      Object.keys(MAT_NAMES).forEach(function(k){var v=MAT_NAMES[k];if(v&&mats.indexOf(v)<0)mats.push(v)});
+      if(mats.length)SCHEMA_RES.mat=mats;
+    }
+  }catch(e){}
+  try{
+    if(typeof ARTS!=='undefined'&&Array.isArray(ARTS)&&ARTS.length){
+      var arts=[];
+      ARTS.forEach(function(a){if(a&&a.name&&arts.indexOf(a.name)<0)arts.push(a.name)});
+      if(arts.length)SCHEMA_RES.art=arts;
+    }
+  }catch(e){}
+  return SCHEMA_RES;
+}
 
 var EVENT_TYPES = ['visit','invite','chat'];
 var OPT_CLS = ['primary','danger'];
@@ -33,6 +66,7 @@ function _isStr(v){return typeof v==='string' && v.length>0}
 
 /* 校验 DATA.events：返回错误数组；0 条错误即校验通过 */
 function validateEvents(){
+  schemaResRefresh();
   const errs=[];
   if(!DATA || !Array.isArray(DATA.events)){
     errs.push('DATA.events 缺失或不是数组');
@@ -157,6 +191,7 @@ function validateQuests(){
 }
 /* 总校验：事件表 + 任务表 + 区域记忆事件表（0 错误即通过） */
 function validateAll(){
+  schemaResRefresh();
   return validateEvents().concat(validateQuests()).concat(validateRegionEvents())
     .concat(validateItemRefs()).concat(validateNpcs()).concat(validateWorld())
     .concat(validateEquip()).concat(validatePills()).concat(validateCult());
