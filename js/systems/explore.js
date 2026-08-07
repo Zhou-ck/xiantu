@@ -202,6 +202,8 @@ function doExplore(rid){
   let trav2=trav;
   if(S.pet&&petAlive()&&S.pet.talent==='speed')trav2=Math.max(1,Math.floor(trav*0.8)); /* 14.4 迅捷灵兽坐骑 */
   if(trav2<trav)log('<p class="sys">灵兽驮你而行，日行千里（行程再省两成）。</p>');
+  const rIco=(typeof mapLoc==='function'&&mapLoc(r.id))?mapLoc(r.id).icon:'🧭';
+  log('<div class="exp-banner"><span class="eb-ico">'+rIco+'</span><div class="eb-tx"><b>'+esc(r.name)+'</b><small>约 '+trav2+' 日 · 凶险 '+d+' · 时令 '+seasonLabel()+'</small></div></div>');
   ra+=insightBonus(S);
   h+=Math.floor(attrVal(S,'int')/10);
   const luckMod=(S.bg.traits.some(t=>t.id==='luckUp')?5:0)+Math.floor(S.luck/4)+(petAlive()&&S.pet.talent==='luck'?5:0)+(S.companion?companionLuck():0);

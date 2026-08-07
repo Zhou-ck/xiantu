@@ -219,6 +219,21 @@ function playerFigHtml(s){
   if(!k&&typeof ART!=='undefined')k=ART.hero;
   return k?'<div class="bfig bfig-has"><img class="bfig-img" src="'+k+'" alt="" loading="lazy"></div>':'<div class="bfig bfig-emoji">🧙</div>';
 }
+/* v78 战利品卡片：按关键词配图标，胜利/事件奖励统一渲染为金条 */
+function lootChip(l){
+  const s=String(l||'');
+  let ic='📜';
+  if(s.indexOf('灵石')>=0)ic='💰';
+  else if(s.indexOf('修为')>=0)ic='✨';
+  else if(s.indexOf('战意')>=0)ic='⚡';
+  else if(s.indexOf('功德')>=0)ic='🕯️';
+  else if(s.indexOf('气运')>=0)ic='🍀';
+  else if(s.indexOf('悟道')>=0||s.indexOf('顿悟')>=0)ic='💡';
+  else if(s.indexOf('×')>=0||s.indexOf('妖丹')>=0||s.indexOf('寒玉')>=0||s.indexOf('铁矿石')>=0)ic='🎒';
+  else if(s.indexOf('（')>=0)ic='🎁';
+  else if(s.indexOf('+')>=0)ic='🏆';
+  return '<span class="loot-chip">'+ic+' '+esc(s)+'</span>';
+}
 /* v66 受击演出：命中时形象闪红微震（低特效/测试桩自动跳过） */
 function bfigHit(who){
   if(typeof fxOn==='function'&&!fxOn())return;
@@ -277,7 +292,7 @@ function battle(enemy,onEnd,spar){
         if(chance(0.12)){const it=randItem(rand(1,3));addItem(it);loot.push(it.name+'（'+QNAMES[it.quality]+'）')}
         if(chance(0.08)){S.luck=clamp(S.luck+1,1,100);loot.push('气运 +1')}
         log('<p class="good">你斩敌于剑下（'+st.rounds+'回合）。</p>');
-        for(const l of loot)log('<p class="loot">· '+l+'</p>');
+        log('<div class="loot-strip">'+loot.map(lootChip).join('')+'</div>');
         const sg1=growAttr('str',0.10,'血战淬炼，膂力渐增'),sg2=growAttr('agi',0.08,'游斗之间，身法渐熟');
         if(sg1||sg2)log(sg1+sg2);
       }else if(ph<=0){

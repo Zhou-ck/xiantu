@@ -1,4 +1,4 @@
-/* v75 突破天象分层：境界场景图 + 天劫色调冒烟 */
+/* v78 战利品金条 + 探索回执横幅冒烟 */
 const fs=require('fs'),path=require('path'),vm=require('vm');
 const root=path.join(__dirname,'..');
 const js=fs.readFileSync(require('path').join(process.env.TEMP||process.env.TMPDIR||require('os').tmpdir(),'xiantu_game.js'),'utf8');
@@ -21,31 +21,28 @@ let fails=0;function assert(c,m){if(!c){fails++;console.log('FAIL:',m)}else cons
 
 vm.runInContext(`S=newState('测试',BACKGROUNDS[0]); PENDING=0;`,ctx);
 
-// T1 境界→场景图映射
-assert(vm.runInContext("breakSceneKey(8)",ctx)==='cult.jpg','炼气突破→闭关场景图');
-assert(vm.runInContext("breakSceneKey(9)",ctx)==='tribulation.jpg','筑基→天劫场景图');
-assert(vm.runInContext("breakSceneKey(13)",ctx)==='heart.jpg','金丹→心魔场景图');
-assert(vm.runInContext("breakSceneKey(17)",ctx)==='faceless.jpg','元婴→无面天象');
-assert(vm.runInContext("breakSceneKey(21)",ctx)==='ghostgate.jpg','化神→九幽之门');
-assert(vm.runInContext("breakSceneKey(41)",ctx)==='tianmen.jpg','飞升→天门');
+// T1 战利品金条：图标映射 + 渲染接线
+vm.runInContext(`window.__c1=lootChip('灵石 +80'); window.__c2=lootChip('修为 +120'); window.__c3=lootChip('妖丹 ×1');`,ctx);
+assert(vm.runInContext('window.__c1',ctx).indexOf('loot-chip')>=0&&vm.runInContext('window.__c1',ctx).indexOf('💰')>=0,'灵石战利配钱袋图标');
+assert(vm.runInContext('window.__c2',ctx).indexOf('✨')>=0,'修为战利配修为图标');
+assert(vm.runInContext('window.__c3',ctx).indexOf('🎒')>=0,'材料战利配行囊图标');
+const combat=fs.readFileSync(path.join(root,'js','systems','combat.js'),'utf8');
+assert(combat.indexOf('function lootChip')>=0&&combat.indexOf('loot-strip')>=0,'战斗胜利战利以金条渲染');
+const q=fs.readFileSync(path.join(root,'js','systems','quests.js'),'utf8');
+const se=fs.readFileSync(path.join(root,'js','data','storyEvents.js'),'utf8');
+const re=fs.readFileSync(path.join(root,'js','data','exploreEvents.js'),'utf8');
+assert(q.indexOf('loot-strip')>=0&&se.indexOf('loot-strip')>=0&&re.indexOf('loot-strip')>=0,'剧情/故事/区域事件战利统一金条');
 
-// T2 弹窗接线：breakOpen 设置背景图
-const bt=fs.readFileSync(path.join(root,'js','systems','breakthrough.js'),'utf8');
-assert(bt.indexOf('function breakSceneKey')>=0&&bt.indexOf("url('assets/scenes/\"")>=0,'突破弹窗按境界设置天象背景');
-assert(bt.indexOf("setAttribute('data-trib'")>=0,'天劫类型色调接线');
-const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
-assert(html.indexOf('id="breakScene"')>=0,'突破壳含天象背景层');
-
-// T3 样式：天象层 + 四劫色调 + 触屏压暗
+// T2 探索回执横幅
+const ex=fs.readFileSync(path.join(root,'js','systems','explore.js'),'utf8');
+assert(ex.indexOf('exp-banner')>=0,'探索出发渲染回执横幅');
 const css=fs.readFileSync(path.join(root,'css','main.css'),'utf8');
-assert(css.indexOf('#breakScene.break-scene')>=0,'天象背景层样式存在');
-assert(css.indexOf('[data-trib="thunder"]')>=0&&css.indexOf('[data-trib="xinmo"]')>=0&&css.indexOf('[data-trib="yehuo"]')>=0&&css.indexOf('[data-trib="feng"]')>=0,'四类天劫色调齐全');
-assert(css.indexOf('html.fx-touch #breakScene.break-scene')>=0,'触屏压暗天象背景');
+assert(css.indexOf('.loot-chip')>=0&&css.indexOf('@keyframes lootIn')>=0&&css.indexOf('.exp-banner')>=0,'金条与回执横幅样式存在');
 
-// T4 版本同步
+// T3 版本同步
 const sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
 assert(vm.runInContext('GAME_VERSION',ctx)==='78','版本号 v78');
 assert(sw.indexOf('xiantu2-v'+vm.runInContext('GAME_VERSION',ctx))>=0,'SW 缓存名与版本号同步');
 
-console.log(fails===0?'smoke101: ALL PASS':'smoke101 FAILS: '+fails);
+console.log(fails===0?'smoke104: ALL PASS':'smoke104 FAILS: '+fails);
 process.exit(fails?1:0);

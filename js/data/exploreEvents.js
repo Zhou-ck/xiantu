@@ -138,7 +138,7 @@ function runRegionEvent(ev){
         startCombat(e,res=>{
           if(res.win){
             const w=applyEventEffects(fx.winFx||{stones:30});
-            if(w.length)log('<p class="loot">战利：'+w.join(' · ')+'。</p>');
+          if(w.length)log('<div class="loot-strip">'+w.map(lootChip).join('')+'</div>');
           }else{
             log('<p class="danger">你败下阵来，仓皇退走。</p>');
           }
