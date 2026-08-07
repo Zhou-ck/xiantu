@@ -180,13 +180,29 @@ function questFindNpc(name){
   return all.find(n=>n&&n.name===name)||(S.daoPartner&&S.daoPartner.name===name?S.daoPartner:null);
 }
 /* 剧情事件通用演出：标题 + 台词 + 抉择（fx 效果器复用区域记忆语义） */
+function storyLineHtml(ln){
+  const txt=String(ln||'');
+  const cast=pickCastNames(txt);
+  let speaker='';
+  if(cast.length){
+    const k=cast[0];
+    const src=((typeof NPC_ART!=='undefined'&&NPC_ART[k])||(typeof SECT_PERSON_ART!=='undefined'&&SECT_PERSON_ART[k])||'');
+    speaker='<span class="sl-speaker">'+(src?'<img src="'+src+'" alt="" loading="lazy">':'')+'<i>'+esc(k)+'</i></span>';
+  }
+  const m=txt.match(/^(.*?)「([^」]+)」(.*)$/);
+  if(m){
+    const pre=esc(m[1]).trim(),quote=esc(m[2]),post=esc(m[3]);
+    return (speaker?speaker:'')+(pre?('<span class="sl-pre">'+pre+'</span>'):'')+'<span class="sl-quote">「'+quote+'」</span>'+(post?' <span class="sl-post">'+post+'</span>':'');
+  }
+  return (speaker?speaker:'')+'<span class="sl-text">'+esc(txt)+'</span>';
+}
 function runStoryLines(title,lines,opts,after){
   const sc=sceneThumb(title);
-  log('<p class="scene">'+(sc?sc+' ':'')+'📖 〖 '+esc(title)+' 〗</p>');
+  log('<p class="scene story-stage">'+(sc?sc+' ':'')+'📖 〖 '+esc(title)+' 〗</p>');
   try{if(typeof setSceneImg==='function')setSceneImg(title)}catch(e){}
   const cast=storyCastBar(pickCastNames(title+' '+(lines||[]).join(' ')));
   if(cast)log(cast);
-  for(const ln of lines)log('<p>'+ln+'</p>');
+  for(const ln of lines)log('<p class="story-line">'+storyLineHtml(ln)+'</p>');
   logChoices((opts||[]).map(o=>({
     txt:o.txt,cls:o.cls||'',
     fn:()=>{
