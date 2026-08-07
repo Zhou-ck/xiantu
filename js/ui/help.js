@@ -104,12 +104,15 @@ function collectionAtlas(){
     const got=(S.flag.atlasMiles||[]).indexOf(m.k+':'+m.n)>=0;
     return '<div class="bd-row'+(got?' ok':'')+'"><span>'+(got?'✅ ':'🔒 ')+m.t+'（'+{item:'物品',enemy:'敌人',recipe:'配方'}[m.k]+' '+m.n+'）</span></div>';
   }).join('');
+  const totalItems=typeof itemCatalog==='function'?Object.keys(itemCatalog()).length:0;
   openPanel('📖 收藏图鉴',
     '<p>天地万物，皆可入藏。收集图鉴，亦是一条证道之路。</p>'+
     '<div class="bd-box"><div class="bd-head">🧭 收集进度</div>'+
-    '<div class="bd-row"><span>🎒 物品</span><b>'+c.items+' 种</b></div>'+
+    '<div class="bd-row"><span>🎒 物品</span><b>'+c.items+' / '+totalItems+' 种</b></div>'+
+    '<div class="bar" style="height:6px;margin:2px 0 8px"><i style="width:'+Math.floor(Math.min(1,c.items/Math.max(1,totalItems))*100)+'%"></i></div>'+
     '<div class="bd-row"><span>👹 敌人</span><b>'+c.enemies+' 类</b></div>'+
-    '<div class="bd-row"><span>📜 配方（'+PROF_NAMES[S.prof||'alchemy']+'）</span><b>'+mastered+'/'+prof.length+'</b></div></div>'+
+    '<div class="bd-row"><span>📜 配方（'+PROF_NAMES[S.prof||'alchemy']+'）</span><b>'+mastered+' / '+prof.length+'</b></div>'+
+    '<div class="bar" style="height:6px;margin:2px 0 0"><i style="width:'+Math.floor(Math.min(1,mastered/Math.max(1,prof.length))*100)+'%"></i></div></div>'+
     (S.prof?'<h4>📜 配方册</h4><div class="tome-grid">'+(recipeRows||'无')+'</div>':'')+
     '<div class="row" style="margin-top:8px"><button class="small primary" onclick="panelDanJing()">📜 丹经（丹药图鉴 · 丹毒 '+(S.flag.danTox||0)+'/100）</button></div>'+
     '<h4>🎒 物品册（已获 '+c.items+' 种）</h4><div class="tome-grid">'+(itemRows||'<p style="color:#6f7a94">尚未获得任何物品。</p>')+'</div>'+
@@ -119,20 +122,23 @@ function collectionAtlas(){
 /* ===== 生涯统计墙：十八系统计数总览 ===== */
 function careerWall(){
   if(!S)return;
-  const sec=(a,b)=>'<div class="bd-row"><span>'+a+'</span><b>'+b+'</b></div>';
+  const stat=(a,b)=>'<div class="stat-cell"><b>'+b+'</b><span>'+a+'</span></div>';
+  const box=(icon,title,cells)=>'<div class="bd-box"><div class="bd-head">'+icon+' '+title+'</div><div class="stat-grid">'+cells.join('')+'</div></div>';
   const npcTalks=(S.npcs||[]).reduce((a,n)=>a+(n.talks||0),0);
   const maxBond=(S.npcs||[]).reduce((a,n)=>Math.max(a,(n.bond||0)),0);
   const craftTotal=Object.values(S.flag.craftLog||{}).reduce((a,x)=>a+(x.count||0),0);
   const techSum=Object.values((S.flag.tech&&S.flag.tech.ups)||{}).reduce((a,b)=>a+b,0);
-  openPanel('📊 生涯统计','<p>数十年仙途，皆在这一卷之中。</p>'+
-    '<div class="bd-box"><div class="bd-head">🧘 修炼</div>'+sec('闭关总日数',(S.flag.cultDaysTotal||0)+' 日')+sec('悟道',(S.flag.insights||0)+' 次')+sec('大境界突破',(S.flag.bigBreaks||0)+' 次')+sec('瓶颈破关',(S.flag.bottleneckBreaks||0)+' 次')+sec('渡劫感悟',(S.insight||0)+' 点')+'</div>'+
-    '<div class="bd-box"><div class="bd-head">🧭 历练</div>'+sec('探索',(S.flag.exploreCount||0)+' 次')+sec('秘境',(S.flag.dungeons||0)+' 座 · '+Object.keys(S.flag.dungeonDone||{}).length+' 类')+sec('试炼塔',(S.flag.tower||0)+' 层')+sec('妖潮守城',(S.flag.tideWins||0)+' 胜 · '+(S.flag.tideFails||0)+' 负')+'</div>'+
-    '<div class="bd-box"><div class="bd-head">⚔️ 战斗</div>'+sec('击杀',(S.kills||0)+' 名')+sec('胜利',(S.wins||0)+' 场')+sec('战意',((S.flag.tech&&S.flag.tech.pts)||0)+' 点')+sec('战技',techSum+' 级')+'</div>'+
-    '<div class="bd-box"><div class="bd-head">🤝 人际</div>'+sec('道侣',(S.flag.partnerCount||0)+' 位')+sec('双修',(S.flag.dualCount||0)+' 次 · '+(S.flag.dualDays||0)+' 日')+sec('交谈',npcTalks+' 次')+sec('羁绊最深',maxBond+' 点')+sec('论道',(S.flag.daolunWins||0)+' 胜 · '+(S.flag.daolunLosses||0)+' 负')+'</div>'+
-    '<div class="bd-box"><div class="bd-head">🏯 宗门</div>'+sec('门中事宜',(S.flag.sectEvents||0)+' 件')+sec('宗门任务',(S.flag.sectTasks||0)+' 次')+'</div>'+
-    '<div class="bd-box"><div class="bd-head">⚒️ 副业</div>'+sec('当前副业',S.prof?(PROF_NAMES[S.prof]+' '+S.profLevel+' 阶'):'未习得')+sec('炼制成功',craftTotal+' 件')+sec('装备强化',(S.flag.enhanceCount||0)+' 次')+'</div>'+
-    '<div class="bd-box"><div class="bd-head">📖 收藏</div>'+sec('物品',Object.keys(S.seenI||{}).length+' 种')+sec('敌人',Object.keys(S.seenE||{}).length+' 类')+sec('称号',(S.titles||[]).length+' 个')+sec('已证结局',(S.endings||[]).length+' 个')+sec('轮回',(S.rebirths||0)+' 世')+'</div>'+
-    '<div class="bd-box"><div class="bd-head">⚖️ 善恶</div>'+sec('功德',(S.merit||0)+' 点')+sec('业力',(S.karma||0)+' 点')+sec('善恶值',netMerit())+'</div>');
+  const boxes=[
+    box('🧘','修炼',[stat('闭关总日数',(S.flag.cultDaysTotal||0)+' 日'),stat('悟道',(S.flag.insights||0)+' 次'),stat('大境界突破',(S.flag.bigBreaks||0)+' 次'),stat('瓶颈破关',(S.flag.bottleneckBreaks||0)+' 次'),stat('渡劫感悟',(S.insight||0)+' 点')]),
+    box('🧭','历练',[stat('探索',(S.flag.exploreCount||0)+' 次'),stat('秘境',(S.flag.dungeons||0)+' 座 · '+Object.keys(S.flag.dungeonDone||{}).length+' 类'),stat('试炼塔',(S.flag.tower||0)+' 层'),stat('妖潮守城',(S.flag.tideWins||0)+' 胜 · '+(S.flag.tideFails||0)+' 负')]),
+    box('⚔️','战斗',[stat('击杀',(S.kills||0)+' 名'),stat('胜利',(S.wins||0)+' 场'),stat('战意',((S.flag.tech&&S.flag.tech.pts)||0)+' 点'),stat('战技',techSum+' 级')]),
+    box('🤝','人际',[stat('道侣',(S.flag.partnerCount||0)+' 位'),stat('双修',(S.flag.dualCount||0)+' 次 · '+(S.flag.dualDays||0)+' 日'),stat('交谈',npcTalks+' 次'),stat('羁绊最深',maxBond+' 点'),stat('论道',(S.flag.daolunWins||0)+' 胜 · '+(S.flag.daolunLosses||0)+' 负')]),
+    box('🏯','宗门',[stat('门中事宜',(S.flag.sectEvents||0)+' 件'),stat('宗门任务',(S.flag.sectTasks||0)+' 次')]),
+    box('⚒️','副业',[stat('当前副业',S.prof?(PROF_NAMES[S.prof]+' '+S.profLevel+' 阶'):'未习得'),stat('炼制成功',craftTotal+' 件'),stat('装备强化',(S.flag.enhanceCount||0)+' 次')]),
+    box('📖','收藏',[stat('物品',Object.keys(S.seenI||{}).length+' 种'),stat('敌人',Object.keys(S.seenE||{}).length+' 类'),stat('称号',(S.titles||[]).length+' 个'),stat('已证结局',(S.endings||[]).length+' 个'),stat('轮回',(S.rebirths||0)+' 世')]),
+    box('⚖️','善恶',[stat('功德',(S.merit||0)+' 点'),stat('业力',(S.karma||0)+' 点'),stat('善恶值',netMerit())]),
+  ];
+  openPanel('📊 生涯统计','<p>数十年仙途，皆在这一卷之中。</p>'+boxes.join(''));
 }
 /* ===== 天下大势：时代 / 声望格局 / 世界纪事 ===== */
 function worldPanel(){

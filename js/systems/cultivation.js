@@ -862,15 +862,17 @@ function petGain(n){
 function petPanel(){
   if(!S.pet){openPanel('🐾 灵兽','<p>你尚无灵兽相伴。</p><p>可在<b>坊市·奇珍拍卖</b>或探索机缘中获得兽卵，于<b>行囊</b>中点「使用」孵化。</p>');return}
   const p=S.pet;
+  const lvNeed=petLevelNeed(p);
+  const pct=clamp(Math.floor((p.exp||0)/lvNeed*100),0,100);
+  const art=p.species==='灵狐'?ART.foxPet:'';
   openPanel('🐾 灵兽 · '+esc(p.name),
-artImg(p.species==='灵狐'?ART.foxPet:'',130,130,'pet')+
-    '<p>种类：<b>'+p.species+'</b> · 天赋：'+PET_TALENT_DESC[p.talent]+'</p>'+
-    '<p>等阶：'+p.form+' 阶 · 成长：'+p.exp+' / '+petLevelNeed(p)+' · 助战加成：+'+petCombatBonus()+'</p>'+
-    '<p>'+(p.faint>0?'<span class="danger">重伤休养中，还需 '+p.faint+' 日。</span>':'<span class="good">精神抖擞，时刻待命。</span>')+'</p>'+
-    '<div class="row">'+
-    '<button onclick="feedPet()">🍖 喂食灵石（50）</button>'+
-    (p.faint<=0?'<button onclick="petTrain()">⚔️ 放养历练 · 15日</button>':'')+
-    '</div>'+
+    '<div class="pet-card"><div class="pet-img">'+(art?'<img class="pet-portrait" src="'+art+'" alt="" loading="lazy">':'<span class="pet-emoji">🐾</span>')+'</div>'+
+    '<div class="pet-info"><div class="nm">'+esc(p.name)+' <span class="tag">'+esc(p.species)+'</span> <span class="tag">'+p.form+' 阶</span></div>'+
+    '<div class="ds">天赋：'+esc(PET_TALENT_DESC[p.talent]||'')+' · 助战加成：+'+petCombatBonus()+'</div>'+
+    '<div class="bar"><i style="width:'+pct+'%"></i></div>'+
+    '<div class="pet-exp">成长 '+p.exp+' / '+lvNeed+'（'+pct+'%）</div>'+
+    '<div class="pet-status">'+(p.faint>0?'<span class="danger">重伤休养中，还需 '+p.faint+' 日</span>':'<span class="good">精神抖擞，时刻待命</span>')+'</div>'+
+    '<div class="pet-btns"><button onclick="feedPet()">🍖 喂食灵石（50）</button>'+(p.faint<=0?'<button onclick="petTrain()">⚔️ 放养历练 · 15日</button>':'')+'</div></div></div>'+
     '<p style="font-size:12.5px;color:#6f7a94">喂食与历练可提升灵兽等级；助战加成随等阶提升，战斗与探索时自动生效。</p>');
 }
 function feedPet(){

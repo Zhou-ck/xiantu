@@ -1,4 +1,4 @@
-/* v71 探索事件台词条化 + 突破跃迁横幅 + 渡劫演出冒烟 */
+/* v73 灵兽卡 + 生涯统计卡 + 收藏图鉴进度条冒烟 */
 const fs=require('fs'),path=require('path'),vm=require('vm');
 const root=path.join(__dirname,'..');
 const js=fs.readFileSync(require('path').join(process.env.TEMP||process.env.TMPDIR||require('os').tmpdir(),'xiantu_game.js'),'utf8');
@@ -21,24 +21,29 @@ let fails=0;function assert(c,m){if(!c){fails++;console.log('FAIL:',m)}else cons
 
 vm.runInContext(`S=newState('测试',BACKGROUNDS[0]); S.flag={}; PENDING=0;`,ctx);
 
-// T1 探索故事事件台词条化（说话人 + 引文气泡 + 抉择保留）
-vm.runInContext(`runStoryEvent({id:'v71_t',title:'夜半荒山',t:'一位神秘道人立于坟前：「天机不可泄。」随即隐入夜色。',cat:'rare',opts:[{txt:'跟上',fn:()=>{}}]}); window.__se=document.getElementById('story')._html;`,ctx);
-const se=vm.runInContext('window.__se',ctx);
-assert(se.indexOf('story-line')>=0&&se.indexOf('sl-quote')>=0&&se.indexOf('天机不可泄')>=0,'探索事件以台词条演出（引文气泡）');
-assert(se.indexOf('sl-speaker')>=0&&se.indexOf('神秘道人')>=0,'探索事件识别说话人并挂立绘徽章');
-assert(vm.runInContext('PENDING',ctx)===1,'探索事件保留抉择（PENDING=1）');
+// T1 灵兽卡：立绘 + 成长条 + 状态 + 操作
+vm.runInContext(`{ S.pet={name:'小白',species:'灵狐',talent:'stealth',form:2,exp:30,level:1,faint:0}; petPanel(); window.__pp=document.getElementById('panelBody')._html; }`,ctx);
+const pp=vm.runInContext('window.__pp',ctx);
+assert(pp.indexOf('pet-card')>=0&&pp.indexOf('pet-portrait')>=0&&pp.indexOf('foxPet.jpg')>=0,'灵兽卡带立绘');
+assert(pp.indexOf('成长 30 /')>=0&&pp.indexOf('助战加成')>=0,'灵兽卡带成长进度与助战加成');
+assert(pp.indexOf('喂食灵石')>=0&&pp.indexOf('放养历练')>=0,'灵兽卡保留操作按钮');
 
-// T2 突破跃迁横幅 + 渡劫演出接线
-const bt=fs.readFileSync(path.join(root,'js','systems','breakthrough.js'),'utf8');
-assert(bt.indexOf('bt-realm-up')>=0&&bt.indexOf('realm-jump')>=0,'突破成功渲染跃迁横幅（弹窗+故事流）');
-assert(bt.indexOf('trib-fire')>=0,'渡劫小游戏带天雷演出');
-const css=fs.readFileSync(path.join(root,'css','main.css'),'utf8');
-assert(css.indexOf('.bt-realm-up')>=0&&css.indexOf('.realm-jump')>=0&&css.indexOf('.trib-fire')>=0,'跃迁横幅与天雷演出样式存在');
+// T2 生涯统计卡片化
+vm.runInContext(`{ S.flag.sectEvents=1; careerWall(); window.__cw=document.getElementById('panelBody')._html; }`,ctx);
+const cw=vm.runInContext('window.__cw',ctx);
+assert(cw.indexOf('stat-grid')>=0&&cw.indexOf('stat-cell')>=0,'生涯统计以统计卡网格呈现');
+assert(cw.indexOf('🏯 宗门')>=0&&cw.indexOf('1 件')>=0&&cw.indexOf('修炼')>=0&&cw.indexOf('善恶')>=0,'生涯统计保留全部区块与数值');
 
-// T3 版本同步
+// T3 收藏图鉴进度条
+vm.runInContext(`{ S.seenI={回春丹:3,聚灵丹:1}; S.seenE={妖狼:2}; collectionAtlas(); window.__ca=document.getElementById('panelBody')._html; }`,ctx);
+const ca=vm.runInContext('window.__ca',ctx);
+assert(ca.indexOf('收集进度')>=0&&ca.indexOf('/')>=0&&ca.indexOf('种')>=0,'收藏图鉴含收集进度（物品/总数）');
+assert(ca.indexOf('class="bar"')>=0,'收藏图鉴含进度条');
+
+// T4 版本同步
 const sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
 assert(vm.runInContext('GAME_VERSION',ctx)==='73','版本号 v73');
 assert(sw.indexOf('xiantu2-v'+vm.runInContext('GAME_VERSION',ctx))>=0,'SW 缓存名与版本号同步');
 
-console.log(fails===0?'smoke97: ALL PASS':'smoke97 FAILS: '+fails);
+console.log(fails===0?'smoke99: ALL PASS':'smoke99 FAILS: '+fails);
 process.exit(fails?1:0);

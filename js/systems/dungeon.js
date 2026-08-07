@@ -97,6 +97,7 @@ function recordDungeonDone(kind){
 }
 function enterDungeon(kind){
   const d=DUNGEONS[kind];
+  if(!d){toast('此处尚未开启');return}
   S.dungeon={kind,depth:0};
   log('<p class="sys">【秘境副本 · '+d.name+'】共 '+d.rooms.length+' 重险关，选择将决定你的收获。</p>');
   dungeonRoom();
@@ -109,10 +110,11 @@ function optIcon(t){
 }
 function dungeonRoom(){
   if(!S.dungeon||!DUNGEONS[S.dungeon.kind])return;
+  const dg=S.dungeon;
   const d=DUNGEONS[S.dungeon.kind];
-  const room=d.rooms[S.dungeon.depth];
-  S.dungeon.depth++;
-  scene(d.name+' · 第 '+S.dungeon.depth+' 重');
+  const room=d.rooms[dg.depth];
+  dg.depth++;
+  scene(d.name+' · 第 '+dg.depth+' 重');
   log('<p>'+room.desc+'</p>');
   const btns=room.opts.map(o=>({txt:optIcon(o.txt)+' '+o.txt,fn:()=>{
     if(o.dc>0){
@@ -131,13 +133,13 @@ function dungeonRoom(){
     else if(kind==='luck')log('<p class="good">'+val+'</p>');
     else if(kind==='demon')log('<p class="danger">'+val+'</p>');
     else if(kind==='hp')log('<p class="danger">'+val+'</p>');
-    if(S.dungeon.depth<d.rooms.length){
+    if(dg.depth<d.rooms.length){
       if(S.hp<=1){die('重伤不治');return}
       dungeonRoom();
     }else{
-      if(S.dungeon.kind==='dream'){S.trinket=null;S.cult+=500;log('<p class="good">梦醒时分，木牌化作齑粉，一段因果就此了结（修为 +500）。</p>')}
+      if(dg.kind==='dream'){S.trinket=null;S.cult+=500;log('<p class="good">梦醒时分，木牌化作齑粉，一段因果就此了结（修为 +500）。</p>')}
       log('<p class="loot">'+d.final+'</p>');
-      recordDungeonDone(S.dungeon.kind);
+      recordDungeonDone(dg.kind);
       S.dungeon=null;
       S.flag.dungeons=(S.flag.dungeons||0)+1;
       const g=Math.floor(eventGift()*0.05+rl()*5);S.cult+=g;
