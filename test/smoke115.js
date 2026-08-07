@@ -23,10 +23,10 @@ vm.runInContext(`S=newState('测试',BACKGROUNDS[0]); PENDING=0;`,ctx);
 const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
 
 // T1 全部 CSS/JS 带版本号参数（缓存强刷）
-assert(html.indexOf('href="css/main.css?v=89"')>=0,'CSS 带版本号参数');
-const scripts=(html.match(/src="js\/[^"]+\.js\?v=89"/g)||[]).length;
+assert(html.indexOf('href="css/main.css?v=90"')>=0,'CSS 带版本号参数');
+const scripts=(html.match(/src="js\/[^"]+\.js\?v=90"/g)||[]).length;
 assert(scripts>=50,'全部 '+scripts+' 个 JS 带版本号参数');
-assert(html.indexOf('src="js/app-shell.js?v=89"')>=0&&html.indexOf('src="js/app.js?v=89"')>=0,'首尾脚本均带版本号');
+assert(html.indexOf('src="js/app-shell.js?v=90"')>=0&&html.indexOf('src="js/app.js?v=90"')>=0,'首尾脚本均带版本号');
 
 // T2 自检页显示游戏版本（下次截图可核对）
 const sj=fs.readFileSync(path.join(root,'js','ui','settings.js'),'utf8');
