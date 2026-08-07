@@ -136,7 +136,14 @@ function openEventModal(title,html,opts){
   window._eventModalOpts=opts||[];
   /* v65：事件弹窗识别标题中的已知人物，先渲染登场立绘条 */
   const cast=storyCastBar(pickCastNames(title));
-  openPanel(title,(cast?cast:'')+html+list);
+  /* v67：副业微操弹窗加炉火/灵光演出 */
+  openPanel(title,(cast?cast:'')+craftFlourish(title)+html+list);
+}
+function craftFlourish(title){
+  if(!title)return '';
+  const m={'炼丹':'🔥','炼器':'🔨','制符':'🪄','布阵':'🧿'};
+  for(const k in m)if(title.indexOf(k)>=0)return '<div class="craft-stage"><i class="craft-fire">'+m[k]+'</i></div>';
+  return '';
 }
 function resolveEventModal(i){
   const opts=window._eventModalOpts||[];

@@ -180,8 +180,13 @@ function daoChat(){
     {txt:'🏮 提起初遇那日',fn:()=>daoChatResolve('first')},
   ];
   if(daoAnnivNear(p))opts.unshift({txt:'🎂 提起你们的纪念日',fn:()=>daoAnniv()});
-  const intro='<p>'+artImg(NPC_ART[p.role]||(p.gender==='男'?ART.daoist:ART.lady),64,64,'avatar')+'茶烟袅袅，'+p.name+'正望着窗外出神。见你坐下，'+he(p)+'弯了弯眼睛：「今天怎么想起我来了？」</p>';
-  openEventModal('💬 与 '+esc(p.name)+' 闲谈',intro,opts);
+  talkModal('💬 与 '+esc(p.name)+' 闲谈',
+    talkHead(p,p.role+(p.gender==='女'?' · ♀':' · ♂')),
+    [
+      {html:'<span style="color:#a99a72">茶烟袅袅，'+esc(p.name)+'正望着窗外出神。</span>'},
+      {html:esc('见你坐下，'+he(p)+'弯了弯眼睛：「今天怎么想起我来了？」'),typing:true,id:'talkLine0'},
+    ],
+    opts);
 }
 function daoChatResolve(kind){
   const p=S.daoPartner;

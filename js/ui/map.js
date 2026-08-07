@@ -7,6 +7,8 @@
 'use strict';
 let MAP_SEL=null;
 const MAP_BG_IMG='assets/scenes/map.jpg';
+/* v67 探索地点缩略图：区域 → 场景图，选点卡与详情卡共用 */
+const REGION_THUMB={near:'assets/scenes/market.jpg',valley:'assets/scenes/tide.jpg',hill:'assets/scenes/beast.jpg',forest:'assets/scenes/forest.jpg',cliff:'assets/scenes/ghostgate.jpg',ruin:'assets/scenes/warcry.jpg',abyss:'assets/scenes/faceless.jpg'};
 /* 水墨地形（确定性伪随机，固定种子） */
 function mapTerrain(){
   const rng=mapRng(MAP_SEED);
@@ -75,7 +77,8 @@ function mapDetail(){
   const locked=S.realm<l.minRealm;
   const visited=l.kind==='region'?(S.flag.regions&&S.flag.regions[l.id]||0):0;
   const qTarget=mainVisitTarget()===l.id;
-  return '<div class="map-detail"><div class="nm">'+l.icon+' '+esc(l.name)+(locked?' <span class="tag" style="color:#e08a6a">🔒 迷雾</span>':'')+(qTarget?' <span class="tag" style="color:#e8d9a8">📌 主线目标</span>':'')+'</div>'+
+  const thumb=REGION_THUMB[l.id]||'';
+  return '<div class="map-detail">'+(thumb?'<img class="map-detail-thumb" src="'+thumb+'" alt="" loading="lazy">':'')+'<div class="nm">'+l.icon+' '+esc(l.name)+(locked?' <span class="tag" style="color:#e08a6a">🔒 迷雾</span>':'')+(qTarget?' <span class="tag" style="color:#e8d9a8">📌 主线目标</span>':'')+'</div>'+
     '<div class="ds">'+esc(l.desc)+'</div>'+
     '<div class="bd-row"><span>境界要求</span><b>'+REALMS[Math.min(l.minRealm,REALMS.length-1)]+'</b></div>'+
     (l.days?'<div class="bd-row"><span>往返耗时</span><b>约 '+l.days+' 日</b></div>':'')+
@@ -86,6 +89,16 @@ function mapDetail(){
     (l.kind==='region'&&visited>0?'<button class="small" onclick="exploreTome()">📖 行迹</button>':'')+
     '</div></div>';
 }
+/* v67 地点速览卡：缩略图 + 名称 + 耗时/凶险 + 一键前往 */
+function locCard(l){
+  const locked=S.realm<l.minRealm;
+  const thumb=REGION_THUMB[l.id]||'';
+  const visited=l.kind==='region'?(S.flag.regions&&S.flag.regions[l.id]||0):0;
+  return '<button class="loc-card'+(locked?' locked':'')+'" onclick="travelTo(\''+l.id+'\')">'+
+    '<span class="loc-imgwrap">'+(thumb?'<img class="loc-img" src="'+thumb+'" alt="" loading="lazy" onload="this.classList.add(\'ld\')">':'')+'<i class="loc-emoji">'+(locked?'🔒':l.icon)+'</i></span>'+
+    '<span class="loc-tx"><b>'+esc(l.name)+'</b><small>'+(locked?REALMS[Math.min(l.minRealm,REALMS.length-1)]+' 后解锁':'约 '+(l.days||0)+' 日 · 凶险 '+(l.danger||0))+(visited?' · 已访 '+visited:'')+'</small></span>'+
+    '</button>';
+}
 function mapHtml(){
   const qt=mainVisitTarget();
   const ql=qt?mapLoc(qt):null;
@@ -93,14 +106,12 @@ function mapHtml(){
     (ql?'<div class="map-quest"><b>📌 主线目标：'+esc(ql.name)+'</b><button class="small primary" onclick="selectMapLoc(\''+ql.id+'\')">查看</button></div>':'')+
     mapSvg()+
     mapDetail()+
+    '<div class="loc-grid">'+MAP_LOCS.filter(l=>S.realm>=l.minRealm).map(locCard).join('')+'</div>'+
     '<div class="row" style="margin-top:10px">'+
     '<button class="small" onclick="exploreTome()">📖 行迹图鉴</button>'+
     '<button class="small" onclick="panelDungeonList()">🏛️ 秘境之门</button>'+
     '<button class="small" onclick="panelQuests()">📜 任务日志</button>'+
-    '</div>'+
-    '<details class="map-alt"><summary>🗺️ 文字地点清单（辅助）</summary>'+
-    REGIONS.filter(r=>S.realm>=r.minRealm).map(r=>'<div class="bd-row"><span>'+esc(r.name)+'</span><b><button class="small" onclick="doExplore(\''+r.id+'\')">前往</button></b></div>').join('')+
-    '</details>';
+    '</div>';
 }
 function selectMapLoc(id){
   MAP_SEL=id;

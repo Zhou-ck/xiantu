@@ -330,10 +330,18 @@ function masterGreet(){
   if((m.cd&&m.cd.greet||0)>0){log('<p class="sys">'+esc(m.name)+'摆摆手：「日日请安，心意到了便是，去忙你的吧。」</p>');passTime(1);renderAll();return}
   m.cd=m.cd||{};m.cd.greet=5;
   const g=rand(1,3);
-  m.favor=clamp((m.favor||60)+g,0,100);
-  log('<p>你于师尊座前恭恭敬敬行了一礼，奉上清茶一盏。'+esc(m.name)+'接过茶，微微颔首：「有心了。」（师徒情分 +'+g+'）</p>');
-  const gw=growWil(0.06,'晨昏定省，道心渐稳');if(gw)log(gw);
-  passTime(1);renderAll();
+  talkModal('🎓 请安 · '+esc(m.name),
+    talkHead(m,(m.role||'师尊')+' · '+(m.gender==='女'?'♀':'♂')),
+    [
+      {html:'<span style="color:#a99a72">你于师尊座前恭恭敬敬行了一礼，奉上清茶一盏。</span>'},
+      {html:esc(m.name+'接过茶，微微颔首：「有心了。」（师徒情分 +'+g+'）'),typing:true,id:'talkLine0'},
+    ],
+    [{txt:'🫂 恭敬退下',cls:'primary',fn:()=>{
+      m.favor=clamp((m.favor||60)+g,0,100);
+      log('<p>'+esc(m.name)+'目送你离去，眼底有一丝暖意（师徒情分 +'+g+'）。</p>');
+      const gw=growWil(0.06,'晨昏定省，道心渐稳');if(gw)log(gw);
+      passTime(1);renderAll();
+    }}]);
 }
 function masterAsk(){
   const m=S.master;
