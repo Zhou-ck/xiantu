@@ -35,7 +35,49 @@ function panelSettings(){
     '<h4>📱 App 与更新</h4><p style="font-size:12.5px;color:#6f7a94">当前版本 v'+(typeof GAME_VERSION==='string'?GAME_VERSION:'41')+' · '+(isNativeApp()?'已运行于原生 App 壳':'浏览器 / PWA 模式')+'。安装到主屏后全屏离线游玩，更新随推送自动生效。</p>'+
     '<div class="row"><button class="small" onclick="checkGameUpdate()">🔄 检查更新</button></div>'+
     '<h4>🙏 素材鸣谢</h4><p style="font-size:12.5px;color:#6f7a94">本作美术素材来自 AI 生成与免费可商用渠道，授权台账见 <b>assets/LICENSES.md</b>。需署名素材将在此统一展示。</p>'+
-    '<div class="row"><button class="small" onclick="openCredit()">📜 查看素材台账</button></div>');
+    '<div class="row"><button class="small" onclick="openCredit()">📜 查看素材台账</button></div>'+
+    '<h4>🩺 闪屏自检</h4><p style="font-size:12.5px;color:#8f9cb8">手机端若仍有泛黄/闪屏，点下方按钮检测当前设备的防护状态，把结果页截图发我即可精准定位。</p>'+
+    '<div class="row"><button class="small" onclick="flashDiag()">检测当前设备闪屏防护状态</button></div>');
+}
+/* v87 闪屏自检：逐项核对触屏防护（动效/滤镜/过渡/透明/整屏闪光层/弹层模糊/按钮过渡） */
+function flashDiag(){
+  const rows=[];
+  const chk=(name,ok,detail)=>rows.push('<div class="diag-row '+(ok?'ok':'no')+'"><span class="diag-mark">'+(ok?'✅':'❌')+'</span><b>'+name+'</b><small>'+detail+'</small></div>');
+  try{
+    const r=document.documentElement;
+    chk('触屏收敛标记 html.fx-touch',!!(r&&r.classList&&r.classList.contains('fx-touch')),'class 中'+(r&&r.classList&&r.classList.contains('fx-touch')?'有':'无')+' fx-touch');
+  }catch(e){chk('触屏收敛标记',false,'读取失败')}
+  try{
+    const a=typeof matchMedia==='function'&&matchMedia('(pointer:coarse)').matches;
+    const b=typeof matchMedia==='function'&&matchMedia('(hover:none)').matches;
+    chk('触屏媒体查询命中',!!(a||b),'pointer:coarse='+!!a+' · hover:none='+!!b);
+  }catch(e){chk('触屏媒体查询命中',false,'读取失败')}
+  try{
+    const el=document.getElementById('sceneLayer');
+    if(el){
+      const cs=getComputedStyle(el);
+      chk('场景层无动画',cs.animationName==='none','animation='+cs.animationName);
+      chk('场景层无滤镜',cs.filter==='none','filter='+cs.filter);
+      chk('场景层无过渡',parseFloat(cs.transitionDuration)===0,'transition='+cs.transitionDuration);
+      chk('场景层低透明',parseFloat(cs.opacity)<=0.4,'opacity='+cs.opacity);
+    }else chk('场景层存在',false,'未找到 #sceneLayer');
+  }catch(e){chk('场景层状态',false,'读取失败')}
+  chk('无整屏闪光层',!document.getElementById('fxFlash'),'fxFlash='+(document.getElementById('fxFlash')?'存在':'不存在'));
+  for(const id of ['panel','guide','battle','cultivate']){
+    try{
+      const e=document.getElementById(id);
+      if(e){const bf=getComputedStyle(e).backdropFilter||'';chk('弹层无模糊 · '+id,bf==='none'||bf==='','backdrop='+bf)}
+    }catch(e){}
+  }
+  try{
+    const btn=document.querySelector('button');
+    if(btn){const tr=getComputedStyle(btn).transitionDuration;chk('按钮过渡收敛',parseFloat(tr)<=0.2||tr==='0s','transition='+tr)}
+  }catch(e){}
+  const bad=rows.filter(r=>r.indexOf('❌')>=0).length;
+  openPanel('🩺 闪屏自检',
+    '<p>以下为当前设备的闪屏防护状态：<b>'+(bad===0?'全部 ✅，防护已生效。':'发现 '+bad+' 项 ❌，请把本页截图发我。')+'</b></p>'+
+    '<div class="diag-box">'+rows.join('')+'</div>'+
+    '<p style="font-size:12px;color:#8f9cb8">请在<b>手机浏览器</b>中检测（触屏标记与媒体查询需真实触屏设备）。</p>');
 }
 function setOpt(k){
   if(!S)return;

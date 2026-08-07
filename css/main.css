@@ -991,6 +991,14 @@ html.fx-touch .realm-jump{animation:none!important}
   #panelBox,#cultBox,#battleBox,#guideBox,#breakBox{transform:translateZ(0);backface-visibility:hidden}
 }
 html.fx-touch #panelBox,html.fx-touch #cultBox,html.fx-touch #battleBox,html.fx-touch #guideBox,html.fx-touch #breakBox{transform:translateZ(0);backface-visibility:hidden}
+/* ---------- v87 闪屏自检面板 ---------- */
+.diag-box{display:flex;flex-direction:column;gap:6px;margin:8px 0}
+.diag-row{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:9px;background:linear-gradient(180deg,#262c48,#1e2338);border:1px solid rgba(201,162,75,.2)}
+.diag-row.ok{border-color:rgba(140,208,160,.45)}
+.diag-row.no{border-color:rgba(220,130,120,.55);background:linear-gradient(180deg,#3a2430,#241a22)}
+.diag-row .diag-mark{font-size:14px;flex:0 0 auto}
+.diag-row b{font-size:12.5px;font-weight:normal;color:var(--gold2);flex:0 0 auto}
+.diag-row small{font-size:11px;color:#8f9cb8;margin-left:auto;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 /* 强敌登场卡：守关大妖 */
 .boss-intro{display:flex;align-items:center;gap:12px;margin:10px 0 8px;padding:12px 13px;background:linear-gradient(180deg,#262c46,#1a1f33);border:1px solid rgba(232,200,106,.5);border-radius:12px;box-shadow:0 0 18px rgba(232,200,106,.14)}
 .boss-intro .bi-img{width:58px;height:58px;border-radius:10px;object-fit:cover;border:1px solid rgba(232,200,106,.45);flex:0 0 auto}

@@ -36,7 +36,7 @@ assert(css.indexOf('html.fx-touch #breakScene.break-scene{opacity:.5!important')
 
 // T3 版本同步
 const sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
-assert(vm.runInContext('GAME_VERSION',ctx)==='86','版本号 v86');
+assert(vm.runInContext('GAME_VERSION',ctx)==='87','版本号 v87');
 assert(sw.indexOf('xiantu2-v'+vm.runInContext('GAME_VERSION',ctx))>=0,'SW 缓存名与版本号同步');
 
 console.log(fails===0?'smoke109: ALL PASS':'smoke109 FAILS: '+fails);
