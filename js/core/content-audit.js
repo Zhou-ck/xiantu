@@ -16,6 +16,8 @@ var CONTENT_CATALOG = [
   {key:'story',      name:'通用故事',   min:140, idField:'id', importable:true, cats:['calm','herb','rare','epic','danger'], catMin:18},
   {key:'region',     name:'区域记忆',   min:16,  idField:'id', importable:true, regionMin:2},
   {key:'meditation', name:'顿悟事件',   min:16,  idField:'id', importable:true},
+  {key:'partner',    name:'道侣事件',   min:24,  idField:'id', importable:false},
+  {key:'sect',       name:'宗门事件',   min:24,  idField:'id', importable:false},
   {key:'theme',      name:'赛季主题',   min:16,  idField:'id', importable:false},
   {key:'npc',        name:'NPC 池',     min:26,  idField:'role',importable:false},
   {key:'items',      name:'物品目录',   min:60,  idField:null, importable:false},
@@ -39,6 +41,8 @@ function _contentPool(key){
     case 'story': return (typeof STORY_EVENTS!=='undefined'&&Array.isArray(STORY_EVENTS))?STORY_EVENTS:[];
     case 'region': return (typeof REGION_EVENTS!=='undefined'&&Array.isArray(REGION_EVENTS))?REGION_EVENTS:[];
     case 'meditation': return (typeof MEDITATION_EVENTS!=='undefined'&&Array.isArray(MEDITATION_EVENTS))?MEDITATION_EVENTS:[];
+    case 'partner': return (typeof PARTNER_EVENTS!=='undefined'&&Array.isArray(PARTNER_EVENTS))?PARTNER_EVENTS:[];
+    case 'sect': return (typeof SECT_EVENTS!=='undefined'&&Array.isArray(SECT_EVENTS))?SECT_EVENTS:[];
     case 'theme': return (typeof THEME_EVENTS!=='undefined'&&Array.isArray(THEME_EVENTS))?THEME_EVENTS:[];
     case 'npc': return (typeof NPC_POOL!=='undefined'&&Array.isArray(NPC_POOL))?NPC_POOL:[];
     case 'items': {
@@ -98,7 +102,7 @@ function contentCheck(){
   if(typeof schemaResRefresh==='function')schemaResRefresh();
   var errs=[];
   /* 叙事事件池跨池 id 不得撞车；装备/地图/称号等允许与其它域同名 */
-  var EVENT_CROSS={social:1,story:1,region:1,meditation:1,theme:1};
+  var EVENT_CROSS={social:1,story:1,region:1,meditation:1,theme:1,partner:1,sect:1};
   var crossSeen={};
   CONTENT_CATALOG.forEach(function(c){
     var arr=_contentPool(c.key);
@@ -146,10 +150,55 @@ function contentCheck(){
     var va=validateAll();
     va.forEach(function(e){errs.push(e)});
   }
+  /* 道侣/宗门池结构 + fx 白名单 */
+  if(typeof validatePartnerEvents==='function')errs=errs.concat(validatePartnerEvents());
+  if(typeof validateSectEvents==='function')errs=errs.concat(validateSectEvents());
   return errs;
 }
 
-/* 按批前缀抽查：b01_ / b02_ / b03_ */
+/* 道侣/宗门池 fx 键白名单与结构校验 */
+var PARTNER_FX_KEYS=['aff','affF','affA','favor','affinity','bond','mem','flag','stones','cult','mood','merit','roll','combat'];
+var SECT_FX_KEYS=['favor','bond','contrib','contribVal','merit','insight','fame','stones','cult','mood','hp','flag','roll','combat'];
+function _validateFxPool(arr,poolName,allowedFx,allowStage){
+  var errs=[];
+  if(!Array.isArray(arr)||!arr.length)return errs;
+  arr.forEach(function(e,i){
+    var at='['+poolName+'#'+i+']';
+    if(!e||!e.id){errs.push(at+' 缺 id');return}
+    if(typeof e.t!=='string'||!e.t)errs.push('['+e.id+'] 缺 t');
+    if(allowStage&&e.stage&&['married','unmarried'].indexOf(e.stage)<0)errs.push('['+e.id+'] stage 非法：'+e.stage);
+    if(!Array.isArray(e.opts)||!e.opts.length){errs.push('['+e.id+'] opts 为空');return}
+    e.opts.forEach(function(o,j){
+      if(!o||typeof o.txt!=='string'||!o.txt)errs.push('['+e.id+'] opts['+j+'] 缺 txt');
+      var fx=o&&o.fx||{};
+      Object.keys(fx).forEach(function(k){
+        if(allowedFx.indexOf(k)<0)errs.push('['+e.id+'] opts['+j+'] fx 键非法：'+k);
+      });
+      if(fx.roll){
+        if(!fx.roll.attr||!fx.roll.dc)errs.push('['+e.id+'] roll 缺 attr/dc');
+        if(fx.roll.hitFx)errs=errs.concat(_checkNestedFx(e.id,fx.roll.hitFx,allowedFx));
+        if(fx.roll.missFx)errs=errs.concat(_checkNestedFx(e.id,fx.roll.missFx,allowedFx));
+      }
+      if(fx.combat){
+        var c=fx.combat;
+        if(!c.name||!c.atk||!c.hp)errs.push('['+e.id+'] combat 缺 name/atk/hp');
+        if(c.winFx)errs=errs.concat(_checkNestedFx(e.id,c.winFx,allowedFx));
+      }
+    });
+  });
+  return errs;
+}
+function _checkNestedFx(id,fx,allowedFx){
+  var errs=[];
+  Object.keys(fx||{}).forEach(function(k){
+    if(allowedFx.indexOf(k)<0)errs.push('['+id+'] 嵌套 fx 键非法：'+k);
+  });
+  return errs;
+}
+function validatePartnerEvents(){return _validateFxPool(PARTNER_EVENTS,'partner',PARTNER_FX_KEYS,true)}
+function validateSectEvents(){return _validateFxPool(SECT_EVENTS,'sect',SECT_FX_KEYS,false)}
+
+/* 按批前缀抽查：b01_ / b02_ / b03_ / b04_ */
 function contentByBatch(prefix){
   var errs=[];
   if(!prefix||typeof prefix!=='string')return ['batch 前缀为空'];
@@ -159,6 +208,8 @@ function contentByBatch(prefix){
     {key:'story', arr:_contentPool('story')},
     {key:'region', arr:_contentPool('region')},
     {key:'meditation', arr:_contentPool('meditation')},
+    {key:'partner', arr:_contentPool('partner')},
+    {key:'sect', arr:_contentPool('sect')},
     {key:'titles', arr:_contentPool('titles')},
   ];
   var found=0;
@@ -183,6 +234,9 @@ function contentByBatch(prefix){
       }
       if(pool.key==='meditation'){
         if(!e.t||!Array.isArray(e.opts))errs.push('['+id+'] meditation 字段不全');
+      }
+      if(pool.key==='partner'||pool.key==='sect'){
+        if(!e.t||!Array.isArray(e.opts)||!e.opts.length)errs.push('['+id+'] 缺 t/opts');
       }
       if(pool.key==='titles'){
         if(typeof e.check!=='function'||typeof e.effect!=='function')errs.push('['+id+'] 称号缺 check/effect');

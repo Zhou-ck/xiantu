@@ -402,32 +402,53 @@ function sectGift(i){
   log('<p>你备下 80 灵石为礼，'+(g>=8?'对方眼中一亮，破例多与你说了会话。':'对方道谢收下。')+'（'+esc(p.name)+' 好感 +'+g+'）</p>');
   passTime(1);renderAll();
 }
-/* ===== 门中事宜：同门事件池（宗门人物互动深化） ===== */
+/* ===== 门中事宜：同门事件池（v93 SECT_EVENTS 数据化） ===== */
+function _sectFixT(t){
+  const p=S.sectNpcs&&S.sectNpcs.length?S.sectNpcs[rand(0,S.sectNpcs.length-1)]:null;
+  const name=p?p.name:'同门';
+  return String(t==null?'':t).split('{p}').join(name).split('{s}').join(S.sect?S.sect.name:'本门');
+}
+/* 宗门 fx 解释器：favor/bond/贡献/功德/悟性/roll/combat/数值 */
+function runSectFx(fx){
+  fx=fx||{};
+  const p=S.sectNpcs&&S.sectNpcs.length?S.sectNpcs[rand(0,S.sectNpcs.length-1)]:null;
+  if(fx.favor!=null&&p)favorChange(p,fx.favor,'');
+  if(fx.bond!=null&&p&&typeof addBond==='function'){const bb=addBond(p,fx.bond);if(bb)log(bb)}
+  if(fx.contrib!=null)S.contrib=(S.contrib||0)+fx.contrib;
+  if(fx.contribVal!=null)S.contribVal=(S.contribVal||0)+fx.contribVal;
+  if(fx.merit!=null)addMerit(fx.merit);
+  if(fx.insight!=null)addWis(fx.insight);
+  if(fx.fame!=null){S.fame=S.fame||{};S.fame.zheng=(S.fame.zheng||0)+fx.fame}
+  if(fx.stones!=null)S.stones=(S.stones||0)+fx.stones;
+  if(fx.cult!=null)S.cult=(S.cult||0)+fx.cult;
+  if(fx.mood!=null)S.mood=clamp((S.mood||0)+fx.mood,0,100);
+  if(fx.hp!=null&&fx.hp<0)S.hp=Math.max(1,S.hp-Math.floor(S.maxHp*(-fx.hp)/100));
+  if(fx.flag){if(typeof fx.flag==='string')S.flag[fx.flag]=true;else for(const k in fx.flag)S.flag[k]=fx.flag[k]}
+  if(fx.roll){
+    const r=doRoll(fx.roll.attr,fx.roll.dc);
+    if(fx.roll.prelude)log('<p>'+_sectFixT(fx.roll.prelude)+rollBadge(r.r,r.mod,r.t,r.dc)+'</p>');
+    if(r.hit){if(fx.roll.hit)log('<p>'+_sectFixT(fx.roll.hit)+'</p>');runSectFx(fx.roll.hitFx||{})}
+    else{if(fx.roll.miss)log('<p>'+_sectFixT(fx.roll.miss)+'</p>');runSectFx(fx.roll.missFx||{})}
+  }
+  if(fx.combat){
+    const c=fx.combat;
+    startCombat({name:c.name,atk:c.atk,def:c.def,hp:c.hp,elem:c.elem,style:c.style},res=>{
+      if(res.win){if(c.winTxt)log('<p class="good">'+_sectFixT(c.winTxt)+'</p>');runSectFx(c.winFx||{})}
+      else if(c.loseTxt)log('<p>'+_sectFixT(c.loseTxt)+'</p>');
+    });
+  }
+}
 function sectEvent(){
   if(!S.sect){toast('尚未拜入宗门');return}
   if((S.flag.sectEventCd||0)>0){toast('门中诸事安好，'+(S.flag.sectEventCd)+' 日后再说');return}
   closePanel();
   S.flag.sectEventCd=rand(15,30);
-  const pool=[
-    {t:'后山演武场上，两名同门切磋到一半起了真火，其中一人已拔剑出鞘。',o:[
-      {txt:'🛡️ 上前劝和（魅力判定）',fn:()=>{const R=doRoll('cha',14);log('<p>你横身挡在两人之间：'+rollBadge(R.r,R.mod,R.t,R.dc)+'</p>');if(R.hit){addMerit(1);const p=pick(S.sectNpcs||[]);if(p){p.favor=clamp(p.favor+4,0,100);const bb=addBond(p,2);if(bb)log(bb);}log('<p class="good">你三言两语化解干戈，众人对你愈发敬重（功德+1，同门好感+4）。</p>')}else{log('<p class="danger">两人打得兴起，你被误伤了一下（气血-5%）。</p>');S.hp=Math.max(1,S.hp-Math.floor(S.maxHp*0.05));}}},
-      {txt:'⚔️ 以武压场（力量判定）',fn:()=>{const R=doRoll('str',15);log('<p>你纵身跃入场中：'+rollBadge(R.r,R.mod,R.t,R.dc)+'</p>');if(R.hit){S.fame=S.fame||{};S.fame.zheng=(S.fame.zheng||0)+3;log('<p class="good">你一招分开两人，技惊四座（正道声望+3）。</p>')}else{log('<p>你出手太重，反被两人联手逼退，面子上有些挂不住。</p>');}}},
-      {txt:'👀 站在一旁看热闹',fn:()=>{log('<p>你抱臂旁观，只当一场好戏。事后两人各自悻悻散去。</p>');}},
-    ]},
-    {t:'一名外门弟子采药时误入妖兽领地，此刻正被围在山坳里。',o:[
-      {txt:'🦸 仗义出手相救',fn:()=>{log('<p>你闻讯御风赶往山坳……</p>');startCombat({name:'山中妖兽',atk:4+rl(),def:1+rl(),hp:25+rl()*8},res=>{if(res.win){addMerit(3);log('<p class="good">你救出同门，对方千恩万谢（功德+3）。</p>')}else{log('<p class="danger">妖兽凶猛，你拼死才把同门背出来，自己也挂了彩。</p>');}});}},
-      {txt:'📜 通报长老，请宗门定夺',fn:()=>{addMerit(1);const g=rand(20,50);S.contribVal+=g;log('<p class="good">长老派执法队救人，嘉你处事稳重（贡献值+'+g+'，功德+1）。</p>');}},
-    ]},
-    {t:'入夜，门中几名弟子围炉夜话，正论到「道为何物」。',o:[
-      {txt:'🧘 坐下参与论道（智慧判定）',fn:()=>{const R=doRoll('int',14);log('<p>你于炉边落座：'+rollBadge(R.r,R.mod,R.t,R.dc)+'</p>');if(R.hit){addWis(1);const g=Math.floor(60+rl()*10);S.cult+=g;log('<p class="good">你一言点醒众人，自己也悟得一线天机（悟性+1，修为+'+g+'）。</p>')}else{log('<p>你听得入神，插不上话，却也记下几句。</p>');}}},
-      {txt:'🍶 温一壶酒与大家同饮',fn:()=>{for(const p of (S.sectNpcs||[]))p.mood=clamp((p.mood||60)+5,0,100);log('<p class="good">酒过三巡，众人话匣子大开，门中情谊更暖（同门心情+5）。</p>');}},
-    ]},
-  ];
-  const ev=pick(pool);
+  const ev=pick(SECT_EVENTS||[]);
+  if(!ev){toast('宗门无事');return}
   const person=S.sectNpcs&&S.sectNpcs.length?S.sectNpcs[rand(0,S.sectNpcs.length-1)]:null;
   const head=person?talkHead(person,person.title||person.role):'<div class="talk-head"><span class="talk-avatar">🏮</span><div class="talk-meta"><b>'+esc(S.sect.name)+'</b><small>门中事宜</small></div></div>';
-  talkModal('🏮 门中事宜',head,[{html:'<span style="color:#a99a72">'+esc(ev.t)+'</span>'}],
-    ev.o.map(o=>({txt:o.txt,fn:()=>{o.fn();S.flag.sectEvents=(S.flag.sectEvents||0)+1;passTime(1);renderAll()}})));
+  talkModal('🏮 门中事宜',head,[{html:'<span style="color:#a99a72">'+esc(_sectFixT(ev.t))+'</span>'}],
+    ev.opts.map(o=>({txt:o.txt,fn:()=>{runSectFx(o.fx||{});S.flag.sectEvents=(S.flag.sectEvents||0)+1;passTime(1);renderAll()}})));
 }
 function sectMaster(i){
   const p=S.sectNpcs[i];

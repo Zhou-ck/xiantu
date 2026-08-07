@@ -766,40 +766,55 @@ function childrenHtml(){
   }).join('');
 }
 
-/* ================= 道侣事件：更丰富的日常心动 ================= */
+/* ================= 道侣事件：数据化（v93 PARTNER_EVENTS 池） ================= */
+function _fixG(t){return String(t==null?'':t).split('{g}').join(S.daoPartner?he(S.daoPartner):'她')}
+/* 道侣 fx 解释器：aff/roll/combat/mem/flag/数值 */
+function runPartnerFx(p,fx){
+  fx=fx||{};
+  const g=he(p);
+  if(fx.aff!=null)daoAff(p,fx.aff,fx.aff,'');
+  if(fx.affF!=null)p.favor=clamp((p.favor||0)+fx.affF,0,100);
+  if(fx.affA!=null)p.affinity=clamp((p.affinity||0)+fx.affA,0,200);
+  if(fx.favor!=null)favorChange(p,fx.favor,'');
+  if(fx.affinity!=null)p.affinity=clamp((p.affinity||0)+fx.affinity,0,200);
+  if(fx.bond!=null&&typeof addBond==='function'){const bb=addBond(p,fx.bond);if(bb)log(bb)}
+  if(fx.mem)addMemory(p,_fixG(fx.mem));
+  if(fx.flag){if(typeof fx.flag==='string')S.flag[fx.flag]=true;else for(const k in fx.flag)S.flag[k]=fx.flag[k]}
+  if(fx.stones)S.stones=(S.stones||0)+fx.stones;
+  if(fx.cult)S.cult=(S.cult||0)+fx.cult;
+  if(fx.mood)S.mood=clamp((S.mood||0)+fx.mood,0,100);
+  if(fx.merit)addMerit(fx.merit);
+  if(fx.roll){
+    const r=doRoll(fx.roll.attr,fx.roll.dc);
+    if(fx.roll.prelude)log('<p>'+_fixG(fx.roll.prelude)+rollBadge(r.r,r.mod,r.t,r.dc)+'</p>');
+    if(r.hit){if(fx.roll.hit)log('<p>'+_fixG(fx.roll.hit)+'</p>');runPartnerFx(p,fx.roll.hitFx||{})}
+    else{if(fx.roll.miss)log('<p>'+_fixG(fx.roll.miss)+'</p>');runPartnerFx(p,fx.roll.missFx||{})}
+  }
+  if(fx.combat){
+    const c=fx.combat;
+    startCombat({name:c.name,atk:c.atk,def:c.def,hp:c.hp,elem:c.elem,style:c.style},res=>{
+      if(res.win){if(c.winTxt)log('<p class="good">'+_fixG(c.winTxt)+'</p>');runPartnerFx(p,c.winFx||{})}
+      else if(c.loseTxt)log('<p>'+_fixG(c.loseTxt)+'</p>');
+    });
+  }
+}
 function partnerEvent(){
   const p=S.daoPartner;
   if(!p)return;
-  const g=he(p);
-  const evs=[
-    {t:'夜深了，'+g+'悄悄起身，把一件外袍轻轻搭在你肩上。',opts:[
-      {txt:'💞 握住'+g+'还没来得及收回的手',fn:()=>{log('<p>你的手覆上'+g+'的手背。'+g+'僵了一下，没有抽走，声音闷闷的：「……怕你着凉。」</p>');daoAff(p,3,3,'')}},
-      {txt:'🛌 装作熟睡，看'+g+'怎么办',fn:()=>{log('<p>你闭着眼装睡，感觉到'+g+'在你身侧站了很久，最后极轻极轻地叹了口气，替你掖了掖被角，又悄悄走开了。</p>');daoAff(p,2,2,'')}},
-    ]},
-    {t:''+g+'练剑时划破了手，正抿着唇偷偷包扎。',opts:[
-      {txt:'🧵 上前替'+g+'包扎（魅力判定）',fn:()=>{const R=doRoll('cha',13);log('<p>你接过布条，低头替'+g+'缠好：'+rollBadge(R.r,R.mod,R.t,R.dc)+'</p>');if(R.hit){log('<p>'+g+'看着你认真的侧脸，忽然道：「……要是手一直不好，你是不是一直这样待我？」</p>');daoAff(p,4,4,'')}else{log('<p>你手忙脚乱，打了个难看的结。'+g+'举起手看了看，笑了：「还行，像只蝴蝶。」</p>');daoAff(p,1,1,'')}}},
-      {txt:'😏 打趣'+g+'剑法不精',fn:()=>{log('<p>你笑'+g+'剑法不精，'+g+'恼羞成怒，抄起剑鞘作势要敲你。你抱头鼠窜，满院子鸡飞狗跳。</p>');favorChange(p,-1,'打趣剑法，惹得道侣恼羞成怒')}},
-    ]},
-    {t:'有人当众给'+g+'送了一匣灵玉，'+g+'扭头看向你。',opts:[
-      {txt:'😌 大度一笑，替'+g+'谢过对方',fn:()=>{log('<p>你含笑上前，替'+g+'谢绝了那匣灵玉：「'+g+'的心意，自有我来给。」'+g+'耳朵微红，却挺直了腰。</p>');daoAff(p,4,3,'')}},
-      {txt:'😤 吃醋，牵着'+g+'就走',fn:()=>{log('<p>你一把牵起'+g+'的手，大步离开。'+g+'被你拽得踉跄，却弯着眼睛笑了：「醋坛子。」</p>');daoAff(p,2,2,'')}},
-    ]},
-    {t:''+g+'忽然问：「若有一日，我不在了，你会如何？」',opts:[
-      {txt:'🛡️ 认真回答：我会踏遍九界寻你',fn:()=>{log('<p>你望着'+g+'的眼睛，一字一句：「若你不在了，我便踏遍九界，把你的魂寻回来。」'+g+'愣了很久，忽然扑进你怀里，肩膀轻轻发抖。</p>');daoAff(p,5,5,'')}},
-      {txt:'😅 笑着岔开：「说什么傻话」',fn:()=>{log('<p>你笑着岔开话题。'+g+'跟着笑了笑，眼底却有一瞬黯淡。</p>');favorChange(p,-1,'生死之问被玩笑带过，道侣暗自失落');p.affinity=clamp((p.affinity||0)-1,0,200)}},
-    ]},
-    {t:'雪夜，'+g+'捧着一只烤红薯，在洞府外等你。',opts:[
-      {txt:'🔥 拉'+g+'进洞府，围炉分食',fn:()=>{log('<p>你把'+g+'拉进洞府，烤红薯掰成两半。'+g+'捧着半只红薯，被热气熏得眉眼弯弯：「甜的。」</p>');daoAff(p,3,3,'')}},
-      {txt:'🧣 解下围巾替'+g+'系上',fn:()=>{log('<p>你解下自己的围巾，替'+g+'一圈圈系好。'+g+'整张脸埋在围巾里，只露出一双亮晶晶的眼睛。</p>');daoAff(p,4,4,'')}},
-    ]},
-    {t:''+g+'偷偷在你枕下放了一枚护身符，被你发现了。',opts:[
-      {txt:'💞 收下，贴身佩戴',fn:()=>{S.flag.tongxin=true;addMemory(p,g+'偷偷给我求了护身符');log('<p class="good">你郑重收下那枚护身符，贴身佩戴。'+g+'别过脸去：「寺里的老和尚说，能挡一次灾……你别笑我。」</p>');daoAff(p,5,5,'')}},
-      {txt:'🙏 认真道谢，又替'+g+'求了一枚',fn:()=>{log('<p>你谢过'+g+'，隔日悄悄去了同一座山寺，替'+g+'也求了一枚。'+g+'捏着那枚符，看了你很久。</p>');daoAff(p,4,4,'')}},
-    ]},
-  ];
-  const e=pick(evs);
+  let pool=PARTNER_EVENTS||[];
+  pool=pool.filter(function(e){
+    if(e.stage==='married')return !!p.married;
+    if(e.stage==='unmarried')return !p.married;
+    return true;
+  });
+  if(!pool.length)pool=PARTNER_EVENTS||[];
+  const e=pick(pool);
   talkModal('💞 道侣之事',
     talkHead(p,p.role+(p.gender==='女'?' · ♀':' · ♂')),
-    [{html:'<span style="color:#a99a72">'+esc(e.t)+'</span>'}],
-    e.opts);
+    [{html:'<span style="color:#a99a72">'+esc(_fixG(e.t))+'</span>'}],
+    e.opts.map(o=>({txt:o.txt,fn:()=>{
+      runPartnerFx(p,o.fx||{});
+      S.flag.partnerEvents=(S.flag.partnerEvents||0)+1;
+      passTime(1);renderAll();
+    }})));
 }

@@ -279,6 +279,8 @@ function eventTotalCount(){
   if(typeof REGION_EVENTS!=='undefined')n+=REGION_EVENTS.length;
   if(typeof STORY_EVENTS!=='undefined')n+=STORY_EVENTS.length;
   if(typeof THEME_EVENTS!=='undefined')n+=THEME_EVENTS.length;
+  if(typeof PARTNER_EVENTS!=='undefined')n+=PARTNER_EVENTS.length;
+  if(typeof SECT_EVENTS!=='undefined')n+=SECT_EVENTS.length;
   if(typeof MAIN_STORY!=='undefined')n+=MAIN_STORY.reduce((a,c)=>a+c.steps.filter(s=>s.type==='story').length,0);
   if(typeof SIDE_QUESTS!=='undefined')n+=SIDE_QUESTS.reduce((a,c)=>a+c.steps.filter(s=>s.type==='story').length,0);
   if(typeof CALM_V!=='undefined')n+=CALM_V.length+HERB_V.length+RARE_V.length+DANGER_V.length;

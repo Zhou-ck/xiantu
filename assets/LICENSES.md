@@ -46,6 +46,8 @@
 | assets/scenes/map.jpg | AnyaIGC gpt-image-2（用户授权，备用额度） | 同上 | 无（视觉桥抽查确认） | 九州舆图底图（SVG 标记叠加用） | 2026-08-06 |
 | assets/scenes/tianyan.jpg | AnyaIGC gpt-image-2（用户授权，备用额度） | 同上 | 无（视觉桥抽查确认） | 主线·天衍祭坛场景 | 2026-08-06 |
 | assets/scenes/ghostgate.jpg | AnyaIGC gpt-image-2（用户授权，备用额度） | 同上 | 无（视觉桥抽查确认） | 主线·幽冥之门场景 | 2026-08-06 |
+| assets/scenes/temple.jpg | AnyaIGC gpt-image-2（备用额度出图） | 同上 | 无（待人工视觉抽查） | 主线第零章·破庙场景 | 2026-08-07 |
+| assets/scenes/valley.jpg | LuckyAPI gpt-image-2（按次） | 同上 | 无（待人工视觉抽查） | 主线第一章·灵溪幽谷场景 | 2026-08-07 |
 
 > 说明：以上立绘与场景图均由用户授权的图像生成接口生成（LuckyAPI / AnyaIGC 的 gpt-image-2），
 > 生成提示均含「无文字、无水印」，并已用视觉桥抽查确认画面干净；场景图为 1536×1024 压缩 JPG 入仓。

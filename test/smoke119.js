@@ -29,17 +29,18 @@ assert(counts.b03m===6,'B03 顿悟 6 条（'+counts.b03m+'）');
 assert(counts.b03r===4,'B03 区域 4 条（'+counts.b03r+'）');
 assert(counts.b03t===6,'B03 称号 6 条（'+counts.b03t+'）');
 
-assert(vm.runInContext('GAME_VERSION==="92"',ctx),'GAME_VERSION===92');
+const ver=vm.runInContext('GAME_VERSION',ctx);
+assert(typeof ver==='string'&&/^\d+$/.test(ver),'GAME_VERSION 为数字 v'+ver);
 
 const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
-assert(html.includes('js/core/content-audit.js?v=92'),'index 含 content-audit?v=92');
-assert(html.includes('js/data/batches/b01-social.js?v=92'),'index 含 b01');
-assert(html.includes('js/data/batches/b02-story.js?v=92'),'index 含 b02');
-assert(html.includes('js/data/batches/b03-cult.js?v=92'),'index 含 b03');
-assert(!html.includes('?v=91'),'index 无残留 v=91');
+assert(html.includes('js/core/content-audit.js?v='+ver),'index 含 content-audit?v='+ver);
+assert(html.includes('js/data/batches/b01-social.js?v='+ver),'index 含 b01');
+assert(html.includes('js/data/batches/b02-story.js?v='+ver),'index 含 b02');
+assert(html.includes('js/data/batches/b03-cult.js?v='+ver),'index 含 b03');
+assert(!html.includes('?v='+(parseInt(ver,10)-1)),'index 无残留 v'+(parseInt(ver,10)-1));
 
 const sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
-assert(sw.includes("xiantu2-v92"),'sw CACHE v92');
+assert(sw.includes('xiantu2-v'+ver),'sw CACHE v'+ver);
 assert(sw.includes('content-audit.js'),'sw ASSETS 含 content-audit');
 assert(sw.includes('b01-social.js')&&sw.includes('b02-story.js')&&sw.includes('b03-cult.js'),'sw ASSETS 含三批次');
 
