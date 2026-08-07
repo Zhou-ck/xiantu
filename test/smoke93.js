@@ -48,7 +48,7 @@ assert(vm.runInContext('window.__ch',ctx).indexOf('craft-stage')>=0,'炼器微�
 
 // T5 版本同步
 const sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
-assert(vm.runInContext('GAME_VERSION',ctx)==='71','版本号 v71');
+assert(vm.runInContext('GAME_VERSION',ctx)==='72','版本号 v72');
 assert(sw.indexOf('xiantu2-v'+vm.runInContext('GAME_VERSION',ctx))>=0,'SW 缓存名与版本号同步');
 
 console.log(fails===0?'smoke93: ALL PASS':'smoke93 FAILS: '+fails);

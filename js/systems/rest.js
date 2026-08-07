@@ -29,6 +29,11 @@ function consume(i){
   const it=S.items[i];
   if(!it){toast('此物已不存在');return}
   if(!it.use){toast('此物不可用');return}
+  /* v72 服丹演出：服用任何物品都有灵光飘字反馈（低特效/测试桩自动跳过） */
+  try{
+    if(typeof fxFloatText==='function')fxFloatText('服用 '+it.name,'#e8c86a',false);
+    if(typeof fxBurst==='function')fxBurst(5,'#d8b558');
+  }catch(e){}
   if(it.use==='heal'){
     const heal=Math.floor(S.maxHp*0.6*(it.qMult||1))+(S.bg.traits.some(t=>t.id==='healer')?Math.floor(S.maxHp*0.2):0);
     S.hp=Math.min(S.maxHp,S.hp+heal);
@@ -310,22 +315,25 @@ function panelRest(){
   const farm=ensureFarm();
   const slots=farmSlots();
   let farmHtml='<p>灵田共 <b>'+slots+'</b> 块（洞府扩建 / 自建宗门灵田可加块）。种下种子，静待成熟；途中或有虫害、灵雨、妖兽滋扰。</p>';
+  farmHtml+='<div class="farm-grid">';
   for(let i=0;i<slots;i++){
     const p=farm.plots[i]||null;
     if(!p||!p.crop){
-      farmHtml+='<div class="bd-row"><span>🌱 第 '+(i+1)+' 块（空置）</span><b>'+
-        '<button class="small" onclick="plantCrop(\'herb\','+i+')">灵草 30·7日</button> '+
-        '<button class="small" onclick="plantCrop(\'sherb\','+i+')">灵参 80·15日</button> '+
-        '<button class="small" onclick="plantCrop(\'fruit\','+i+')">朱果 200·30日</button> '+
-        '<button class="small" onclick="plantCrop(\'xucan\','+i+')">玄参 120·20日</button> '+
-        '<button class="small" onclick="plantCrop(\'zizhi\','+i+')">紫芝 260·40日</button></b></div>';
+      farmHtml+='<div class="farm-plot empty"><span class="fp-ico">🌱</span><div class="fp-tx"><b>第 '+(i+1)+' 块 · 空置</b><small>择一种子播种</small><div class="fp-btns">'+
+        '<button class="small" onclick="plantCrop(\'herb\','+i+')">灵草 30·7日</button>'+
+        '<button class="small" onclick="plantCrop(\'sherb\','+i+')">灵参 80·15日</button>'+
+        '<button class="small" onclick="plantCrop(\'fruit\','+i+')">朱果 200·30日</button>'+
+        '<button class="small" onclick="plantCrop(\'xucan\','+i+')">玄参 120·20日</button>'+
+        '<button class="small" onclick="plantCrop(\'zizhi\','+i+')">紫芝 260·40日</button></div></div></div>';
     }else{
       const left=(p.planted||0)+(p.days||0)-S.days;
       const ready=left<=0;
-      farmHtml+='<div class="bd-row'+(ready?' ok':'')+'"><span>🌾 第 '+(i+1)+' 块 · <b>'+CROP_NAMES[p.crop]+'</b>'+(p.evt?' <span class="tag" style="color:#e08a6a">⚠️ '+({pest:'虫害',rain:'灵雨',thief:'妖兽出没'})[p.evt]+'</span>':'')+'</span><b>'+
-        (ready?'<button class="small primary" onclick="harvestCrop('+i+')">收获</button>':'还需 '+Math.max(0,left)+' 日')+'</b></div>';
+      const pct=clamp(Math.floor(((p.days||1)-Math.max(0,left))/(p.days||1)*100),0,100);
+      const CROP_EMOJI={herb:'🌿',sherb:'🌾',fruit:'🍒',xucan:'🌿',zizhi:'🍄'};
+      farmHtml+='<div class="farm-plot'+(ready?' ready':'')+'"><span class="fp-ico">'+(CROP_EMOJI[p.crop]||'🌿')+'</span><div class="fp-tx"><b>'+CROP_NAMES[p.crop]+'</b><small>'+(ready?'已成熟':'还需 '+Math.max(0,left)+' 日')+(p.evt?' · <span class="tag" style="color:#e08a6a">⚠️ '+({pest:'虫害',rain:'灵雨',thief:'妖兽出没'})[p.evt]+'</span>':'')+'</small><div class="bar" style="height:6px;margin:4px 0 0"><i style="width:'+pct+'%"></i></div></div>'+(ready?'<div class="fp-btns"><button class="small primary" onclick="harvestCrop('+i+')">收获</button></div>':'')+'</div>';
     }
   }
+  farmHtml+='</div>';
   const artsHtml=S.arts.map((a,i)=>{
     const lv=a.level||1;
     const maxLv=Math.min(5,bigStage(S.realm)+1);

@@ -174,8 +174,12 @@ function startAuction(){
   const a=getAuction();
   if(a.sold){toast('已售出，来年再会');return}
   const up=Math.max(10,Math.floor(a.price*0.1));
-  openEventModal('🏆 奇珍拍卖 · 第 '+(a.rounds+1)+'/'+AUCTION_ROUNDS+' 轮',
-    '<p>拍品：<b>'+esc(a.it.name)+'</b>（'+QNAMES[a.it.quality]+'）<br>当前价 <b>'+a.price+'</b> 灵石'+(a.lead?'（你暂居上风）':'（你尚未出手）')+'</p><p class="sys">共 3 轮，落槌前价高者得。观望则看他人竞价。</p>',[
+  talkModal('🏆 奇珍拍卖 · 第 '+(a.rounds+1)+'/'+AUCTION_ROUNDS+' 轮',
+    '<div class="talk-head"><span class="talk-avatar">🏮</span><div class="talk-meta"><b>拍卖行掌柜</b><small>奇珍竞拍 · 第 '+(a.rounds+1)+'/'+AUCTION_ROUNDS+' 轮</small></div></div>',
+    [
+      {html:'<span style="color:#a99a72">拍品：<b>'+esc(a.it.name)+'</b>（'+QNAMES[a.it.quality]+'）</span>'},
+      {html:'当前价 <b>'+a.price+'</b> 灵石'+(a.lead?'（你暂居上风）':'（你尚未出手）')+'。共 3 轮，落槌前价高者得，观望则看他人竞价。',typing:true,id:'talkLine0'},
+    ],[
       {txt:'💰 加价 '+up+' 灵石',cls:'primary',fn:()=>{
         if(S.stones<a.price+up){toast('灵石不足（需 '+(a.price+up)+'）');panelMarket();renderAll();return}
         S.flag.auctionLead=true;
