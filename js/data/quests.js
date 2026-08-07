@@ -181,6 +181,12 @@ const MAIN_STORY=[
       opts:[
         {txt:'💠 握住天门钥匙',cls:'primary',fx:{flag:{heavenKey:1},insight:1,once:'m9s3_a'}},
       ]},
+     {type:'story',id:'m9s4',title:'三生石前',go:'quests',
+      lines:['入天门前，你于灵溪尽头见到一方青石，石上水纹如镜，映出三生：前世持卷的老道、今生破庙里惊醒的少年、来世白发执琴的故人。','镜中人齐齐望向你，异口同声：「记得你是谁，就不会走丢。」'],
+      opts:[
+        {txt:'🪨 抚石立誓，勿忘来路',cls:'primary',fx:{insight:1,luck:1,once:'m9s4_a'}},
+        {txt:'🤝 将三生之诺刻入残玉',fx:{merit:3,flag:{tianVow:1}}},
+      ]},
    ]},
   {id:'ch10',icon:'☁️',title:'天门之约',summary:'天门开启，仙凡两别——你兑现了三百年前的约定。',realm:10,
    steps:[
@@ -195,6 +201,12 @@ const MAIN_STORY=[
       opts:[
         {txt:'🌍 转身，守此天地（凡尘线）',cls:'primary',fx:{flag:{tianEnding:'stay'}}},
         {txt:'☁️ 头也不回，踏门而去（飞升线）',fx:{flag:{tianEnding:'ascend'}}},
+      ]},
+     {type:'story',id:'m10s4',title:'人间相送',go:'quests',
+      lines:['临别那夜，灵溪谷的琴声彻夜未歇；破庙的山神像前，多了一炷新香；宗门的钟声敲过三巡，为你送行。','你忽然明白：仙凡之别，隔的从来不是天与地，而是你有没有把人间放进心里。'],
+      opts:[
+        {txt:'🎶 以琴音回礼，辞别故人',cls:'primary',fx:{merit:3,insight:1,once:'m10s4_a'}},
+        {txt:'🤫 不回头，让山风替你道别',fx:{karma:-1,flag:{tianVow:1}}},
       ]},
      {type:'story',id:'m10s3',title:'飞升',go:'quests',
       lines:['无论你作何选择，三百年的因果都在这一刻画上句点。残玉化作流光，飞回破庙的供桌之下——等待下一位有缘人。','【主线 · 天门之约 完结】你的名字，被写进了天衍的注脚。'],

@@ -113,5 +113,7 @@
 | assets/scenes/cult_snow.jpg | AnyaIGC gpt-image-2（用户授权，备用额度） | 生成即所有，可商用免署名 | 无 | v55 修炼场景·雪山 | 2026-08-07 |
 | assets/scenes/cult_abyss.jpg | AnyaIGC gpt-image-2（用户授权，备用额度） | 生成即所有，可商用免署名 | 无 | v55 修炼场景·禁地 | 2026-08-07 |
 | assets/scenes/cult_cave.jpg | AnyaIGC gpt-image-2（用户授权，备用额度） | 生成即所有，可商用免署名 | 无 | v55 修炼场景·洞府 | 2026-08-07 |
+| assets/scenes/tianwen.jpg | AnyaIGC gpt-image-2（用户授权，备用额度） | 生成即所有，可商用免署名 | 无 | 主线·三生石前（v57） | 2026-08-07 |
+| assets/scenes/tianmen.jpg | AnyaIGC gpt-image-2（用户授权，备用额度） | 生成即所有，可商用免署名 | 无 | 主线·人间相送（v57） | 2026-08-07 |
 | assets/modules/world_tower.jpg | AnyaIGC gpt-image-2（用户授权，备用额度） | 生成即所有，可商用免署名 | 无（视觉抽查） | 六页导航·模块图卡 | 2026-08-07 |
 

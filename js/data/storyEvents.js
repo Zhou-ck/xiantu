@@ -84,6 +84,17 @@ const STORY_EVENTS=[
   {id:'st_v55_10',cat:'epic',weight:1,title:'灵光垂幕',t:'一道灵光自云隙垂下，如幕如瀑，正落在你身前丈许。',opts:[{txt:'✨ 承接入体',cls:'primary',fx:{root:2}},{txt:'🧘 观想其意',fx:{insight:1,cult:150}}]},
   {id:'st_v55_11',cat:'danger',weight:2,title:'阴风过岗',t:'荒岗阴风骤起，风中有细碎的嚎哭声，一队黑影自雾中逼近。',opts:[{txt:'⚔️ 拔剑相迎',cls:'danger',fx:{fight:{name:'荒岗阴兵',atk:8,def:3,hp:42,elem:'dark',style:'guard'},winFx:{mat:{demonCore:1}}}},{txt:'🏃 贴地急遁',fx:{hp:-15}}]},
   {id:'st_v55_12',cat:'danger',weight:2,title:'流沙陷阱',t:'脚下的沙地忽然下陷，流沙裹着碎石向你涌来！',opts:[{txt:'🌀 借力翻滚',cls:'danger',fx:{fight:{name:'流沙漩涡',atk:6,def:1,hp:36,elem:'earth',style:'rapid'},winFx:{stones:80}}},{txt:'🧗 抓住岩缝攀出',fx:{hp:-12}}]},
+  /* —— v57 扩充（10 条）—— */
+  {id:'st_v57_1',cat:'calm',weight:2,title:'石桥驮影',t:'石桥下，一位老修士背着一个凡童淌水而过，凡童咯咯直笑。',opts:[{txt:'🫡 侧身让路，目送他们',cls:'primary',fx:{merit:2}},{txt:'🧘 静立桥头，看流水',fx:{cult:55}}]},
+  {id:'st_v57_2',cat:'calm',weight:2,title:'晒书人',t:'秋阳下，有人把满架的书搬到院中晾晒，书页泛黄，字迹犹新。',opts:[{txt:'📖 借阅一卷',cls:'primary',fx:{insight:1,once:'st_v57_2'}},{txt:'🤝 帮忙搬书',fx:{merit:2}}]},
+  {id:'st_v57_3',cat:'calm',weight:2,title:'井台晨话',t:'清晨井台边，村妇们一边洗衣一边说笑，惊起一滩白鹭。',opts:[{txt:'🕊️ 静静听一段家常',cls:'primary',fx:{mood:4}},{txt:'🚶 不扰清早，绕道而行',fx:{cult:45}}]},
+  {id:'st_v57_4',cat:'herb',weight:2,title:'苔衣',t:'古井壁上的青苔肥厚如毡，药铺的人说这是「井泉苔」，能配安神方。',opts:[{txt:'🪣 刮下一片苔衣',cls:'primary',fx:{mat:{herb:2}}},{txt:'🙏 留它在井中养水',fx:{merit:1,mood:2}}]},
+  {id:'st_v57_5',cat:'herb',weight:2,title:'野栗',t:'栗子树下落了一层刺球，裂开的栗子饱满油亮，捡起来能当干粮。',opts:[{txt:'🌰 捡一袋野栗',cls:'primary',fx:{mat:{herb:1},stones:25}},{txt:'🫙 分给路过的猎户',fx:{merit:2}}]},
+  {id:'st_v57_6',cat:'rare',weight:2,title:'残局之约',t:'山亭石桌上摆着一局未完的残棋，旁边压着一张字条：「解此局者，可于亭柱第三孔取一物。」',opts:[{txt:'♟️ 落子解局',cls:'primary',fx:{mat:{jade:1}}},{txt:'📜 只取字条，不作局中人',fx:{insight:1,once:'st_v57_6'}}]},
+  {id:'st_v57_7',cat:'rare',weight:2,title:'雾中渡口',t:'浓雾锁江，渡口只有一条小船。船夫戴着斗笠，声音沙哑：「过不过？雾里有雾里的走法。」',opts:[{txt:'⛵ 上船渡江',cls:'primary',fx:{cult:120,luck:1,once:'st_v57_7'}},{txt:'🧭 沿江寻桥',fx:{cult:80}}]},
+  {id:'st_v57_8',cat:'epic',weight:1,title:'天外琴音',t:'云层之上，隐约传来一段琴音，如诉如慕，竟与灵溪谷的曲调同源。',opts:[{txt:'🎶 盘坐听音',cls:'primary',fx:{insight:1,cult:160}},{txt:'🌫️ 循音而望，记下方位',fx:{flag:{tianSound:1},insight:1,once:'st_v57_8'}}]},
+  {id:'st_v57_9',cat:'danger',weight:2,title:'断桥残雪',t:'雪后断桥，桥板覆冰，一具樵夫的尸体横在桥头，似是被冻毙。',opts:[{txt:'🧣 掩埋遗骸，立碑为记',cls:'primary',fx:{merit:5}},{txt:'⚔️ 疑有凶手，循迹查探',fx:{fight:{name:'雪地妖物',atk:8,def:3,hp:44,elem:'ice',style:'burst'},winFx:{mat:{pelt:1}}}}]},
+  {id:'st_v57_10',cat:'danger',weight:2,title:'地陷',t:'前方地面忽然塌陷，露出一个深不见底的地洞，洞中传来嗡嗡声。',opts:[{txt:'🕳️ 入洞一探',cls:'danger',fx:{fight:{name:'地穴妖蜂',atk:7,def:2,hp:38,elem:'wood',style:'rapid'},winFx:{mat:{sherb:1}}}},{txt:'🚶 绕开地洞',fx:{hp:-10}}]},
 ];
 /* v48 赛季主题：风 / 雷 / 火 / 水（每 3 游戏年轮换） */
 const THEMES=[
