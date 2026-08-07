@@ -69,7 +69,9 @@ function beginGame(){
   if(S.memories.length>=6)S.flag.memCue=2;
   else if(S.memories.length>=3)S.flag.memCue=1;
   S.maxHp=calcMaxHp(S);S.hp=S.maxHp;
-  T.switchScreen('screen-title','screen-game',{after:()=>{
+  /* bugfix(E2E 捕获)：创建流程实际停留在 screen-create，from 须为创建页，
+     否则创建页(z-50)残留覆盖游戏(z-10)并拦截全部点击（仅"继续前缘"路径正常） */
+  T.switchScreen('screen-create','screen-game',{after:()=>{
   setSceneImg('title');
   scene('天衍山 · 凡人界 · 晨曦');
   log('<p>云海翻涌如万顷白浪，天衍山孤峰刺破层云。你于破庙中醒来，掌心还残留着梦里的寒意。庙门外青石小径蜿蜒入雾，半截石碑上只余一个「仙」字可辨。</p><p>远处钟鸣悠长，惊起林间飞鸟。你明白，此去再也回不了头。</p>');

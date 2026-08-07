@@ -1010,6 +1010,25 @@ html.xt-bright #battleBox,html.xt-bright #cultBox{background:linear-gradient(180
 html.xt-bright button{background:linear-gradient(180deg,#3c4570,#2d3454)}
 html.xt-bright .item-card,html.xt-bright .mod-card,html.xt-bright .loc-card,html.xt-bright .quest-row,html.xt-bright .farm-plot,html.xt-bright .pet-card,html.xt-bright .prep-row,html.xt-bright .tab-act,html.xt-bright .qcard{background:linear-gradient(180deg,#2e3556,#242a44)}
 html.xt-bright .talk-head,html.xt-bright .cast-cell,html.xt-bright .exp-banner,html.xt-bright .stat-cell{background:linear-gradient(180deg,#333a5e,#272d48)}
+/* ---------- v90 触屏安全动态化：纯透明度动效（GPU 安全，不触发合成闪） ---------- */
+@keyframes fadeInOnly{from{opacity:0}to{opacity:1}}
+@keyframes cardFade{from{opacity:0}to{opacity:1}}
+@keyframes barPulse{0%,100%{opacity:.22}50%{opacity:.72}}
+@media (pointer:coarse),(hover:none){
+  .log{animation:fadeInOnly .22s ease-out!important}
+  .mod-card{animation:cardFade .26s ease-out both!important}
+  .mod-card:nth-child(n+2){animation-delay:.03s!important}
+  #panel.fx-in,#battle.fx-in,#cultivate.fx-in,#guide.fx-in,#breakthrough.fx-in,#ending.fx-in{animation:fadeInOnly .18s ease-out both!important}
+  #panel.fx-in #panelBox,#cultivate.fx-in #cultBox,#battle.fx-in #battleBox,#guide.fx-in #guideBox,#breakthrough.fx-in #breakBox{animation:fadeInOnly .18s ease-out both!important}
+  .bar>i::after{display:block!important;transform:none!important;width:100%!important;background:linear-gradient(90deg,transparent,rgba(255,255,255,.32),transparent);animation:barPulse 2.8s ease-in-out infinite!important}
+  .qi-ambient{display:block!important;opacity:.65}
+}
+html.fx-touch .log{animation:fadeInOnly .22s ease-out!important}
+html.fx-touch .mod-card{animation:cardFade .26s ease-out both!important}
+html.fx-touch #panel.fx-in,html.fx-touch #battle.fx-in,html.fx-touch #cultivate.fx-in,html.fx-touch #guide.fx-in,html.fx-touch #breakthrough.fx-in,html.fx-touch #ending.fx-in{animation:fadeInOnly .18s ease-out both!important}
+html.fx-touch #panel.fx-in #panelBox,html.fx-touch #cultivate.fx-in #cultBox,html.fx-touch #battle.fx-in #battleBox,html.fx-touch #guide.fx-in #guideBox,html.fx-touch #breakthrough.fx-in #breakBox{animation:fadeInOnly .18s ease-out both!important}
+html.fx-touch .bar>i::after{display:block!important;transform:none!important;width:100%!important;background:linear-gradient(90deg,transparent,rgba(255,255,255,.32),transparent);animation:barPulse 2.8s ease-in-out infinite!important}
+html.fx-touch .qi-ambient{display:block!important;opacity:.65}
 /* 强敌登场卡：守关大妖 */
 .boss-intro{display:flex;align-items:center;gap:12px;margin:10px 0 8px;padding:12px 13px;background:linear-gradient(180deg,#262c46,#1a1f33);border:1px solid rgba(232,200,106,.5);border-radius:12px;box-shadow:0 0 18px rgba(232,200,106,.14)}
 .boss-intro .bi-img{width:58px;height:58px;border-radius:10px;object-fit:cover;border:1px solid rgba(232,200,106,.45);flex:0 0 auto}
