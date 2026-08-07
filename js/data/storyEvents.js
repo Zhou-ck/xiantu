@@ -117,6 +117,15 @@ const STORY_EVENTS=[
   {id:'st_v59_8',cat:'danger',weight:2,title:'雾中灯',t:'浓雾里亮着一盏惨白的灯，灯下立着一道模糊人影，正朝你招手。',opts:[{txt:'🕯️ 提灯上前探看',cls:'primary',fx:{merit:4}},{txt:'⚔️ 疑为引路邪祟，拍灯示警',fx:{fight:{name:'雾中提灯人',atk:8,def:3,hp:42,elem:'dark',style:'guard'},winFx:{merit:3,stones:50}}}]},
   {id:'st_v59_9',cat:'danger',weight:2,title:'夜半敲门',t:'夜宿破庙，三更时分，门外响起不紧不慢的敲门声——可这荒山，哪来的过路人？',opts:[{txt:'🧘 装作未闻，守住心神',cls:'primary',fx:{insight:1,once:'st_v59_9'}},{txt:'🚪 开门一探',fx:{fight:{name:'叩门夜影',atk:9,def:4,hp:46,elem:'dark',style:'burst'},winFx:{stones:60}}}]},
   {id:'st_v59_10',cat:'danger',weight:2,title:'毒瘴谷',t:'谷口立着褪色的木牌：「毒瘴入骨，勿入」。谷中却隐约有灵光闪烁。',opts:[{txt:'🌿 闭息入谷一探',cls:'danger',fx:{fight:{name:'瘴谷毒蟾',atk:8,def:3,hp:40,elem:'wood',style:'poison'},winFx:{mat:{sherb:1}}}},{txt:'🚶 木牌既立，转身便走',fx:{hp:-8}}]},
+  /* —— v60 宗门/道侣向扩充（8 条）—— */
+  {id:'st_v60_1',cat:'calm',weight:2,title:'宗门夜巡',t:'夜巡宗门，檐角的铜铃被风摇响。巡夜的师兄递来一壶热茶：「值守苦，喝口热的。」',opts:[{txt:'🍵 接过热茶，聊几句',cls:'primary',fx:{mood:4}},{txt:'🤝 谢过，替他多巡半圈',fx:{merit:2}}]},
+  {id:'st_v60_2',cat:'calm',weight:2,title:'藏经阁守书人',t:'藏经阁的守书老人正逐册晒书，忽然抬头看你：「书晒久了会脆，人心也一样。」',opts:[{txt:'📖 陪他晒一日书',cls:'primary',fx:{insight:1,once:'st_v60_2'}},{txt:'🫡 鞠一躬，轻声告退',fx:{mood:3,cult:40}}]},
+  {id:'st_v60_3',cat:'rare',weight:2,title:'宗门论剑',t:'宗门演武场上，两位师兄正以竹代剑过招。围观人群里，有人低声议论着「天衍」二字。',opts:[{txt:'🗡️ 下场试剑，以武会友',cls:'primary',fx:{cult:120,insight:1,once:'st_v60_3'}},{txt:'👂 竖起耳朵听那议论',fx:{flag:{sectRumor:1},insight:1}}]},
+  {id:'st_v60_4',cat:'rare',weight:2,title:'掌门传功',t:'掌门闭关前唤你到静室，将一枚温润的木牌放在你掌心：「宗门之重，不在楼阁，在人。此牌，认得你的剑。」',opts:[{txt:'🙏 双手接过木牌',cls:'primary',fx:{flag:{sectToken:1},luck:1}},{txt:'🤝 谢掌门，言明愿以剑护宗',fx:{merit:3,flag:{sectToken:2}}}]},
+  {id:'st_v60_5',cat:'calm',weight:2,title:'道侣煮茶',t:'洞府檐下，道侣正守着茶炉，见你回来，眉眼弯弯：「火候刚好，来尝。」',opts:[{txt:'🍵 接过茶，并肩坐下',cls:'primary',fx:{mood:6,favor:3}},{txt:'🙈 偷捏一下她的袖子',fx:{mood:4,favor:5}}]},
+  {id:'st_v60_6',cat:'calm',weight:2,title:'道侣观星',t:'夜风微凉，道侣靠在廊柱边看星，忽然指着天际：「那颗星，三百年前也这么亮。」',opts:[{txt:'✨ 陪她看一整夜',cls:'primary',fx:{mood:6,insight:1,once:'st_v60_6'}},{txt:'🌠 讲一段星象传说',fx:{favor:5}}]},
+  {id:'st_v60_7',cat:'rare',weight:2,title:'道侣手书',t:'行囊里多了一封叠得整整齐齐的信，字迹是道侣的：「出门在外，平安为要。勿念，盼归。」',opts:[{txt:'💌 贴身收好，回信一封',cls:'primary',fx:{favor:4,mood:4}},{txt:'🕊️ 折成纸鹤寄回',fx:{favor:6,insight:1,once:'st_v60_7'}}]},
+  {id:'st_v60_8',cat:'rare',weight:2,title:'道侣剑穗',t:'临别前，道侣将一枚亲手编的红绳剑穗系上你的剑柄：「剑有鞘，我有你。」',opts:[{txt:'🗡️ 系好剑穗，郑重应诺',cls:'primary',fx:{favor:6,luck:1,once:'st_v60_8'}},{txt:'🙏 谢过，将剑穗收进怀里',fx:{favor:8,merit:1}}]},
 ];
 /* v48 赛季主题：风 / 雷 / 火 / 水（每 3 游戏年轮换） */
 const THEMES=[

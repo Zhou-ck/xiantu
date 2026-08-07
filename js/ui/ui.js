@@ -83,6 +83,8 @@ function scene(title){
 }
 /* 场景背景：按标题关键词匹配生成好的场景插画 */
 const SCENE_IMG=[
+  [/无面战魂|无面|问心手势/, 'assets/scenes/faceless.jpg'],
+  [/天机棋局|棋局|对弈/, 'assets/scenes/chess.jpg'],
   [/山门夜哨|夜哨|暗桩/, 'assets/scenes/sectnight.jpg'],
   [/封魔印|封印|裂隙异动/, 'assets/scenes/seal.jpg'],
   [/剑冢回响|回响|断剑信物/, 'assets/scenes/swordtomb.jpg'],
