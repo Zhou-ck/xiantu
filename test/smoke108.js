@@ -38,7 +38,7 @@ assert(css.indexOf('html.fx-touch .page-hero-img.ld{opacity:.62}')>=0,'横幅亮
 
 // T4 版本同步
 const sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
-assert(vm.runInContext('GAME_VERSION',ctx)==='85','版本号 v85');
+assert(vm.runInContext('GAME_VERSION',ctx)==='86','版本号 v86');
 assert(sw.indexOf('xiantu2-v'+vm.runInContext('GAME_VERSION',ctx))>=0,'SW 缓存名与版本号同步');
 
 console.log(fails===0?'smoke108: ALL PASS':'smoke108 FAILS: '+fails);

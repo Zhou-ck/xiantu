@@ -351,13 +351,15 @@ header .spacer{flex:1}
 @media (pointer:coarse),(hover:none){
   #ink-mist{display:none!important}
   #dust{display:none!important}
-  /* v64：触屏彻底不渲染暖色场景背景层，区域不再因换图/首次合成闪黄 */
-  #sceneLayer{display:none!important}
+  /* v86：触屏恢复静态场景背景（无动画/滤镜/过渡，去掉暗色面纱），画面显著提亮 */
+  #sceneLayer{opacity:.28!important;animation:none!important;filter:none!important;transition:none!important;will-change:auto}
+  #sceneVeil{display:none!important}
   #panel.fx-in #panelBox,#cultivate.fx-in #cultBox,#battle.fx-in #battleBox,#guide.fx-in #guideBox,#breakthrough.fx-in #breakBox{animation:overlayIn .18s ease-out both!important}
 }
 /* 混合输入设备兜底：即使同时匹配 hover:hover，也强制收敛（防 blur/金箔流光复活） */
 html.fx-touch #ink-mist,html.fx-touch #dust{display:none!important}
-html.fx-touch #sceneLayer{display:none!important}
+html.fx-touch #sceneLayer{opacity:.28!important;animation:none!important;filter:none!important;transition:none!important;will-change:auto}
+html.fx-touch #sceneVeil{display:none!important}
 html.fx-touch #panel,html.fx-touch #guide,html.fx-touch #battle,html.fx-touch #cultivate{backdrop-filter:none!important}
 html.fx-touch button::after{display:none!important}
 /* v64fix 触屏暖图闪黄收敛：加载成功后才淡入，压暗色温 + 深色面纱 + 关金箔流光 + 突破金环低亮 */

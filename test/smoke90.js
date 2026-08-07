@@ -20,9 +20,9 @@ vm.createContext(ctx);vm.runInContext(js,ctx);
 let fails=0;function assert(c,m){if(!c){fails++;console.log('FAIL:',m)}else console.log('ok  :',m)}
 
 const css=fs.readFileSync(path.join(root,'css','main.css'),'utf8');
-// T1 场景背景层触屏不渲染（媒体查询 + fx-touch 兜底）
-assert(css.indexOf('#sceneLayer{display:none!important}')>=0,'触屏媒体查询：场景层不渲染');
-assert(css.indexOf('html.fx-touch #sceneLayer{display:none!important}')>=0,'fx-touch 兜底：场景层不渲染');
+// T1 场景背景层触屏静态低透明（媒体查询 + fx-touch 兜底，无动效防闪、保留画面亮度）
+assert(css.indexOf('#sceneLayer{opacity:.28!important;animation:none!important;filter:none!important;transition:none!important;will-change:auto}')>=0,'触屏媒体查询：场景层静态低透明');
+assert(css.indexOf('html.fx-touch #sceneLayer{opacity:.28!important;animation:none!important;filter:none!important;transition:none!important;will-change:auto}')>=0,'fx-touch 兜底：场景层静态低透明');
 // T2 导航图加载成功后才淡入（暗底先呈现，杜绝暖图突现）
 assert(css.indexOf('.page-hero-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .45s ease')>=0,'页横幅图默认透明 + 淡入过渡');
 assert(css.indexOf('.page-hero-img.ld{opacity:.68}')>=0,'页横幅图加载后淡入到 .68');

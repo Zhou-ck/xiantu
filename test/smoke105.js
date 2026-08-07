@@ -38,7 +38,7 @@ assert(css.indexOf('.tome-cell.atlas-item')>=0&&css.indexOf('.atlas-enemy .ae-im
 
 // T4 版本同步
 const sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
-assert(vm.runInContext('GAME_VERSION',ctx)==='85','版本号 v85');
+assert(vm.runInContext('GAME_VERSION',ctx)==='86','版本号 v86');
 assert(sw.indexOf('xiantu2-v'+vm.runInContext('GAME_VERSION',ctx))>=0,'SW 缓存名与版本号同步');
 
 console.log(fails===0?'smoke105: ALL PASS':'smoke105 FAILS: '+fails);
