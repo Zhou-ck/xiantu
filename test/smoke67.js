@@ -19,6 +19,7 @@ assert(vm.runInContext('window.__ev&&window.__ev.cat==="rare"',ctx),'rollStoryEv
 
 // T2 效果执行器：灵石 / 材料 / hp / root / mood
 vm.runInContext(`
+  S.root=50; S.mood=50; S.hp=Math.max(50,S.maxHp);
   const before={st:S.stones,hp:S.hp,root:S.root,mood:S.mood};
   applyEventEffects({stones:100,mat:{herb:2},hp:-10,root:3,mood:5});
   window.__d={st:S.stones-before.st,hp:before.hp-S.hp,root:S.root-before.root,mood:S.mood-before.mood};
