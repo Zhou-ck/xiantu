@@ -122,10 +122,19 @@ const STORY_EVENTS=[
   {id:'st_v60_2',cat:'calm',weight:2,title:'藏经阁守书人',t:'藏经阁的守书老人正逐册晒书，忽然抬头看你：「书晒久了会脆，人心也一样。」',opts:[{txt:'📖 陪他晒一日书',cls:'primary',fx:{insight:1,once:'st_v60_2'}},{txt:'🫡 鞠一躬，轻声告退',fx:{mood:3,cult:40}}]},
   {id:'st_v60_3',cat:'rare',weight:2,title:'宗门论剑',t:'宗门演武场上，两位师兄正以竹代剑过招。围观人群里，有人低声议论着「天衍」二字。',opts:[{txt:'🗡️ 下场试剑，以武会友',cls:'primary',fx:{cult:120,insight:1,once:'st_v60_3'}},{txt:'👂 竖起耳朵听那议论',fx:{flag:{sectRumor:1},insight:1}}]},
   {id:'st_v60_4',cat:'rare',weight:2,title:'掌门传功',t:'掌门闭关前唤你到静室，将一枚温润的木牌放在你掌心：「宗门之重，不在楼阁，在人。此牌，认得你的剑。」',opts:[{txt:'🙏 双手接过木牌',cls:'primary',fx:{flag:{sectToken:1},luck:1}},{txt:'🤝 谢掌门，言明愿以剑护宗',fx:{merit:3,flag:{sectToken:2}}}]},
-  {id:'st_v60_5',cat:'calm',weight:2,title:'道侣煮茶',t:'洞府檐下，道侣正守着茶炉，见你回来，眉眼弯弯：「火候刚好，来尝。」',opts:[{txt:'🍵 接过茶，并肩坐下',cls:'primary',fx:{mood:6,favor:3}},{txt:'🙈 偷捏一下她的袖子',fx:{mood:4,favor:5}}]},
-  {id:'st_v60_6',cat:'calm',weight:2,title:'道侣观星',t:'夜风微凉，道侣靠在廊柱边看星，忽然指着天际：「那颗星，三百年前也这么亮。」',opts:[{txt:'✨ 陪她看一整夜',cls:'primary',fx:{mood:6,insight:1,once:'st_v60_6'}},{txt:'🌠 讲一段星象传说',fx:{favor:5}}]},
-  {id:'st_v60_7',cat:'rare',weight:2,title:'道侣手书',t:'行囊里多了一封叠得整整齐齐的信，字迹是道侣的：「出门在外，平安为要。勿念，盼归。」',opts:[{txt:'💌 贴身收好，回信一封',cls:'primary',fx:{favor:4,mood:4}},{txt:'🕊️ 折成纸鹤寄回',fx:{favor:6,insight:1,once:'st_v60_7'}}]},
-  {id:'st_v60_8',cat:'rare',weight:2,title:'道侣剑穗',t:'临别前，道侣将一枚亲手编的红绳剑穗系上你的剑柄：「剑有鞘，我有你。」',opts:[{txt:'🗡️ 系好剑穗，郑重应诺',cls:'primary',fx:{favor:6,luck:1,once:'st_v60_8'}},{txt:'🙏 谢过，将剑穗收进怀里',fx:{favor:8,merit:1}}]},
+  {id:'st_v60_5',cat:'calm',weight:2,title:'道侣煮茶',t:'洞府檐下，道侣正守着茶炉，见你回来，眉眼弯弯：「火候刚好，来尝。」',opts:[{txt:'🍵 接过茶，并肩坐下',cls:'primary',fx:{mood:6,insight:1,once:'st_v60_5'}},{txt:'🙈 偷捏一下她的袖子',fx:{mood:4,luck:1,once:'st_v60_5b'}}]},
+  {id:'st_v60_6',cat:'calm',weight:2,title:'道侣观星',t:'夜风微凉，道侣靠在廊柱边看星，忽然指着天际：「那颗星，三百年前也这么亮。」',opts:[{txt:'✨ 陪她看一整夜',cls:'primary',fx:{mood:6,insight:1,once:'st_v60_6'}},{txt:'🌠 讲一段星象传说',fx:{mood:4,cult:60}}]},
+  {id:'st_v60_7',cat:'rare',weight:2,title:'道侣手书',t:'行囊里多了一封叠得整整齐齐的信，字迹是道侣的：「出门在外，平安为要。勿念，盼归。」',opts:[{txt:'💌 贴身收好，回信一封',cls:'primary',fx:{mood:6,insight:1,once:'st_v60_7'}},{txt:'🕊️ 折成纸鹤寄回',fx:{mood:4,luck:1}}]},
+  {id:'st_v60_8',cat:'rare',weight:2,title:'道侣剑穗',t:'临别前，道侣将一枚亲手编的红绳剑穗系上你的剑柄：「剑有鞘，我有你。」',opts:[{txt:'🗡️ 系好剑穗，郑重应诺',cls:'primary',fx:{mood:6,luck:1,insight:1,once:'st_v60_8'}},{txt:'🙏 谢过，将剑穗收进怀里',fx:{merit:2,mood:4}}]},
+  /* —— v61 宗门/道侣向扩充（8 条）—— */
+  {id:'st_v61_1',cat:'calm',weight:2,title:'宗门早课',t:'晨钟响过三声，弟子们于演武场列队早课。领课师兄中气十足：「修行如逆水行舟——开始！」',opts:[{txt:'🧘 随众站桩半时辰',cls:'primary',fx:{cult:70,mood:3}},{txt:'📿 闭目听一遍心法',fx:{insight:1,once:'st_v61_1'}}]},
+  {id:'st_v61_2',cat:'rare',weight:2,title:'藏珍阁试炼',t:'藏珍阁每季开阁，弟子可入内取一物——但能取到什么，全凭本事。',opts:[{txt:'🔮 以气机感应宝光',cls:'primary',fx:{mat:{jade:1}}},{txt:'📜 只取一卷功法残页',fx:{insight:1,cult:90,once:'st_v61_2'}}]},
+  {id:'st_v61_3',cat:'rare',weight:2,title:'大比备战',t:'宗门大比将至，演武场日夜有人练剑。你路过时，有人递来一柄木剑：「来两招？」',opts:[{txt:'🗡️ 接剑过招',cls:'primary',fx:{cult:130,insight:1,once:'st_v61_3'}},{txt:'👏 旁观学招',fx:{cult:80}}]},
+  {id:'st_v61_4',cat:'rare',weight:2,title:'下山历练令',t:'掌门的历练令传到你手上：「下山三月，带回一件「见过世面」的东西。」',opts:[{txt:'🧭 接下历练令',cls:'primary',fx:{stones:80,flag:{sectTrial:1}}},{txt:'🤝 与同门结伴下山',fx:{merit:2,luck:1,flag:{sectTrial:2}}}]},
+  {id:'st_v61_5',cat:'calm',weight:2,title:'道侣生辰',t:'今日是道侣的生辰。她嘴上说「不必铺张」，却在檐下挂了一盏新灯，等你先开口。',opts:[{txt:'🎐 送一盏亲手糊的花灯',cls:'primary',fx:{mood:8,insight:1,once:'st_v61_5'}},{txt:'🍜 煮一碗长寿面',fx:{mood:6,cult:50}}]},
+  {id:'st_v61_6',cat:'calm',weight:2,title:'道侣同行',t:'下山路上，道侣与你并肩而行，忽然笑道：「你走路总爱走左边，是为了让我走靠山的一侧？」',opts:[{txt:'😳 被看穿心事，低头认了',cls:'primary',fx:{mood:8,luck:1,once:'st_v61_6'}},{txt:'🫡 正色道：「护道侣，天经地义」',fx:{merit:2,mood:5}}]},
+  {id:'st_v61_7',cat:'rare',weight:2,title:'道侣夜话',t:'夜宿山间，篝火噼啪。道侣说起小时候偷吃供果被追了半个村的事，笑得前仰后合。',opts:[{txt:'🔥 添柴续话，聊到东方既白',cls:'primary',fx:{mood:8,insight:1,once:'st_v61_7'}},{txt:'🌙 笑罢，各自静坐观星',fx:{mood:6,cult:60}}]},
+  {id:'st_v61_8',cat:'rare',weight:2,title:'道侣赠剑',t:'道侣将一柄旧剑递给你：「这是我入道时第一柄剑，剑钝了，剑心没钝。送给你。」',opts:[{txt:'🗡️ 郑重接剑，以剑护她',cls:'primary',fx:{luck:1,insight:1,once:'st_v61_8'}},{txt:'🤝 收下，也赠她一枚护身符',fx:{merit:3,mood:4}}]},
 ];
 /* v48 赛季主题：风 / 雷 / 火 / 水（每 3 游戏年轮换） */
 const THEMES=[
