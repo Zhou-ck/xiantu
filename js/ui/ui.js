@@ -83,6 +83,8 @@ function scene(title){
 }
 /* 场景背景：按标题关键词匹配生成好的场景插画 */
 const SCENE_IMG=[
+  [/剑冢回响|回响|断剑信物/, 'assets/scenes/swordtomb.jpg'],
+  [/战魂|誓约|战旗/, 'assets/scenes/warcry.jpg'],
   [/三生石|三生/, 'assets/scenes/tianwen.jpg'],
   [/人间相送|相送|辞别/, 'assets/scenes/tianmen.jpg'],
   [/天衍|祭坛|天门/,'assets/scenes/tianyan.jpg'],

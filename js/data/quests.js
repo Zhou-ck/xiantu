@@ -72,6 +72,12 @@ const MAIN_STORY=[
         {txt:'🗡️ 以剑意开路，踏入宗门',cls:'primary',fx:{merit:2}},
         {txt:'🤔 先拜入宗门，徐徐图之',fx:{insight:1,once:'m3s4_b'}},
       ]},
+     {type:'story',id:'m3s5',title:'剑冢回响',go:'quests',
+      lines:['入宗前夜，你重回断魂崖。月色下的剑痕竟发出低鸣，像是在与你说最后的嘱托。','「叛徒的剑，是从这里偷走的。这一截断剑你带着——它认得那柄剑的杀气。」剑意凝成一截断剑，落入你掌心。'],
+      opts:[
+        {txt:'🗡️ 收下断剑信物',cls:'primary',fx:{flag:{swordToken:1},insight:1,once:'m3s5_a'}},
+        {txt:'🪨 将断剑留在剑痕旁',fx:{merit:3,luck:1}},
+      ]},
    ]},
   {id:'ch4',icon:'🏯',title:'宗门风云',summary:'古战遗信指向宗门内鬼，藏经阁密语揭开半卷天衍经下落。',realm:4,
    steps:[
@@ -106,6 +112,12 @@ const MAIN_STORY=[
       opts:[
         {txt:'⚔️ 提剑迎向黑云',cls:'danger',fx:{fight:{name:'魔潮前哨统领',atk:10,def:5,hp:60,elem:'dark',style:'burst',boss:true},winFx:{merit:5,stones:120}}},
         {txt:'🕵️ 隐匿身形，探清魔潮部署',fx:{insight:1,once:'m5s3_b'}},
+      ]},
+     {type:'story',id:'m5s4',title:'战魂誓约',go:'quests',
+      lines:['击退前哨后，战魂飘至你面前，将一面残破战旗按入你手中：「旗在，志在。若有一日裂隙失守，凭此旗号令残魂，为你断后。」','你接过战旗，战魂的身影淡了几分，嘴角却微微上扬——它等这句话，等了三百年。'],
+      opts:[
+        {txt:'🪧 立下誓约，扛起战旗',cls:'primary',fx:{flag:{warVow:1},merit:3,once:'m5s4_a'}},
+        {txt:'🔥 燃旗为誓，不留退路',fx:{karma:-1,luck:1,flag:{warVow:2}}},
       ]},
    ]},
   {id:'ch6',icon:'🌑',title:'幽冥之门',summary:'荒古禁地古修残影托付封魔印，九幽裂隙由此开启。',realm:6,
@@ -370,6 +382,18 @@ const SIDE_QUESTS=[
      ]},
    ],
    reward:{stones:300}},
+  {id:'sq_tianjue',icon:'📜',title:'天衍遗策',area:'ruin',summary:'古战场深处的铜匣里，藏着一页天衍经的残策。',
+   start:{visits:['ruin',3]},
+   steps:[
+     {type:'story',title:'残影托信',lines:['第三回到古战场，一处焦土下露出半截铜匣。战魂的残影浮现：「三百年前我埋下此匣，等的就是天衍经的传人。」','「匣中是一页残策——天衍经第三卷的开篇。持之可解祭坛禁制，亦可辨魔修真身。」'],opts:[
+       {txt:'📜 郑重取出残策',cls:'primary',fx:{insight:1}},
+     ]},
+     {type:'kill',param:3,hint:'魔潮斥候正搜山寻此匣——击败 3 名敌人，护住遗策。',go:'map'},
+     {type:'story',title:'残策入怀',lines:['你将残策贴身收好，焦土之上风声渐歇。','战魂残影散去前低语：「记住——天衍经的最后一页，不在书里，在人心里。」'],opts:[
+       {txt:'🤝 向焦土郑重一礼',cls:'primary',fx:{merit:3,insight:1,once:'sq_tianjue'}},
+     ]},
+   ],
+   reward:{stones:250,mat:{jade:1}}},
 ];
 /* 主线/支线对账：校验用（章节步骤数 / 支线步骤数） */
 function questCoverage(){

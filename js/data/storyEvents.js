@@ -95,6 +95,17 @@ const STORY_EVENTS=[
   {id:'st_v57_8',cat:'epic',weight:1,title:'天外琴音',t:'云层之上，隐约传来一段琴音，如诉如慕，竟与灵溪谷的曲调同源。',opts:[{txt:'🎶 盘坐听音',cls:'primary',fx:{insight:1,cult:160}},{txt:'🌫️ 循音而望，记下方位',fx:{flag:{tianSound:1},insight:1,once:'st_v57_8'}}]},
   {id:'st_v57_9',cat:'danger',weight:2,title:'断桥残雪',t:'雪后断桥，桥板覆冰，一具樵夫的尸体横在桥头，似是被冻毙。',opts:[{txt:'🧣 掩埋遗骸，立碑为记',cls:'primary',fx:{merit:5}},{txt:'⚔️ 疑有凶手，循迹查探',fx:{fight:{name:'雪地妖物',atk:8,def:3,hp:44,elem:'ice',style:'burst'},winFx:{mat:{pelt:1}}}}]},
   {id:'st_v57_10',cat:'danger',weight:2,title:'地陷',t:'前方地面忽然塌陷，露出一个深不见底的地洞，洞中传来嗡嗡声。',opts:[{txt:'🕳️ 入洞一探',cls:'danger',fx:{fight:{name:'地穴妖蜂',atk:7,def:2,hp:38,elem:'wood',style:'rapid'},winFx:{mat:{sherb:1}}}},{txt:'🚶 绕开地洞',fx:{hp:-10}}]},
+  /* —— v58 扩充（10 条）—— */
+  {id:'st_v58_1',cat:'calm',weight:2,title:'檐下避雨',t:'骤雨，你于屋檐下避雨，檐角的铜铃被风吹得叮当响，像在数雨点。',opts:[{txt:'🔔 听铃听雨',cls:'primary',fx:{mood:4,cult:45}},{txt:'🧘 雨中观檐滴入洼',fx:{cult:60}}]},
+  {id:'st_v58_2',cat:'calm',weight:2,title:'荷锄而归',t:'暮色里，老农荷锄而归，身后跟着一条黄狗，影子被夕阳拉得很长。',opts:[{txt:'🌾 目送他们进村',cls:'primary',fx:{merit:1,mood:3}},{txt:'🚶 错身而过',fx:{cult:40}}]},
+  {id:'st_v58_3',cat:'herb',weight:2,title:'断肠草',t:'溪边长着一丛断肠草，叶面泛着幽幽紫光——剧毒，却也是一味猛药引子。',opts:[{txt:'🧤 以布裹手采下',cls:'primary',fx:{mat:{herb:2}}},{txt:'⚠️ 记下位置，提醒路人',fx:{merit:2}}]},
+  {id:'st_v58_4',cat:'herb',weight:2,title:'蜂巢',t:'悬崖下挂着一个斗大的野蜂巢，蜜香隔着老远都能闻到。',opts:[{txt:'🍯 以烟熏取蜜',cls:'primary',fx:{mat:{herb:1},stones:35}},{txt:'🚶 不扰蜂家',fx:{merit:1}}]},
+  {id:'st_v58_5',cat:'rare',weight:2,title:'水底剑影',t:'深潭底部，隐约有一道剑影静静悬浮，水光粼粼间似有灵性。',opts:[{txt:'🌊 入水一探',cls:'primary',fx:{mat:{iron:1},insight:1,once:'st_v58_5'}},{txt:'🧘 临渊观剑',fx:{cult:70}}]},
+  {id:'st_v58_6',cat:'rare',weight:2,title:'药王遗炉',t:'藤蔓深处露出一尊锈迹斑斑的丹炉，炉腹上刻着「丹成之日，炉鸣九声」。',opts:[{txt:'🔥 引火试炉',cls:'primary',fx:{profExp:15,insight:1,once:'st_v58_6'}},{txt:'📜 拓下炉文',fx:{cult:60}}]},
+  {id:'st_v58_7',cat:'epic',weight:1,title:'月宫桂影',t:'中秋月明，天边竟浮起一片桂树的虚影，桂香隔着云层都能闻到。',opts:[{txt:'🌕 接一片桂叶',cls:'primary',fx:{luck:1,mood:6}},{txt:'🧘 沐月静修',fx:{cult:150,insight:1,once:'st_v58_7'}}]},
+  {id:'st_v58_8',cat:'danger',weight:2,title:'荒村夜哭',t:'一座荒村，入夜后隐隐传来哭声。村口井边坐着个披发的白衣女子。',opts:[{txt:'🕯️ 秉烛上前探问',cls:'primary',fx:{merit:4}},{txt:'⚔️ 疑为邪祟，拔剑相向',fx:{fight:{name:'井边怨灵',atk:8,def:3,hp:40,elem:'dark',style:'guard'},winFx:{merit:3}}}]},
+  {id:'st_v58_9',cat:'danger',weight:2,title:'山火',t:'远处山火蔓延，浓烟滚滚，风向却正朝着一座村庄吹去。',opts:[{txt:'🌊 御水灭火，护村而行',cls:'primary',fx:{merit:6,stones:40}},{txt:'🚶 绕路而行',fx:{hp:-10,karma:3}}]},
+  {id:'st_v58_10',cat:'danger',weight:2,title:'断崖裂隙',t:'断崖上裂开一道新缝，缝隙深处传来低沉的呼吸声，仿佛有什么东西在岩层下翻身。',opts:[{txt:'⚔️ 探入裂隙',cls:'danger',fx:{fight:{name:'岩下蛰物',atk:9,def:4,hp:48,elem:'earth',style:'burst'},winFx:{mat:{jade:1}}}},{txt:'🚶 记下方位，从长计议',fx:{insight:1,once:'st_v58_10'}}]},
 ];
 /* v48 赛季主题：风 / 雷 / 火 / 水（每 3 游戏年轮换） */
 const THEMES=[
