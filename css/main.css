@@ -11,13 +11,13 @@ html,body{height:100%}
 body{
   font-family:'Kaiti SC','STKaiti','KaiTi','SimSun',serif;
   background:
-    radial-gradient(ellipse at 50% -10%,#3a4268 0%,#1d2236 48%,#0d101c 100%),
+    radial-gradient(ellipse at 50% -10%,#454f7d 0%,#222842 48%,#111527 100%),
     repeating-linear-gradient(115deg,rgba(255,255,255,.012) 0 2px,transparent 2px 9px);
   color:#e8dcc0;min-height:100vh;
 }
 button{
   font-family:inherit;cursor:pointer;border:1px solid rgba(201,162,75,.55);
-  background:linear-gradient(180deg,#2b3150,#1d2236);
+  background:linear-gradient(180deg,#343b5f,#252b46);
   color:var(--gold2);padding:7px 12px;border-radius:8px;font-size:14px;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 2px 6px rgba(0,0,0,.35);
   transition:background-color .15s,color .15s,border-color .15s,box-shadow .15s;
@@ -92,7 +92,7 @@ h1.title{font-size:46px;letter-spacing:14px;color:var(--gold2);text-shadow:0 0 2
 #screen-game{position:fixed;inset:0;display:flex;flex-direction:column;z-index:10}
 header{
   padding:10px 18px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;
-  background:linear-gradient(180deg,#1e2438,#151929);border-bottom:1px solid var(--line-gold);
+  background:linear-gradient(180deg,#262d4a,#1b2036);border-bottom:1px solid var(--line-gold);
   box-shadow:0 2px 12px rgba(0,0,0,.35);
 }
 header .logo{color:var(--gold2);font-size:18px;letter-spacing:6px;text-shadow:0 0 12px rgba(201,162,75,.35)}
@@ -105,7 +105,7 @@ header .spacer{flex:1}
 #main{flex:1;display:flex;min-height:0}
 #side{
   width:310px;min-width:250px;overflow:auto;padding:14px;border-right:1px solid #2e3350;
-  background:linear-gradient(180deg,rgba(32,37,58,.96),rgba(21,25,40,.97));
+  background:linear-gradient(180deg,rgba(40,47,72,.96),rgba(27,32,50,.97));
   border-right:1px solid var(--line-gold);
 }
 #scrim{position:fixed;inset:0;background:rgba(5,7,12,.55);z-index:35;display:none}
@@ -113,9 +113,9 @@ header .spacer{flex:1}
   flex:1;overflow:auto;padding:22px 26px;position:relative;
   overscroll-behavior:contain;
   background:
-    radial-gradient(ellipse at 50% -20%,rgba(110,130,195,.3),transparent 58%),
-    linear-gradient(180deg,rgba(18,22,36,.12),rgba(16,20,32,.55)),
-    repeating-linear-gradient(0deg,rgba(201,162,75,.035) 0 1px,transparent 1px 26px);
+    radial-gradient(ellipse at 50% -20%,rgba(130,150,215,.42),transparent 58%),
+    linear-gradient(180deg,rgba(26,32,52,.16),rgba(24,30,48,.62)),
+    repeating-linear-gradient(0deg,rgba(201,162,75,.05) 0 1px,transparent 1px 26px);
 }
 #main{position:relative}
 #sceneLayer{position:absolute;inset:0;z-index:0;background-size:cover;background-position:center;opacity:.40;filter:saturate(.88) brightness(.92);transition:opacity .8s ease;animation:kenburns 26s ease-in-out infinite alternate;pointer-events:none}
@@ -175,7 +175,7 @@ header .spacer{flex:1}
 
 #actions{
   padding:10px 14px;display:flex;gap:8px;flex-wrap:wrap;justify-content:center;
-  background:linear-gradient(180deg,#1a1e30,#141724);border-top:1px solid var(--line-gold);
+  background:linear-gradient(180deg,#222840,#1a1e32);border-top:1px solid var(--line-gold);
 }
 #actions button{display:inline-flex;align-items:center;gap:6px}
 .act-icon{
@@ -197,7 +197,7 @@ header .spacer{flex:1}
 }
 #panelBox{
   width:min(680px,94vw);max-height:86vh;display:flex;flex-direction:column;
-  background:linear-gradient(180deg,#232940,#171b2b);border:1px solid rgba(201,162,75,.5);border-radius:14px;
+  background:linear-gradient(180deg,#2b3250,#1e2336);border:1px solid rgba(201,162,75,.5);border-radius:14px;
   box-shadow:0 0 50px rgba(0,0,0,.7),inset 0 0 40px rgba(201,162,75,.04);overflow:hidden;
 }
 #panelHead{padding:14px 20px;border-bottom:1px solid #3a3f5c;display:flex;align-items:center;gap:12px}
@@ -207,7 +207,7 @@ header .spacer{flex:1}
 #panelBody p{font-size:14px;color:#cfc3a0;line-height:1.9;margin:4px 0}
 #panelBody .row{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
 .item-card{
-  background:linear-gradient(180deg,#1e2338,#191e31);border:1px solid rgba(201,162,75,.22);border-radius:8px;
+  background:linear-gradient(180deg,#262c48,#1e2338);border:1px solid rgba(201,162,75,.22);border-radius:8px;
   padding:10px 12px;margin:8px 0;box-shadow:0 2px 8px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.04);
 }
 .item-card .nm{color:var(--gold2);font-size:14px}
@@ -309,14 +309,14 @@ header .spacer{flex:1}
 .quest-item.done{color:#5c8a5c}
 .quest-item b{font-weight:normal}
 #guide{position:fixed;inset:0;z-index:80;display:none;align-items:center;justify-content:center;background:rgba(5,7,12,.78)}
-#guideBox{width:min(640px,94vw);max-height:88vh;overflow:auto;background:linear-gradient(180deg,#232940,#171b2b);border:1px solid var(--gold);border-radius:14px;padding:26px 30px;box-shadow:0 0 50px rgba(0,0,0,.7);-webkit-overflow-scrolling:touch}
+#guideBox{width:min(640px,94vw);max-height:88vh;overflow:auto;background:linear-gradient(180deg,#2b3250,#1e2336);border:1px solid var(--gold);border-radius:14px;padding:26px 30px;box-shadow:0 0 50px rgba(0,0,0,.7);-webkit-overflow-scrolling:touch}
 #guideBox h3{color:var(--gold2);font-weight:normal;letter-spacing:3px;text-align:center;font-size:20px;margin-bottom:12px}
 #guideBox p{color:#cfc3a0;line-height:1.9;font-size:14.5px;margin:8px 0}
 #guideBox .tip{background:#1b1f31;border-left:3px solid var(--gold);padding:10px 12px;border-radius:4px;margin:10px 0;color:#c9b98e;font-size:13.5px;line-height:1.8}
 #guideNav{display:flex;justify-content:space-between;align-items:center;margin-top:22px;gap:10px}
 #guideDots{color:#5d5f74;font-size:13px}
 #battle{position:fixed;inset:0;z-index:55;display:none;align-items:center;justify-content:center;background:rgba(5,7,12,.82)}
-#battleBox{width:min(560px,94vw);max-height:92vh;display:flex;flex-direction:column;background:linear-gradient(180deg,#232940,#141724);border:1px solid var(--gold);border-radius:14px;box-shadow:0 0 60px rgba(0,0,0,.8);overflow:hidden}
+#battleBox{width:min(560px,94vw);max-height:92vh;display:flex;flex-direction:column;background:linear-gradient(180deg,#2b3250,#1c2034);border:1px solid var(--gold);border-radius:14px;box-shadow:0 0 60px rgba(0,0,0,.8);overflow:hidden}
 #battleHead{padding:11px 16px;text-align:center;color:var(--gold2);letter-spacing:3px;font-size:16px;border-bottom:1px solid #3a3f5c;background:rgba(0,0,0,.22)}
 .bside{padding:10px 18px 4px}
 .bname{font-size:14.5px;color:#f0e6c8;margin-bottom:5px}
@@ -379,7 +379,7 @@ html.fx-touch .mod-imgwrap::after{content:'';position:absolute;inset:0;z-index:1
 html.fx-touch .bar>i::after{display:none!important}
 html.fx-touch #btAura.on{animation:auraBurstT 1s ease-out}
 html.fx-touch #panel.fx-in #panelBox,html.fx-touch #cultivate.fx-in #cultBox,html.fx-touch #battle.fx-in #battleBox,html.fx-touch #guide.fx-in #guideBox,html.fx-touch #breakthrough.fx-in #breakBox{animation:overlayIn .18s ease-out both!important}
-#cultBox{width:min(560px,94vw);max-height:92vh;display:flex;flex-direction:column;background:linear-gradient(180deg,#232940,#141724);border:1px solid var(--gold);border-radius:14px;box-shadow:0 0 60px rgba(0,0,0,.8);overflow:hidden}
+#cultBox{width:min(560px,94vw);max-height:92vh;display:flex;flex-direction:column;background:linear-gradient(180deg,#2b3250,#1c2034);border:1px solid var(--gold);border-radius:14px;box-shadow:0 0 60px rgba(0,0,0,.8);overflow:hidden}
 #cultHead{padding:11px 16px;text-align:center;color:var(--gold2);letter-spacing:3px;font-size:16px;border-bottom:1px solid #3a3f5c;background:rgba(0,0,0,.22)}
 .cult-partner{display:flex;align-items:center;gap:10px;padding:8px 12px;margin:8px 14px 2px;background:linear-gradient(180deg,#232a47,#1a2036);border:1px solid rgba(201,162,75,.25);border-radius:10px}
 .cult-partner.dual{border-color:rgba(232,200,106,.55);box-shadow:0 0 14px rgba(232,200,106,.12)}
@@ -435,12 +435,12 @@ html.fx-touch #panel.fx-in #panelBox,html.fx-touch #cultivate.fx-in #cultBox,htm
 }
 
 /* ===== 仙途2 · 分类导航（底部标签页） ===== */
-#tabbar{display:flex;flex:0 0 auto;gap:4px;padding:6px 6px calc(6px + env(safe-area-inset-bottom));background:linear-gradient(180deg,#1a1e30,#141724);border-top:1px solid var(--line-gold)}
+#tabbar{display:flex;flex:0 0 auto;gap:4px;padding:6px 6px calc(6px + env(safe-area-inset-bottom));background:linear-gradient(180deg,#222840,#1a1e32);border-top:1px solid var(--line-gold)}
 #tabbar .tab-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:52px;background:none;border:none;border-radius:10px;color:#8f9cb8;padding:4px 2px;cursor:pointer}
 #tabbar .tab-btn.on{color:var(--gold2);background:rgba(201,162,75,.12)}
 #tabbar .tab-ico{font-size:20px;line-height:1}
 #tabbar .tab-lbl{font-size:11px;letter-spacing:1px}
-.tab-act{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:linear-gradient(180deg,#1e2338,#191e31);border:1px solid rgba(201,162,75,.22);border-radius:10px;padding:10px 12px;margin:7px 0;color:var(--gold2)}
+.tab-act{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:linear-gradient(180deg,#262c48,#1e2338);border:1px solid rgba(201,162,75,.22);border-radius:10px;padding:10px 12px;margin:7px 0;color:var(--gold2)}
 .tab-act .tab-act-ico{font-size:20px;width:34px;text-align:center;flex:0 0 auto}
 .tab-act-tx{display:flex;flex-direction:column;gap:2px;min-width:0}
 .tab-act-tx b{font-size:14px;font-weight:normal;color:var(--gold2)}
@@ -458,7 +458,7 @@ html.fx-touch #panel.fx-in #panelBox,html.fx-touch #cultivate.fx-in #cultBox,htm
 .page-hero-tx b{font-size:19px;font-weight:normal;color:var(--gold2);letter-spacing:4px;text-shadow:0 0 12px rgba(201,162,75,.35)}
 .page-hero-tx small{font-size:12px;color:#c9b98e;letter-spacing:1px}
 .mod-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:4px}
-.mod-card{display:flex;flex-direction:column;text-align:left;background:linear-gradient(180deg,#1e2338,#191e31);border:1px solid rgba(201,162,75,.22);border-radius:12px;overflow:hidden;padding:0;color:var(--gold2);animation:modIn .34s ease-out both;transition:transform .16s ease,border-color .16s ease}
+.mod-card{display:flex;flex-direction:column;text-align:left;background:linear-gradient(180deg,#262c48,#1e2338);border:1px solid rgba(201,162,75,.22);border-radius:12px;overflow:hidden;padding:0;color:var(--gold2);animation:modIn .34s ease-out both;transition:transform .16s ease,border-color .16s ease}
 .mod-card:nth-child(odd){animation-delay:.04s}
 .mod-card:nth-child(even){animation-delay:.09s}
 .mod-imgwrap{position:relative;width:100%;aspect-ratio:16/9;background:linear-gradient(160deg,#252c4a,#171b2e);display:flex;align-items:center;justify-content:center;overflow:hidden}
@@ -722,7 +722,7 @@ html.fx-low .map-pin{animation:none}
 .qcard-foot{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;align-items:center}
 .qtag{font-size:11px}
 .story-cast{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0 12px}
-.cast-cell{display:flex;align-items:center;gap:8px;background:linear-gradient(180deg,#232940,#1a1f33);border:1px solid rgba(201,162,75,.32);border-radius:10px;padding:5px 10px 5px 5px;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+.cast-cell{display:flex;align-items:center;gap:8px;background:linear-gradient(180deg,#2b3250,#20263f);border:1px solid rgba(201,162,75,.32);border-radius:10px;padding:5px 10px 5px 5px;box-shadow:0 2px 8px rgba(0,0,0,.25)}
 .cast-cell .cast-img{width:38px;height:38px;border-radius:8px;object-fit:cover;border:1px solid rgba(201,162,75,.45)}
 .cast-cell span{font-size:13px;color:var(--gold2);letter-spacing:1px}
 .bside.fig-side{display:flex;align-items:center;gap:12px}
@@ -738,7 +738,7 @@ html.fx-low .story-cast,html.fx-low .qcard-head{animation:none!important}
 
 /* ---------- v66 聊天式对话演出 / 战斗受击 ---------- */
 .talk-wrap{display:flex;flex-direction:column;gap:10px}
-.talk-head{display:flex;align-items:center;gap:12px;padding:10px 12px;background:linear-gradient(180deg,#232940,#1a1f33);border:1px solid rgba(201,162,75,.3);border-radius:12px;margin-bottom:2px}
+.talk-head{display:flex;align-items:center;gap:12px;padding:10px 12px;background:linear-gradient(180deg,#2b3250,#20263f);border:1px solid rgba(201,162,75,.3);border-radius:12px;margin-bottom:2px}
 .talk-avatar{width:52px;height:52px;border-radius:50%;object-fit:cover;border:2px solid rgba(201,162,75,.5);flex:0 0 auto;font-size:27px;display:flex;align-items:center;justify-content:center;background:#262c46;overflow:hidden}
 .talk-meta{display:flex;flex-direction:column;gap:2px;min-width:0}
 .talk-meta b{color:var(--gold2);font-size:15px;letter-spacing:1px}
@@ -761,7 +761,7 @@ html.fx-low .talk-bubble,html.fx-low .talk-avatar{animation:none!important}
 
 /* ---------- v67 探索地点卡 / 详情缩略图 / 副业演出 ---------- */
 .loc-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
-.loc-card{display:flex;flex-direction:column;text-align:left;padding:0;background:linear-gradient(180deg,#1e2338,#191e31);border:1px solid rgba(201,162,75,.22);border-radius:12px;overflow:hidden;color:var(--gold2)}
+.loc-card{display:flex;flex-direction:column;text-align:left;padding:0;background:linear-gradient(180deg,#262c48,#1e2338);border:1px solid rgba(201,162,75,.22);border-radius:12px;overflow:hidden;color:var(--gold2)}
 .loc-card.locked{opacity:.62}
 .loc-card.locked .loc-imgwrap{filter:grayscale(.85) brightness(.65)}
 .loc-imgwrap{position:relative;width:100%;aspect-ratio:16/9;background:linear-gradient(160deg,#252c4a,#171b2e);display:flex;align-items:center;justify-content:center;overflow:hidden}
@@ -790,7 +790,7 @@ html.fx-low .loc-img{transition:none!important}
 html.fx-touch .loc-img{filter:none!important}
 
 /* ---------- v69 任务行卡片化 ---------- */
-.quest-row{display:flex;align-items:center;gap:9px;padding:7px 10px;background:linear-gradient(180deg,#1e2338,#191e31);border:1px solid rgba(201,162,75,.18);border-radius:9px;margin:5px 0}
+.quest-row{display:flex;align-items:center;gap:9px;padding:7px 10px;background:linear-gradient(180deg,#262c48,#1e2338);border:1px solid rgba(201,162,75,.18);border-radius:9px;margin:5px 0}
 .quest-row.done{opacity:.72}
 .quest-ico{font-size:17px;flex:0 0 auto}
 .quest-tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
@@ -823,7 +823,7 @@ html.fx-low .bt-realm-up{animation:none!important}
 
 /* ---------- v72 灵田卡片 / 操作演出 ---------- */
 .farm-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:8px}
-.farm-plot{display:flex;align-items:flex-start;gap:10px;padding:10px 11px;background:linear-gradient(180deg,#1e2338,#191e31);border:1px solid rgba(201,162,75,.22);border-radius:12px}
+.farm-plot{display:flex;align-items:flex-start;gap:10px;padding:10px 11px;background:linear-gradient(180deg,#262c48,#1e2338);border:1px solid rgba(201,162,75,.22);border-radius:12px}
 .farm-plot.empty{border-style:dashed}
 .farm-plot.ready{border-color:rgba(140,208,160,.55);box-shadow:0 0 12px rgba(140,208,160,.14)}
 .farm-plot .fp-ico{font-size:26px;flex:0 0 auto;line-height:1.2}
@@ -837,7 +837,7 @@ html.fx-low .bt-realm-up{animation:none!important}
 }
 
 /* ---------- v73 灵兽卡 / 生涯统计卡 ---------- */
-.pet-card{display:flex;align-items:center;gap:14px;padding:14px;background:linear-gradient(180deg,#1e2338,#191e31);border:1px solid rgba(201,162,75,.28);border-radius:14px;margin-bottom:10px;box-shadow:0 2px 10px rgba(0,0,0,.25)}
+.pet-card{display:flex;align-items:center;gap:14px;padding:14px;background:linear-gradient(180deg,#262c48,#1e2338);border:1px solid rgba(201,162,75,.28);border-radius:14px;margin-bottom:10px;box-shadow:0 2px 10px rgba(0,0,0,.25)}
 .pet-card .pet-img{flex:0 0 auto;width:112px;height:112px;border-radius:14px;overflow:hidden;background:linear-gradient(160deg,#252c4a,#171b2e);border:1px solid rgba(201,162,75,.35);display:flex;align-items:center;justify-content:center}
 .pet-card .pet-portrait{width:100%;height:100%;object-fit:cover}
 .pet-card .pet-emoji{font-size:44px;line-height:1}
@@ -862,7 +862,7 @@ html.fx-low .bt-realm-up{animation:none!important}
 .chip.end-chip{border-color:rgba(201,162,75,.5);color:var(--gold2)}
 .chip.mem-chip{border-color:rgba(160,168,224,.45);color:#aab8e0}
 .chip.flag-chip{border-color:rgba(200,120,150,.45);color:#d8a0b8}
-.prep-row{display:flex;align-items:center;gap:8px;padding:7px 10px;margin:4px 0;border-radius:9px;background:linear-gradient(180deg,#1e2338,#191e31);border:1px solid rgba(201,162,75,.16)}
+.prep-row{display:flex;align-items:center;gap:8px;padding:7px 10px;margin:4px 0;border-radius:9px;background:linear-gradient(180deg,#262c48,#1e2338);border:1px solid rgba(201,162,75,.16)}
 .prep-row.ok{border-color:rgba(140,208,160,.5)}
 .prep-row.no{border-color:rgba(200,120,120,.35)}
 .prep-mark{font-size:15px;flex:0 0 auto}
@@ -922,7 +922,7 @@ html.fx-low .craft-result{animation:none!important}
 .loot-chip{animation:lootIn .3s ease-out both}
 .loot-strip .loot-chip:nth-child(n+2){animation-delay:.05s}
 @keyframes lootIn{0%{opacity:0;transform:translateY(6px) scale(.9)}100%{opacity:1;transform:none}}
-.exp-banner{display:flex;align-items:center;gap:12px;margin:8px 0 10px;padding:11px 13px;background:linear-gradient(180deg,#232940,#1a1f33);border:1px solid rgba(201,162,75,.32);border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,.22)}
+.exp-banner{display:flex;align-items:center;gap:12px;margin:8px 0 10px;padding:11px 13px;background:linear-gradient(180deg,#2b3250,#20263f);border:1px solid rgba(201,162,75,.32);border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,.22)}
 .exp-banner .eb-ico{font-size:26px;flex:0 0 auto}
 .exp-banner .eb-tx{display:flex;flex-direction:column;gap:2px;min-width:0}
 .exp-banner .eb-tx b{font-size:14.5px;font-weight:normal;color:var(--gold2);letter-spacing:2px}
@@ -930,7 +930,7 @@ html.fx-low .craft-result{animation:none!important}
 html.fx-low .loot-chip{animation:none!important}
 
 /* ---------- v79 收藏图鉴图标化 ---------- */
-.tome-cell.atlas-item{border:1px solid rgba(201,162,75,.2);border-radius:10px;padding:8px 6px;background:linear-gradient(180deg,#1e2338,#191e31)}
+.tome-cell.atlas-item{border:1px solid rgba(201,162,75,.2);border-radius:10px;padding:8px 6px;background:linear-gradient(180deg,#262c48,#1e2338)}
 .tome-cell.atlas-item.qc0{border-color:#8f9cb8}
 .tome-cell.atlas-item.qc1{border-color:#6fae6f}
 .tome-cell.atlas-item.qc2{border-color:#6f9fcf}
@@ -942,7 +942,7 @@ html.fx-low .loot-chip{animation:none!important}
 .tome-cell.atlas-enemy .ae-emoji{font-size:24px;display:block;line-height:1.3}
 
 /* ---------- v80 修仙志分节折叠卡 ---------- */
-.help-sec{margin:8px 0;border:1px solid rgba(201,162,75,.2);border-radius:10px;background:linear-gradient(180deg,#1e2338,#191e31);overflow:hidden}
+.help-sec{margin:8px 0;border:1px solid rgba(201,162,75,.2);border-radius:10px;background:linear-gradient(180deg,#262c48,#1e2338);overflow:hidden}
 .help-sec summary{cursor:pointer;padding:9px 12px;color:var(--gold2);font-size:14px;letter-spacing:1px;border-bottom:1px solid rgba(201,162,75,.14);list-style:none;display:flex;align-items:center;gap:6px}
 .help-sec summary::-webkit-details-marker{display:none}
 .help-sec summary::after{content:'▾';margin-left:auto;color:#8f9cb8;transition:transform .18s}

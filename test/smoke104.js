@@ -41,7 +41,7 @@ assert(css.indexOf('.loot-chip')>=0&&css.indexOf('@keyframes lootIn')>=0&&css.in
 
 // T3 版本同步
 const sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
-assert(vm.runInContext('GAME_VERSION',ctx)==='84','版本号 v84');
+assert(vm.runInContext('GAME_VERSION',ctx)==='85','版本号 v85');
 assert(sw.indexOf('xiantu2-v'+vm.runInContext('GAME_VERSION',ctx))>=0,'SW 缓存名与版本号同步');
 
 console.log(fails===0?'smoke104: ALL PASS':'smoke104 FAILS: '+fails);

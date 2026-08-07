@@ -23,8 +23,8 @@ vm.runInContext(`S=newState('测试',BACKGROUNDS[0]); PENDING=0;`,ctx);
 const css=fs.readFileSync(path.join(root,'css','main.css'),'utf8');
 
 // T1 主区域背景提亮（手机看不到场景图后的偏暗主因）
-assert(css.indexOf('radial-gradient(ellipse at 50% -20%,rgba(110,130,195,.3),transparent 58%)')>=0,'主区域背景提亮');
-assert(css.indexOf('repeating-linear-gradient(0deg,rgba(201,162,75,.035) 0 1px')>=0,'主区域金线提亮');
+assert(css.indexOf('radial-gradient(ellipse at 50% -20%,rgba(130,150,215,.42),transparent 58%)')>=0,'主区域背景提亮');
+assert(css.indexOf('repeating-linear-gradient(0deg,rgba(201,162,75,.05) 0 1px')>=0,'主区域金线提亮');
 
 // T2 遮罩近无 + 天象 .5 + 地点图全亮
 assert(css.indexOf('html.fx-touch .mod-imgwrap::after{content:\'\';position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(180deg,rgba(8,11,20,.06),rgba(8,11,20,.16))}')>=0,'模块图遮罩近无');
@@ -36,7 +36,7 @@ assert(css.indexOf('html.fx-touch #panelBox,html.fx-touch #cultBox,html.fx-touch
 
 // T4 版本同步
 const sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
-assert(vm.runInContext('GAME_VERSION',ctx)==='84','版本号 v84');
+assert(vm.runInContext('GAME_VERSION',ctx)==='85','版本号 v85');
 assert(sw.indexOf('xiantu2-v'+vm.runInContext('GAME_VERSION',ctx))>=0,'SW 缓存名与版本号同步');
 
 console.log(fails===0?'smoke110: ALL PASS':'smoke110 FAILS: '+fails);
