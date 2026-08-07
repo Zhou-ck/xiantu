@@ -61,3 +61,51 @@
 - 立绘统一半身像 + 同款边框/底纹；场景统一水墨风；
 - 用 CSS filter（sepia / hue-rotate）统一色调；
 - 需统一裁切 512-1024px、优化体积（WebP 可选）。
+
+## 三·补·2、2026-08-07 六页导航图卡（AnyaIGC gpt-image-2）
+
+| 图片 | 来源 | 授权 | 水印 | 用途 | 生成日期 |
+|---|---|---|---|---|---|
+| assets/pages/biz.jpg | AnyaIGC gpt-image-2（用户授权，备用额度） | 生成即所有，可商用免署名 | 无（视觉抽查） | 六页导航·页面横幅 | 2026-08-07 |
+| assets/pages/cult.jpg | AnyaIGC gpt-image-2（用户授权，备用额度） | 生成即所有，可商用免署名 | 无（视觉抽查） | 六页导航·页面横幅 | 2026-08-07 |
+| assets/pages/me.jpg | AnyaIGC gpt-image-2（用户授权，备用额度） | 生成即所有，可商用免署名 | 无（视觉抽查） | 六页导航·页面横幅 | 2026-08-07 |
+| assets/pages/sect.jpg | AnyaIGC gpt-image-2（用户授权，备用额度） | 生成即所有，可商用免署名 | 无（视觉抽查） | 六页导航·页面横幅 | 2026-08-07 |
+| assets/pages/social.jpg | AnyaIGC gpt-image-2（用户授权，备用额度） | 生成即所有，可商用免署名 | 无（视觉抽查） | 六页导航·页面横幅 | 2026-08-07 |
+| assets/pages/world.jpg | AnyaIGC gpt-image-2（用户授权，备用额度） | 生成即所有，可商用免署名 | 无（视觉抽查） | 六页导航·页面横幅 | 2026-08-07 |
+| assets/modules/biz_bag.jpg | AnyaIGC gpt-image-2（用户授权，备用额度） | 生成即所有，可商用免署名 | 无（视觉抽查） | 六页导航·模块图卡 | 2026-08-07 |
+| assets/modules/biz_craft.jpg | AnyaIGC gpt-image-2（用户授权，备用额度） | 生成即所有，可商用免署名 | 无（视觉抽查） | 六页导航·模块图卡 | 2026-08-07 |
+| assets/modules/biz_equip.jpg | AnyaIGC gpt-image-2（用户授权，备用额度） | 生成即所有，可商用免署名 | 无（视觉抽查） | 六页导航·模块图卡 | 2026-08-07 |
+| assets/modules/biz_home.jpg | AnyaIGC gpt-image-2（用户授权，备用额度） | 生成即所有，可商用免署名 | 无（视觉抽查） | 六页导航·模块图卡 | 2026-08-07 |
+| assets/modules/biz_market.jpg | AnyaIGC gpt-image-2（用户授权，备用额度） | 生成即所有，可商用免署名 | 无（视觉抽查） | 六页导航·模块图卡 | 2026-08-07 |
+| assets/modules/cult_break.jpg | AnyaIGC gpt-image-2（用户授权，备用额度） | 生成即所有，可商用免署名 | 无（视觉抽查） | 六页导航·模块图卡 | 2026-08-07 |
+| assets/modules/cult_dao.jpg | AnyaIGC gpt-image-2（用户授权，备用额度） | 生成即所有，可商用免署名 | 无（视觉抽查） | 六页导航·模块图卡 | 2026-08-07 |
+| assets/modules/cult_dual.jpg | AnyaIGC gpt-image-2（用户授权，备用额度） | 生成即所有，可商用免署名 | 无（视觉抽查） | 六页导航·模块图卡 | 2026-08-07 |
+| assets/modules/cult_heart.jpg | AnyaIGC gpt-image-2（用户授权，备用额度） | 生成即所有，可商用免署名 | 无（视觉抽查） | 六页导航·模块图卡 | 2026-08-07 |
+| assets/modules/cult_mind.jpg | AnyaIGC gpt-image-2（用户授权，备用额度） | 生成即所有，可商用免署名 | 无（视觉抽查） | 六页导航·模块图卡 | 2026-08-07 |
+| assets/modules/cult_pet.jpg | AnyaIGC gpt-image-2（用户授权，备用额度） | 生成即所有，可商用免署名 | 无（视觉抽查） | 六页导航·模块图卡 | 2026-08-07 |
+| assets/modules/cult_tech.jpg | AnyaIGC gpt-image-2（用户授权，备用额度） | 生成即所有，可商用免署名 | 无（视觉抽查） | 六页导航·模块图卡 | 2026-08-07 |
+| assets/modules/cult_x.jpg | AnyaIGC gpt-image-2（用户授权，备用额度） | 生成即所有，可商用免署名 | 无（视觉抽查） | 六页导航·模块图卡 | 2026-08-07 |
+| assets/modules/me_atlas.jpg | AnyaIGC gpt-image-2（用户授权，备用额度） | 生成即所有，可商用免署名 | 无（视觉抽查） | 六页导航·模块图卡 | 2026-08-07 |
+| assets/modules/me_career.jpg | AnyaIGC gpt-image-2（用户授权，备用额度） | 生成即所有，可商用免署名 | 无（视觉抽查） | 六页导航·模块图卡 | 2026-08-07 |
+| assets/modules/me_char.jpg | AnyaIGC gpt-image-2（用户授权，备用额度） | 生成即所有，可商用免署名 | 无（视觉抽查） | 六页导航·模块图卡 | 2026-08-07 |
+| assets/modules/me_save.jpg | AnyaIGC gpt-image-2（用户授权，备用额度） | 生成即所有，可商用免署名 | 无（视觉抽查） | 六页导航·模块图卡 | 2026-08-07 |
+| assets/modules/me_setting.jpg | AnyaIGC gpt-image-2（用户授权，备用额度） | 生成即所有，可商用免署名 | 无（视觉抽查） | 六页导航·模块图卡 | 2026-08-07 |
+| assets/modules/me_tome.jpg | AnyaIGC gpt-image-2（用户授权，备用额度） | 生成即所有，可商用免署名 | 无（视觉抽查） | 六页导航·模块图卡 | 2026-08-07 |
+| assets/modules/me_update.jpg | AnyaIGC gpt-image-2（用户授权，备用额度） | 生成即所有，可商用免署名 | 无（视觉抽查） | 六页导航·模块图卡 | 2026-08-07 |
+| assets/modules/sect_big.jpg | AnyaIGC gpt-image-2（用户授权，备用额度） | 生成即所有，可商用免署名 | 无（视觉抽查） | 六页导航·模块图卡 | 2026-08-07 |
+| assets/modules/sect_home.jpg | AnyaIGC gpt-image-2（用户授权，备用额度） | 生成即所有，可商用免署名 | 无（视觉抽查） | 六页导航·模块图卡 | 2026-08-07 |
+| assets/modules/sect_pay.jpg | AnyaIGC gpt-image-2（用户授权，备用额度） | 生成即所有，可商用免署名 | 无（视觉抽查） | 六页导航·模块图卡 | 2026-08-07 |
+| assets/modules/social_dual.jpg | AnyaIGC gpt-image-2（用户授权，备用额度） | 生成即所有，可商用免署名 | 无（视觉抽查） | 六页导航·模块图卡 | 2026-08-07 |
+| assets/modules/social_family.jpg | AnyaIGC gpt-image-2（用户授权，备用额度） | 生成即所有，可商用免署名 | 无（视觉抽查） | 六页导航·模块图卡 | 2026-08-07 |
+| assets/modules/social_master.jpg | AnyaIGC gpt-image-2（用户授权，备用额度） | 生成即所有，可商用免署名 | 无（视觉抽查） | 六页导航·模块图卡 | 2026-08-07 |
+| assets/modules/social_people.jpg | AnyaIGC gpt-image-2（用户授权，备用额度） | 生成即所有，可商用免署名 | 无（视觉抽查） | 六页导航·模块图卡 | 2026-08-07 |
+| assets/modules/social_tea.jpg | AnyaIGC gpt-image-2（用户授权，备用额度） | 生成即所有，可商用免署名 | 无（视觉抽查） | 六页导航·模块图卡 | 2026-08-07 |
+| assets/modules/social_travel.jpg | AnyaIGC gpt-image-2（用户授权，备用额度） | 生成即所有，可商用免署名 | 无（视觉抽查） | 六页导航·模块图卡 | 2026-08-07 |
+| assets/modules/world_boss.jpg | AnyaIGC gpt-image-2（用户授权，备用额度） | 生成即所有，可商用免署名 | 无（视觉抽查） | 六页导航·模块图卡 | 2026-08-07 |
+| assets/modules/world_dungeon.jpg | AnyaIGC gpt-image-2（用户授权，备用额度） | 生成即所有，可商用免署名 | 无（视觉抽查） | 六页导航·模块图卡 | 2026-08-07 |
+| assets/modules/world_main.jpg | AnyaIGC gpt-image-2（用户授权，备用额度） | 生成即所有，可商用免署名 | 无（视觉抽查） | 六页导航·模块图卡 | 2026-08-07 |
+| assets/modules/world_map.jpg | AnyaIGC gpt-image-2（用户授权，备用额度） | 生成即所有，可商用免署名 | 无（视觉抽查） | 六页导航·模块图卡 | 2026-08-07 |
+| assets/modules/world_season.jpg | AnyaIGC gpt-image-2（用户授权，备用额度） | 生成即所有，可商用免署名 | 无（视觉抽查） | 六页导航·模块图卡 | 2026-08-07 |
+| assets/modules/world_sword.jpg | AnyaIGC gpt-image-2（用户授权，备用额度） | 生成即所有，可商用免署名 | 无（视觉抽查） | 六页导航·模块图卡 | 2026-08-07 |
+| assets/modules/world_tower.jpg | AnyaIGC gpt-image-2（用户授权，备用额度） | 生成即所有，可商用免署名 | 无（视觉抽查） | 六页导航·模块图卡 | 2026-08-07 |
+
