@@ -351,14 +351,33 @@ header .spacer{flex:1}
 @media (pointer:coarse),(hover:none){
   #ink-mist{display:none!important}
   #dust{display:none!important}
-  #sceneLayer{animation:none!important;filter:none!important;transition:none!important;opacity:.12!important}
+  /* v64：触屏彻底不渲染暖色场景背景层，区域不再因换图/首次合成闪黄 */
+  #sceneLayer{display:none!important}
   #panel.fx-in #panelBox,#cultivate.fx-in #cultBox,#battle.fx-in #battleBox,#guide.fx-in #guideBox,#breakthrough.fx-in #breakBox{animation:overlayIn .18s ease-out both!important}
 }
 /* 混合输入设备兜底：即使同时匹配 hover:hover，也强制收敛（防 blur/金箔流光复活） */
 html.fx-touch #ink-mist,html.fx-touch #dust{display:none!important}
-html.fx-touch #sceneLayer{animation:none!important;filter:none!important;transition:none!important;opacity:.12!important}
+html.fx-touch #sceneLayer{display:none!important}
 html.fx-touch #panel,html.fx-touch #guide,html.fx-touch #battle,html.fx-touch #cultivate{backdrop-filter:none!important}
 html.fx-touch button::after{display:none!important}
+/* v64fix 触屏暖图闪黄收敛：加载成功后才淡入，压暗色温 + 深色面纱 + 关金箔流光 + 突破金环低亮 */
+@media (pointer:coarse),(hover:none){
+  .page-hero-img.ld{opacity:.36}
+  .page-hero-img{filter:saturate(.74) brightness(.68)}
+  .page-hero::after{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(180deg,rgba(8,11,20,.2),rgba(8,11,20,.46))}
+  .mod-img.ld{opacity:.7}
+  .mod-img{filter:saturate(.78) brightness(.6)}
+  .mod-imgwrap::after{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(180deg,rgba(8,11,20,.28),rgba(8,11,20,.52))}
+  .bar>i::after{display:none!important}
+}
+html.fx-touch .page-hero-img.ld{opacity:.36}
+html.fx-touch .page-hero-img{filter:saturate(.74) brightness(.68)}
+html.fx-touch .page-hero::after{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(180deg,rgba(8,11,20,.2),rgba(8,11,20,.46))}
+html.fx-touch .mod-img.ld{opacity:.7}
+html.fx-touch .mod-img{filter:saturate(.78) brightness(.6)}
+html.fx-touch .mod-imgwrap::after{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(180deg,rgba(8,11,20,.28),rgba(8,11,20,.52))}
+html.fx-touch .bar>i::after{display:none!important}
+html.fx-touch #btAura.on{animation:auraBurstT 1s ease-out}
 html.fx-touch #panel.fx-in #panelBox,html.fx-touch #cultivate.fx-in #cultBox,html.fx-touch #battle.fx-in #battleBox,html.fx-touch #guide.fx-in #guideBox,html.fx-touch #breakthrough.fx-in #breakBox{animation:overlayIn .18s ease-out both!important}
 #cultBox{width:min(560px,94vw);max-height:92vh;display:flex;flex-direction:column;background:linear-gradient(180deg,#232940,#141724);border:1px solid var(--gold);border-radius:14px;box-shadow:0 0 60px rgba(0,0,0,.8);overflow:hidden}
 #cultHead{padding:11px 16px;text-align:center;color:var(--gold2);letter-spacing:3px;font-size:16px;border-bottom:1px solid #3a3f5c;background:rgba(0,0,0,.22)}
@@ -408,6 +427,7 @@ html.fx-touch #panel.fx-in #panelBox,html.fx-touch #cultivate.fx-in #cultBox,htm
 #btAura{position:absolute;inset:0;z-index:2;opacity:0;pointer-events:none;background:radial-gradient(circle at 50% 50%,rgba(232,200,106,.75),transparent 65%)}
 #btAura.on{animation:auraBurst 1.2s ease-out}
 @keyframes auraBurst{0%{opacity:0;transform:scale(.4)}35%{opacity:.9}100%{opacity:0;transform:scale(1.4)}}
+@keyframes auraBurstT{0%{opacity:0;transform:scale(.4)}35%{opacity:.2}100%{opacity:0;transform:scale(1.4)}}
 @media(max-width:820px){
   #breakBox{width:96vw;max-height:88vh;border-radius:16px}
   #breakPortrait img{width:84px;height:108px}
@@ -431,8 +451,9 @@ html.fx-touch #panel.fx-in #panelBox,html.fx-touch #cultivate.fx-in #cultBox,htm
 
 /* ===== v53 六页导航：页面横幅 + 双列模块图卡 ===== */
 .page-hero{position:relative;min-height:96px;border-radius:12px;overflow:hidden;border:1px solid var(--line-gold);margin:4px 0 10px;background:linear-gradient(180deg,#20263e,#161a2b)}
-.page-hero-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.55;filter:saturate(.9) brightness(.9)}
-.page-hero-tx{position:relative;display:flex;flex-direction:column;gap:3px;padding:16px 16px;min-height:96px;justify-content:flex-end;background:linear-gradient(180deg,transparent 30%,rgba(8,11,20,.72))}
+.page-hero-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .45s ease;filter:saturate(.9) brightness(.9)}
+.page-hero-img.ld{opacity:.55}
+.page-hero-tx{position:relative;z-index:2;display:flex;flex-direction:column;gap:3px;padding:16px 16px;min-height:96px;justify-content:flex-end;background:linear-gradient(180deg,transparent 30%,rgba(8,11,20,.72))}
 .page-hero-ico{font-size:26px;line-height:1}
 .page-hero-tx b{font-size:19px;font-weight:normal;color:var(--gold2);letter-spacing:4px;text-shadow:0 0 12px rgba(201,162,75,.35)}
 .page-hero-tx small{font-size:12px;color:#c9b98e;letter-spacing:1px}
@@ -441,9 +462,10 @@ html.fx-touch #panel.fx-in #panelBox,html.fx-touch #cultivate.fx-in #cultBox,htm
 .mod-card:nth-child(odd){animation-delay:.04s}
 .mod-card:nth-child(even){animation-delay:.09s}
 .mod-imgwrap{position:relative;width:100%;aspect-ratio:16/9;background:linear-gradient(160deg,#252c4a,#171b2e);display:flex;align-items:center;justify-content:center;overflow:hidden}
-.mod-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.9}
+.mod-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .4s ease}
+.mod-img.ld{opacity:.9}
 .mod-img.gone{display:none}
-.mod-emoji{display:none;font-size:34px;line-height:1}
+.mod-emoji{display:none;position:relative;z-index:2;font-size:34px;line-height:1}
 .mod-tx{display:flex;flex-direction:column;gap:3px;padding:9px 10px 10px;min-width:0}
 .mod-tx b{font-size:14px;font-weight:normal;color:var(--gold2)}
 .mod-tx small{font-size:11px;color:#8f9cb8;line-height:1.5}

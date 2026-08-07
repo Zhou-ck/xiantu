@@ -100,13 +100,13 @@ function tabHome(k){
   if(!t)return;
   CUR_TAB=k;
   closePanel();
-  const heroImg=t.hero?'<img class="page-hero-img" src="'+t.hero+'" loading="lazy" alt="" onerror="this.style.display=\'none\'">':'';
+  const heroImg=t.hero?'<img class="page-hero-img" src="'+t.hero+'" loading="lazy" alt="" onload="this.classList.add(\'ld\')" onerror="this.style.display=\'none\'">':'';
   const hero='<div class="page-hero">'+heroImg+'<div class="page-hero-tx"><span class="page-hero-ico">'+t.i+'</span><b>'+esc(t.n)+'</b><small>'+esc(t.d)+'</small></div></div>';
   const lead=(k==='cult'?tabStatusCult():'')+'<p style="font-size:13px;color:#a99a72;margin:8px 0 10px">'+t.d+'</p>';
   const items=t.items.map((it,i)=>{
     const ok=it.ok===undefined||it.ok();
     const needTxt=typeof it.need==='function'?it.need():it.need;
-    const imgHtml=it.img?'<img class="mod-img" src="'+it.img+'" loading="lazy" alt="" onerror="this.classList.add(\'gone\');this.nextElementSibling.classList.remove(\'gone\')">':'';
+    const imgHtml=it.img?'<img class="mod-img" src="'+it.img+'" loading="lazy" alt="" onload="this.classList.add(\'ld\')" onerror="this.classList.add(\'gone\');this.nextElementSibling.classList.remove(\'gone\')">':'';
     return '<button class="mod-card'+(ok?'':' locked')+'" onclick="tabGo(\''+k+'\','+i+')">'+
       '<span class="mod-imgwrap">'+(imgHtml||'')+'<i class="mod-emoji">'+(ok?it.i:'🔒')+'</i></span>'+
       '<span class="mod-tx"><b>'+esc(it.n)+'</b><small>'+esc(ok?it.desc:('🔒 '+(needTxt||'条件未满足')))+'</small></span>'+
