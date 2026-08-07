@@ -228,7 +228,8 @@ function doBigBreakCore(nxt,dc,kMod,bonus){
     S.flag.tribMiniDone=true;
   }
   const insB=Math.min(10,(S.insight||0));
-  const R=doRoll('wil',dc,kMod+moodMod()+(S.flag.daoInsight||0)+insB);
+  const daoB=(typeof daoBaseBreakBonus==='function')?daoBaseBreakBonus(S):0;
+  const R=doRoll('wil',dc,kMod+moodMod()+(S.flag.daoInsight||0)+insB+daoB);
   R.t+=(bonus||0);
   R.hit=R.t>=dc;R.crit=R.t>=30;R.fumble=R.t<=5;
   const trib=S.flag.tribType||'thunder';S.flag.tribType=null;
@@ -334,7 +335,8 @@ function applyBreakSuccess(nxt,R,kMod,pre){
   if(S.flag.daoInsight>0){S.flag.daoInsight--;log('<p class="good">道基感悟化为突破之力（判定加成已消耗）。</p>')}
   if((S.insight||0)>0){S.insight=0;log('<p class="good">渡劫感悟尽数化为突破之力，烙印消散（判定加成已消耗）。</p>')}
   rewardPush([{name:'晋入 '+REALMS[nxt],src:'突破',rare:true}]);
-  for(const x of pre.thunderFails)if(x.fail)S.hp=Math.max(1,S.hp-Math.floor(S.maxHp*0.25));
+  const daoProtect=(typeof daoBaseRatio==='function'&&daoBaseRatio(S)>=0.8)?0.9:1;
+  for(const x of pre.thunderFails)if(x.fail)S.hp=Math.max(1,S.hp-Math.floor(S.maxHp*0.25*daoProtect));
   if(pre.heartFail)addDemonMark('fear',60);
   S.realm=nxt;S.maxHp=calcMaxHp(S);S.hp=Math.max(S.hp,Math.floor(S.maxHp*0.6));
   S.flag.bigBreaks=(S.flag.bigBreaks||0)+1;

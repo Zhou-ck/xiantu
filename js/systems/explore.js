@@ -151,6 +151,36 @@ function swordTrialStage(st){
     {txt:'🧠 观剑辨隙（智慧判定）',fn:()=>{const R=doRoll('int',dc);log('<p>你凝神观剑，寻隙而进：'+rollBadge(R.r,R.mod,R.t,R.dc)+'</p>');if(R.hit)S.flag._swordHits++;swordTrialStage(st+1)}},
   ]);
 }
+/* v55 游历修行：云游悟道——不入秘境不求奇遇，天地深处即是道场 */
+function wanderCultivate(){
+  closePanel();
+  if((S.flag.wanderCd||0)>0){log('<p class="sys">你方云游归来，山水之悟尚需沉淀（'+(S.flag.wanderCd||0)+' 日后可再启程）。</p>');renderAll();return}
+  scene('云游悟道');
+  log('<p>你背起行囊，不入秘境、不求奇遇，只往天地深处走——看山是山，看水是水，道自其中。</p>');
+  openEventModal('🧭 云游悟道 · 择路','<p>山水各有其道，往何处去？</p>',[
+    {txt:'⛰️ 入深山（观山悟静）',fn:()=>wanderEvent('mountain')},
+    {txt:'🌊 沿大川（观水悟柔）',fn:()=>wanderEvent('river')},
+    {txt:'🌌 登绝顶（观天悟阔）',fn:()=>wanderEvent('peak')},
+  ]);
+}
+function wanderEvent(kind){
+  const R=doRoll('int',14+Math.floor(S.realm/6));
+  const kw={
+    mountain:['重峦叠嶂，如龙脊横卧，你于山巅静坐，胸怀为之开阔。','山雾聚散，你忽然明白——山不移，雾自来去，道亦如是。'],
+    river:['大川奔流不舍昼夜，你临水而立，悟得「逝者如斯」的真意。','浪花千朵，朵朵不同——你从中看见「无常」与「恒常」的同在。'],
+    peak:['绝顶之上，星河低垂，你仰观天象，顿觉己身渺小而道心弥坚。','云海在脚下翻涌，一轮明月自云间升起——天地之大，皆是道场。'],
+  }[kind];
+  log('<p>'+kw[chance(0.5)?0:1]+'</p><p>'+rollBadge(R.r,R.mod,R.t,R.dc)+'</p>');
+  const g=Math.floor((60+S.root/4)*1.5+rl()*8);
+  S.cult+=g;
+  S.flag.daoBase=clamp((S.flag.daoBase||0)+1,0,daoBaseCap(S));
+  if(R.hit){S.flag.insights=(S.flag.insights||0)+1;log('<p class="good">此行竟有顿悟——悟道 +1，修为 +'+g+'，道基 +1。</p>')}
+  else log('<p class="good">山水无言，道亦在其中（修为 +'+g+'，道基 +1）。</p>');
+  if(chance(0.3)){const m=pick(['herb','iron','pelt']);S.mats[m]=(S.mats[m]||0)+1;log('<p class="loot">沿途采得'+MAT_NAMES[m]+' ×1。</p>')}
+  S.flag.wanderCd=15;
+  if(typeof questTick==='function')questTick();
+  passTime(5);renderAll();
+}
 function doExplore(rid){
   closePanel();
   const r=REGIONS.find(x=>x.id===rid);

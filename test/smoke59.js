@@ -4,7 +4,7 @@ const root=path.join(__dirname,'..');
 function loadJs(rel){return fs.readFileSync(path.join(root,rel),'utf8')}
 const ctx={console,window:{}};
 vm.createContext(ctx);
-for(const rel of ['js/core/world.js','js/data/events.js','js/data/items.js','js/data/equip.js','js/data/pills.js','js/core/schema.js','js/core/content.js','js/data/quests.js','js/data/exploreEvents.js','js/data/storyEvents.js','js/systems/npc.js','js/systems/market.js','js/systems/craft.js','js/systems/explore.js','js/core/state.js']){
+for(const rel of ['js/core/world.js','js/data/events.js','js/data/items.js','js/data/equip.js','js/data/pills.js','js/data/cult.js','js/core/schema.js','js/core/content.js','js/data/quests.js','js/data/exploreEvents.js','js/data/storyEvents.js','js/systems/npc.js','js/systems/market.js','js/systems/craft.js','js/systems/explore.js','js/core/state.js']){
   vm.runInContext(loadJs(rel),ctx);
 }
 let fails=0;

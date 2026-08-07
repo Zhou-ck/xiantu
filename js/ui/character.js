@@ -173,6 +173,8 @@ function charStatusHtml(s,pr){
     '<div class="char-row"><span>气血</span><b>'+Math.floor(st.hp)+' / '+st.maxHp+'</b></div>'+
     '<div class="char-row"><span>🧿 真元</span><b>'+(s.spirit!==undefined?s.spirit:maxSpirit(s))+' / '+maxSpirit(s)+'</b></div>'+
     (st.danTox>0?'<div class="char-row'+(st.danTox>=60?' no':'')+'"><span>⚠️ 丹毒</span><b>'+st.danTox+'/100'+(st.danTox>=30?'（修炼效率 -'+(5*Math.min(3,Math.floor((st.danTox-30)/30)+1))+'%）':'')+(st.danTox>=60?' · 气血 -10%':'')+'</b></div>':'')+
+    '<div class="char-row"><span>🪷 道基</span><b>'+(s.flag.daoBase||0)+'/'+daoBaseCap(s)+'（'+Math.floor(daoBaseRatio(s)*100)+'% · 战力 +'+daoBaseCombat(s)+'）</b></div>'+
+    ((s.flag.impurity||0)>0?'<div class="char-row'+(s.flag.impurity>=60?' no':'')+'"><span>⚠️ 灵浊</span><b>'+(s.flag.impurity||0)+'/100'+(s.flag.impurity>=30?'（修炼效率 -'+(5*Math.min(3,Math.floor(((s.flag.impurity||0)-30)/30)+1))+'%）':'')+(s.flag.impurity>=60?' · 气血 -10%':'')+'</b></div>':'')+
     '<i class="attr-bar hp"><i style="width:'+hpPct+'%"></i></i>'+
     charStatusBadges(s)+'</div>';
 }

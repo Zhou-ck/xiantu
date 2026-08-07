@@ -255,6 +255,12 @@ function craftResolve(r,i,mini){
       }
     }
     log('<p class="good">'+PROF_NAMES[S.prof]+'成功！'+(r.eff==='maze'?'你已布下迷踪阵，探索时凶险大减。':r.eff==='matrix'?'聚灵阵成，洞府灵气浓郁，修炼效率提升！':r.eff==='teleport'?'传送阵成，从此可瞬行千里！':'')+'</p>');
+    /* v55 丹火入道：炼丹成功小概率引天地灵气入体 */
+    if(S.prof==='alchemy'&&chance(0.08)){
+      const g=Math.floor((8+S.root/6)*cultMult(S));
+      S.cult+=g;
+      log('<p class="loot">丹火入道：一缕丹火引动天地灵气倒灌丹田（修为 +'+g+'）。</p>');
+    }
     if(sp&&sp.double&&chance(sp.double)){
       const last=S.flag._lastAdded;
       if(last&&r.eff!=='maze'&&r.eff!=='matrix'&&r.eff!=='teleport'){addItem(Object.assign({},last));log('<p class="loot">'+sp.n+'妙手：此炉竟得双份！</p>')}

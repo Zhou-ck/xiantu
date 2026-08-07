@@ -32,6 +32,8 @@ function panelCult(){
     '<p style="font-size:13px;color:#a99a72">闭关将进入<b>修炼窗口</b>：按真实时间缓缓推进，途中或有异动需当场抉择，可随时「提前出关」按进度结算；若有道侣相伴，可在窗口中切换<b>双人同修</b>。</p>'+
     bnHtml+
     (bn.progress>=0.9?breakPrepHtml(nxt):'')+
+    cultMethodSceneHtml()+
+    bnBreakHtml()+
     '<h4>☯️ 静修（稳妥）</h4>'+
     '<div class="row">'+
     '<button onclick="doCultivate(7,\'quiet\')">⏳ 7 日</button>'+
@@ -39,7 +41,7 @@ function panelCult(){
     '<button onclick="doCultivate(90,\'quiet\')">⏳ 90 日</button>'+
     '<button onclick="doCultivate(365,\'quiet\')">⏳ 一年</button>'+
     '</div>'+
-    '<h4>🔥 苦修（凶险 · 效率 +40% · 走火 ≈'+Math.round(bitterFireChance()*100)+'%'+(S.items.filter(i=>i.use==='save').length?' · 🛡️保命符 ×'+S.items.filter(i=>i.use==='save').length:'')+'）</h4>'+
+    '<h4>🔥 苦修（凶险 · 效率 +40% · 走火 ≈'+Math.round(cultFireChance()*100)+'%'+(S.items.filter(i=>i.use==='save').length?' · 🛡️保命符 ×'+S.items.filter(i=>i.use==='save').length:'')+'）</h4>'+
     '<div class="row">'+
     '<button class="danger" onclick="doCultivate(7,\'bitter\')">🔥 7 日</button>'+
     '<button class="danger" onclick="doCultivate(30,\'bitter\')">🔥 30 日</button>'+
@@ -104,6 +106,8 @@ function cultMultParts(s){
   if(s.flag&&s.flag.flowChoice&&typeof flowType==='function'&&s.arts&&s.arts[0]&&flowType(s).id===s.flag.flowChoice)parts.push({n:'🗡️ 流派·'+FLOW_DEFS[s.flag.flowChoice].n,m:1.05,note:'同流派主修 +5%'});
   const bn=bottleneckInfo(s);
   if(bn.active)parts.push({n:'⚓ 瓶颈压制',m:0.6,note:'悟性 '+(s.wis||0)+'/'+bn.wisNeed+' · 历练 '+(s.trail||0)+'/'+bn.trailNeed});
+  if((s.flag&&s.flag.impurity||0)>=30)parts.push({n:'⚠️ 灵浊压制',m:impurityCultPenalty(s),note:'速修积浊 '+(s.flag.impurity||0)+'/100'});
+  if((s.flag&&s.flag.danTox||0)>=30)parts.push({n:'⚠️ 丹毒压制',m:danToxCultPenalty(s),note:'丹毒 '+(s.flag.danTox||0)+'/100'});
   return parts;
 }
 /* v42 功法相生推荐：灵根亲和（同属/变异主属）+ 五行相生关系一览，指引功法获取方向 */
@@ -162,6 +166,103 @@ function cultBreakdown(){
     '<div class="bd-row total"><span>当前静修速率</span><b>约 '+Math.floor((8+S.root/6)*cultMult(S)*eff)+' / 10日</b></div>'+
     '<div class="bd-note">苦修 ×1.4、灵潮 ×1.5、托管倍率于闭关时另行计入；以上各项相乘即总效率。</div></div>';
 }
+/* ===== v55 修行深化：法门 / 场景 / 道基 / 灵浊 / 破障三选 ===== */
+function cultDaoImpHtml(){
+  const cap=daoBaseCap(S),db=S.flag.daoBase||0,imp=S.flag.impurity||0;
+  const dbPct=Math.floor(daoBaseRatio(S)*100);
+  const impWarn=imp>=30?('（修炼 -'+(5*Math.min(3,Math.floor((imp-30)/30)+1))+'%）'):'';
+  const impHp=imp>=60?' · 气血 -10%':'';
+  const bdBonus=daoBaseBreakBonus(S);
+  return '<div class="item-card"><div class="nm">🪷 道基 '+db+'/'+cap+'（'+dbPct+'%） · ⚠️ 灵浊 '+imp+'/100'+impWarn+impHp+'</div><div class="ds">道基：同境界战力 +'+daoBaseCombat(S)+' · 突破判定'+(bdBonus>=1?' +'+bdBonus:bdBonus<0?' '+bdBonus:' 持平')+'（≥50% +1 · ≥80% 天劫减伤 · <30% -1）；灵浊为速修代价，静养/灵泉/洗灵露可排。</div></div>';
+}
+function cultMethodSceneHtml(){
+  const mthId=S.flag.cultMethod||'qi',scnId=S.flag.cultScene||'cave';
+  const mthBtns=CULT_METHODS.map(m=>{
+    const locked=(m.id==='war'&&techPts()<(m.needTech||2))||(m.id==='wen'&&S.stones<(m.cost||30));
+    return '<button class="small'+(mthId===m.id?' primary':'')+(locked?' locked':'')+'" onclick="setCultMethod(\''+m.id+'\')">'+m.i+' '+m.n+(locked?' 🔒':'')+'</button>';
+  }).join('');
+  const scnBtns=CULT_SCENES.map(sc=>{
+    const locked=S.realm<sc.need;
+    return '<button class="small'+(scnId===sc.id?' primary':'')+(locked?' locked':'')+'" onclick="setCultScene(\''+sc.id+'\')">'+sc.i+' '+sc.n+(locked?' 🔒':'')+'</button>';
+  }).join('');
+  const mth=cultMethod(mthId),scn=cultScene(scnId);
+  return cultDaoImpHtml()+
+    '<div class="item-card"><div class="nm">🧭 修炼法门 · '+mth.i+' '+mth.n+'</div><div class="ds">'+mth.desc+'（'+mth.note+'）<br>场景：'+scn.i+' '+scn.n+'（'+scn.desc+'）</div>'+
+    '<div class="bd-box" style="margin-top:6px"><div class="bd-head">法门（每次闭关生效）</div><div class="row">'+mthBtns+'</div></div>'+
+    '<div class="bd-box"><div class="bd-head">场景（境界解锁）</div><div class="row">'+scnBtns+'</div></div></div>';
+}
+function setCultMethod(id){
+  const m=cultMethod(id);
+  if(!m)return;
+  if(m.id==='war'&&techPts()<(m.needTech||2)){toast('战意不足（需 '+(m.needTech||2)+'）');return}
+  if(m.id==='wen'&&S.stones<(m.cost||30)){toast('灵石不足（需 '+(m.cost||30)+'）');return}
+  S.flag.cultMethod=m.id;
+  toast('修炼法门：'+m.n);
+  panelCult();
+}
+function setCultScene(id){
+  const sc=cultScene(id);
+  if(!sc)return;
+  if(S.realm<sc.need){toast('需 '+REALMS[Math.min(sc.need,REALMS.length-1)]+' 方可前往'+sc.n);return}
+  S.flag.cultScene=sc.id;
+  toast('修炼场景：'+sc.n);
+  panelCult();
+}
+function bnBreakHtml(){
+  const bn=bottleneckInfo(S);
+  if(!bn.active)return '';
+  const rows=[];
+  if(bn.missingWis>0)rows.push('<button class="small" onclick="bottleneckStele()">🪨 悟道碑 · 10日（心性判定 · 悟性+1）</button>');
+  if(bn.missingTrail>0)rows.push('<button class="small" onclick="bottleneckBattle()">⚔️ 实战破障 · 连战3场（胜+历练）</button>');
+  if(bn.missingWis>0)rows.push('<button class="small" onclick="bottleneckDaolun()">📖 论道破障（论道胜场 +悟性）</button>');
+  return '<div class="item-card"><div class="nm">⚡ 瓶颈破障 · 三选一</div><div class="ds">瓶颈不必干等——悟道、实战、论道，任选其一主动破障。</div><div class="row">'+rows.join('')+'</div></div>';
+}
+function bottleneckStele(){
+  closePanel();
+  scene('悟道碑前');
+  log('<p>你于洞府外寻到一方残碑，盘坐碑前，以心神叩问碑上道痕。</p>');
+  const R=doRoll('wil',15+Math.floor(S.realm/6),Math.floor((S.wis||0)/4));
+  log('<p>静坐参碑：'+rollBadge(R.r,R.mod,R.t,R.dc)+'</p>');
+  if(R.hit){addWis(1);log('<p class="good">碑上道痕应心而亮，你只觉灵台通明（悟性 +1）。</p>')}
+  else{log('<p class="sys">道痕晦暗，你参悟良久仍无所获，却也让心境沉静了几分。</p>');if(chance(0.3))addMood(5)}
+  passTime(10);renderAll();
+}
+function bottleneckBattle(){
+  closePanel();
+  log('<p>你提剑出洞，于山道间连战三场，以战破障。</p>');
+  const bossEnemy=n=>{const r=rl();return {name:'破障对手 · '+n,atk:6+Math.floor(r/2),def:2+Math.floor(r/4),hp:30+r*10,style:n%2?'burst':'rapid'}};
+  const fight=(n)=>{
+    if(n>3){addTrail(3);log('<p class="loot">三战皆捷，道心与身手同进（历练 +3）。</p>');if(typeof questTick==='function')questTick();passTime(1);renderAll();return}
+    startCombat(bossEnemy(n),res=>{
+      if(res.win){addTrail(1);log('<p class="good">第 '+n+' 战胜——历练 +1。</p>');fight(n+1)}
+      else{log('<p class="sys">你负伤退回，此轮破障作罢（历练 +0）。</p>');passTime(1);renderAll()}
+    },true);
+  };
+  fight(1);
+}
+function bottleneckDaolun(){
+  panelDaolun();
+  toast('论道胜场可破悟性之障');
+}
+function applyMeditationFx(fx){
+  if(!fx||!S)return;
+  const logs=[];
+  if(fx.cult){S.cult+=fx.cult;logs.push('修为 +'+fx.cult)}
+  if(fx.insight){S.flag.insights=(S.flag.insights||0)+1;logs.push('悟道 +1')}
+  if(fx.dao){S.flag.daoBase=clamp((S.flag.daoBase||0)+fx.dao,0,daoBaseCap(S));logs.push('道基 '+(fx.dao>0?'+':'')+fx.dao)}
+  if(fx.imp){S.flag.impurity=clamp((S.flag.impurity||0)+fx.imp,0,100);logs.push('灵浊 '+(fx.imp>0?'+':'')+fx.imp)}
+  if(fx.mood){addMood(fx.mood);logs.push('心境 '+(fx.mood>0?'+':'')+fx.mood)}
+  if(fx.wil){S.attrs.wil=clamp(S.attrs.wil+fx.wil,1,40);logs.push('心性 +1')}
+  if(fx.heart&&S.heartDemons>0){S.heartDemons=Math.max(0,S.heartDemons+fx.heart);logs.push('心魔 '+(fx.heart>0?'+':'')+fx.heart)}
+  if(fx.luck){S.luck=clamp(S.luck+fx.luck,1,100);logs.push('气运 '+(fx.luck>0?'+':'')+fx.luck)}
+  if(fx.profExp){S.profExp=(S.profExp||0)+fx.profExp;logs.push('造诣经验 +'+fx.profExp)}
+  if(fx.wander)S.flag.wanderMark=(S.flag.wanderMark||0)+fx.wander;
+  if(logs.length)log('<p class="loot">顿悟所得：'+logs.join(' · ')+'。</p>');
+}
+function cultFireChance(){
+  const m=S.flag&&S.flag.cultMethod?cultMethod(S.flag.cultMethod):null;
+  return bitterFireChance()+(m&&m.fire||0);
+}
 /* 闭关修炼弹窗：真实时间推进 + 途中异动抉择 + 加成一览 + 道侣双修 */
 const CULT_FLAVOR=[
   '灵气如溪，缓缓汇入丹田。',
@@ -203,6 +304,16 @@ function doCultivate(days,mode,opts){
   if(opts&&opts.trust)_cult.trust=true;
   if(opts&&opts.trustMult!==undefined)_cult.trustMult=opts.trustMult;
   if(opts&&opts.toRealm!==undefined)_cult.toRealm=opts.toRealm;
+  /* v55 法门 / 场景解析与代价扣取（不满足则自动回退以气养神） */
+  let mth=cultMethod(S.flag.cultMethod||'qi');
+  if(mth.id==='war'&&techPts()<(mth.needTech||2)){toast('战意不足，改用以气养神');S.flag.cultMethod='qi';mth=cultMethod('qi')}
+  if(mth.id==='wen'&&S.stones<(mth.cost||30)){toast('灵石不足，改用以气养神');S.flag.cultMethod='qi';mth=cultMethod('qi')}
+  if(mth.id==='body'){const need=Math.floor(maxSpirit(S)*(mth.spirit||0.2));if(!useSpirit(need)){toast('真元不足，改用以气养神');S.flag.cultMethod='qi';mth=cultMethod('qi')}}
+  if(S.realm<(cultScene(S.flag.cultScene||'cave').need||0))S.flag.cultScene='cave';
+  const scn=cultScene(S.flag.cultScene||'cave');
+  _cult.method=mth;_cult.scene=scn;
+  if(mth.id==='war')S.flag.tech.pts=(S.flag.tech.pts||0)-(mth.needTech||2);
+  if(mth.id==='wen')S.stones-=(mth.cost||30);
   const eventsOn=(typeof setInterval==='function')&&!(opts&&opts.noEvents);
   if(eventsOn){
     _cult.pool=_cultEvents().map(e=>({make:e,at:0.22+Math.random()*0.55,used:false}));
@@ -215,6 +326,7 @@ function doCultivate(days,mode,opts){
   $('cultAbort').onclick=cultAbort;
   $('cultMode').onclick=cultToggleMode;
   $('cultLog').innerHTML='<div class="cult-line">你于洞府中盘膝而坐，运转'+esc(S.arts[0].name)+'，缓缓入定……</div>';
+  _cultLogLine('<p class="sys">🧭 法门：'+mth.i+' '+mth.n+' · 场景：'+scn.i+' '+scn.n+'</p>');
   /* 2E 托管策略：自动购买聚灵丹 */
   if(_cult.trust&&S.flag.autoRules&&S.flag.autoRules.pill&&S.pillBuff<=0&&S.stones>=500){
     S.stones-=300;S.pillBuff+=30;
@@ -468,6 +580,13 @@ function _cultEvents(){
       {txt:'🙈 假装不知，耳根却发烫',fn:()=>{const p=S.daoPartner;p.affinity=clamp((p.affinity||60)+1,0,200);_cultLogLine('<p class="sys">你耳根发烫，却把那只手扣得更紧了些（心动+1）。</p>')}}
     ]}));
   }
+  /* v55 顿悟演出：数据化灵机事件池（低特效自动走第一项） */
+  MEDITATION_EVENTS.forEach(me=>{
+    evs.push(()=>{
+      const e=MEDITATION_EVENTS.find(x=>x.id===me.id);
+      return {txt:e.t,opts:e.opts.map(o=>({txt:o.txt,cls:o.cls||'',fn:()=>{applyMeditationFx(o.fx||{})}}))};
+    });
+  });
   return evs;
 }
 /* 苦修走火概率：与 _cultFinish 结算处的 dch 同源（22% 基础，本季忧思签再 +8%） */
@@ -482,6 +601,11 @@ function _cultResult(days,mode,solo){
   let boostLog='';
   if(S.flag.boostNext){mult*=1.5;S.flag.boostNext=false;boostLog='<p class="good">灵潮之力尚未消退，此番修炼事半功倍！</p>'}
   if(bitter)mult*=1.4;
+  let methodLog='',sceneLog='',v55Log='';
+  const mth=_cult&&_cult.method?cultMethod(_cult.method.id):null;
+  const scn=_cult&&_cult.scene?cultScene(_cult.scene.id):null;
+  if(mth&&mth.mult!==1){mult*=mth.mult;methodLog='<p class="sys">法门 '+mth.i+' '+mth.n+'：效率 ×'+mth.mult.toFixed(2)+'。</p>'}
+  if(scn&&scn.mult!==1){mult*=scn.mult;sceneLog='<p class="sys">场景 '+scn.i+' '+scn.n+'：效率 ×'+scn.mult.toFixed(2)+'。</p>'}
   let bnLog='';
   const bn=bottleneckInfo(S);
   if(bn.active){
@@ -504,6 +628,14 @@ function _cultResult(days,mode,solo){
   if(t>=30){gain*=3;extra='<p><span class="roll crit">🎲 大机缘</span> 你于物我两忘之际窥见天地玄机，修为暴涨，道心亦受淬炼。</p>';}
   else if(t>=22){gain=Math.floor(gain*1.5);extra='<p>这一日你福至心灵，隐隐触及了一丝大道真意，修炼事半功倍。</p>';}
   else if(t<=5){gain=Math.floor(gain*0.5);extra='<p><span class="roll fumble">🎲 心浮气躁</span> 你急于求成，气息紊乱，修为增长大打折扣。</p>';}
+  /* v55 道基 / 灵浊 / 场景结算（法门与场景的「质量」代价） */
+  const daoGain=(mth&&mth.dao||0)+(scn&&scn.daoX?1:0);
+  if(daoGain){S.flag.daoBase=clamp((S.flag.daoBase||0)+daoGain,0,daoBaseCap(S));v55Log+='<p class="good">🪷 道基 +'+daoGain+'（现 '+(S.flag.daoBase||0)+'/'+daoBaseCap(S)+'）。</p>'}
+  if(mth&&mth.imp){S.flag.impurity=clamp((S.flag.impurity||0)+mth.imp,0,100);v55Log+='<p class="sys">速修积浊：灵浊 +'+mth.imp+'（现 '+(S.flag.impurity||0)+'/100）。</p>'}
+  if(scn&&scn.impClean&&(S.flag.impurity||0)>0){S.flag.impurity=Math.max(0,(S.flag.impurity||0)-scn.impClean);v55Log+='<p class="good">灵泉涤尘：灵浊 -'+scn.impClean+'（现 '+(S.flag.impurity||0)+'/100）。</p>'}
+  if(mth&&mth.book)addItem({name:'修行手札',type:'consumable',quality:2,count:1,desc:'闭关著成的手札，展读可得修为并扬散修之名。',use:'notebook',sell:120});
+  if(scn&&scn.danger&&chance(0.2)){S.hp=Math.max(1,S.hp-Math.floor(S.maxHp*0.1));v55Log+='<p class="danger">禁地凶险：一道残影扑来，你负伤而退（气血 -10%）。</p>'}
+  extra+=methodLog+sceneLog+v55Log;
   return {gain:gain,bitter:bitter,boostLog:boostLog,dimLog:dimLog,bnLog:bnLog,extra:extra};
 }
 function _cultFinish(frac){
@@ -522,7 +654,7 @@ function _cultFinish(frac){
   S.cult+=r.gain;
   let pre='';
   if(r.bitter){
-    const dch=bitterFireChance();
+    const dch=cultFireChance();
     if(chance(dch)){S.heartDemons++;pre+='<p class="danger">苦修走火，气血攻心，一道心魔悄然烙下（心魔+1）。</p>'}
     if(chance(0.2)){S.hp=Math.max(1,S.hp-Math.floor(S.maxHp*0.12));pre+='<p class="danger">血气亏损，你咳出一口浊血（气血-12%）。</p>'}
     pre+=growWil(0.16,'以苦为薪，你的道心在磨砺中愈发坚韧');

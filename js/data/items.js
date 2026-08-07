@@ -16,6 +16,7 @@ function itemCatalog(){
   if(typeof RECIPES!=='undefined')for(const k in RECIPES)(RECIPES[k]||[]).forEach(r=>{if(r&&r.name)add({name:r.name,type:'craft',quality:r.q})});
   if(typeof RESEARCH_RECIPES!=='undefined')RESEARCH_RECIPES.forEach(r=>{if(r&&r.name)add({name:r.name,type:'craft',quality:r.q})});
   add({name:'朱果',type:'consumable',quality:3});
+  add({name:'修行手札',type:'consumable',quality:2});
   const fxItems=[];
   const scan=(steps,where)=>{
     (steps||[]).forEach(st=>{

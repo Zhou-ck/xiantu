@@ -22,6 +22,7 @@ const TABS=[
     {n:'守关试炼',i:'⛩️',img:'assets/modules/world_boss.jpg',fn:()=>bossBattle(),desc:'当前境界守关大妖，击败可得重赏'},
     {n:'秘境之门',i:'🏛️',img:'assets/modules/world_dungeon.jpg',fn:()=>panelDungeonList(),ok:()=>S.realm>=2,need:'炼气三层后开启秘境之门',desc:'剑冢/洞府/遗迹/巢穴/残梦副本入口'},
     {n:'御剑试炼',i:'🗡️',img:'assets/modules/world_sword.jpg',fn:()=>swordTrial(),ok:()=>S.realm>=2,need:'炼气三层后开启御剑试炼',desc:'三段时机判定，赏修为与战意（30 日一回）'},
+    {n:'云游悟道',i:'🧭',img:'assets/modules/world_wander.jpg',fn:()=>wanderCultivate(),desc:'不入秘境不求奇遇，天地深处即是道场'},
     {n:'时令',i:'🌸',img:'assets/modules/world_season.jpg',fn:()=>toast(seasonLabel()+'：'+seasonDesc()),desc:'查看当前季节与吉凶'},
   ]},
   {k:'sect',i:'🏯',n:'宗门',d:'拜入 · 任务 · 晋升 · 宝库',hero:'assets/pages/sect.jpg',items:[

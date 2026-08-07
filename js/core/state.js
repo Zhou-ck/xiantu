@@ -58,7 +58,8 @@ function newState(name,bg,gender){
 function calcMaxHp(s){
   const hpBonus=(typeof equipHpBonus==='function')?equipHpBonus(s):0;
   const toxPen=(typeof danToxHpPenalty==='function')?danToxHpPenalty(s):0;
-  return Math.max(1,40+s.attrs.str*3+Math.floor(powR(s.realm)*15)-injuryHpPenalty(s)+hpBonus-toxPen);
+  const impPen=(typeof impurityHpPenalty==='function')?impurityHpPenalty(s):0;
+  return Math.max(1,40+s.attrs.str*3+Math.floor(powR(s.realm)*15)-injuryHpPenalty(s)+hpBonus-toxPen-impPen);
 }
 function attrVal(s,k){return s.attrs[k]+bonusAttr(s,k)+injuryAttrPenalty(s,k)}
 function bonusAttr(s,k){let b=0;for(const a of s.arts)b+=(a.bonus&&a.bonus[k])||0;return b}
@@ -108,7 +109,7 @@ function growWil(base,src){
 }
 /* 属性 → 实际能力换算（数值成长会同步强化这些能力） */
 /* 恐惧烙印：战斗先手 -1/道 */
-function atkBonus(s){return attrVal(s,'str')+weaponAtk(s)+(s.bg&&s.bg.traits.some(t=>t.id==='combat')?2:0)-demonFearAtk(s)+(s.bond?1+s.bond.level:0)}
+function atkBonus(s){return attrVal(s,'str')+weaponAtk(s)+(s.bg&&s.bg.traits.some(t=>t.id==='combat')?2:0)-demonFearAtk(s)+(s.bond?1+s.bond.level:0)+(typeof daoBaseCombat==='function'?daoBaseCombat(s):0)}
 function dodgeBonus(s){return Math.floor(attrVal(s,'agi')/4)+(typeof equipDodge==='function'?equipDodge(s):0)}
 function insightBonus(s){return Math.floor(attrVal(s,'int')/8)}
 function favorBonus(s){return Math.floor(attrVal(s,'cha')/6)}
@@ -161,8 +162,17 @@ function cultMult(s){
   if(s.flag&&s.flag.flowChoice&&typeof flowType==='function'&&s.arts&&s.arts[0]&&flowType(s).id===s.flag.flowChoice)m*=1.05;
   /* v50 丹毒压制：30/60/90 各 -5% 修炼效率 */
   if(typeof danToxCultPenalty==='function')m*=danToxCultPenalty(s);
+  /* v55 灵浊压制：速修代价，阈值同构丹毒 */
+  if(typeof impurityCultPenalty==='function')m*=impurityCultPenalty(s);
   return m;
 }
+/* ===== v55 道基 / 灵浊：修为的「质量」维度 ===== */
+function daoBaseCap(s){s=s||S;return Math.max(10,(bigStage(s.realm||0)+1)*10)}
+function daoBaseRatio(s){s=s||S;const c=daoBaseCap(s);return clamp(((s.flag&&s.flag.daoBase)||0)/Math.max(1,c),0,1)}
+function daoBaseBreakBonus(s){const r=daoBaseRatio(s);return r>=0.8?2:(r>=0.5?1:(r<0.3?-1:0))}
+function daoBaseCombat(s){s=s||S;return Math.floor(daoBaseRatio(s)*10)}
+function impurityCultPenalty(s){const t=s&&s.flag&&s.flag.impurity||0;if(t<30)return 1;return 1-0.05*Math.min(3,Math.floor((t-30)/30)+1)}
+function impurityHpPenalty(s){const t=s&&s.flag&&s.flag.impurity||0;if(t<60)return 0;const base=40+s.attrs.str*3+Math.floor(powR(s.realm)*15);return Math.floor(base*0.1)}
 /* 展示辅助：当前收益倍率（两位小数），供修炼/闭关面板实时显示，公式本体不动 */
 function cultMultDisplay(){
   return (S?cultMult(S):1).toFixed(2);
@@ -253,6 +263,7 @@ function passTime(days){
   if(S.flag.wuxingBuff>0)S.flag.wuxingBuff=Math.max(0,S.flag.wuxingBuff-days);
   if(S.flag.teaCd>0)S.flag.teaCd=Math.max(0,S.flag.teaCd-days);
   if(S.flag.npcVisitCd>0)S.flag.npcVisitCd=Math.max(0,S.flag.npcVisitCd-days);
+  if(S.flag.wanderCd>0)S.flag.wanderCd=Math.max(0,S.flag.wanderCd-days);
   if(S.pet&&S.pet.faint>0)S.pet.faint=Math.max(0,S.pet.faint-days);
   if(S.flag.farm&&Array.isArray(S.flag.farm.plots)){
     for(const p of S.flag.farm.plots){

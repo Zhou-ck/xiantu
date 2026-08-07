@@ -14,7 +14,7 @@ vm.runInContext(`S=newState('测',BACKGROUNDS[0]); PENDING=0;`,ctx);
 // T1 六页结构 + 模块数
 vm.runInContext(`window.__keys=PAGE_KEYS.join(','); window.__counts=TABS.map(t=>t.items.length).join(','); window.__imgs=TABS.every(t=>t.hero)&&TABS.every(t=>t.items.every(it=>!!it.img));`,ctx);
 assert(vm.runInContext('window.__keys==="cult,world,sect,social,biz,me"',ctx),'底部导航为 6 大页（修行/云游/宗门/尘缘/百业/我）');
-assert(vm.runInContext('window.__counts==="8,7,3,6,5,7"',ctx),'六页模块数 8/7/3/6/5/7（共 36 模块）');
+assert(vm.runInContext('window.__counts==="8,8,3,6,5,7"',ctx),'六页模块数 8/8/3/6/5/7（共 37 模块）');
 assert(vm.runInContext('window.__imgs',ctx),'每页含横幅字段、每模块含 img 字段（v54 落图）');
 // T2 双列图卡渲染
 vm.runInContext(`tabHome('cult'); window.__html=document.getElementById('panelBody')._html;`,ctx);

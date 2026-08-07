@@ -200,6 +200,8 @@ function renderAll(){
     '<div class="sb-row"><span>🧙 师尊</span><b>'+(s.master?esc(s.master.name):'无')+'</b></div>'+
     '<div class="sb-row"><span>🧠 悟性</span><b>'+(s.wis||0)+'</b></div>'+
     '<div class="sb-row"><span>🗺️ 历练</span><b>'+(s.trail||0)+'</b></div>'+
+    '<div class="sb-row"><span>🪷 道基</span><b>'+(s.flag.daoBase||0)+'/'+daoBaseCap(s)+'（'+Math.floor(daoBaseRatio(s)*100)+'%）</b></div>'+
+    '<div class="sb-row"><span>⚠️ 灵浊</span><b style="color:'+((s.flag.impurity||0)>=60?'#e08a6a':'#8f9cb8')+'">'+(s.flag.impurity||0)+'/100</b></div>'+
     (s.pet?'<div class="sb-row"><span>🐾 灵兽</span><b>'+esc(s.pet.species+'·'+s.pet.name)+' '+s.pet.level+'级</b></div>':'')+
     (s.prof?'<div class="sb-row"><span>🛠️ 副业</span><b>'+PROF_NAMES[s.prof]+' '+s.profLevel+'阶</b></div>':'')+
     '</div>'+

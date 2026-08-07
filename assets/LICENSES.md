@@ -107,5 +107,6 @@
 | assets/modules/world_map.jpg | AnyaIGC gpt-image-2（用户授权，备用额度） | 生成即所有，可商用免署名 | 无（视觉抽查） | 六页导航·模块图卡 | 2026-08-07 |
 | assets/modules/world_season.jpg | AnyaIGC gpt-image-2（用户授权，备用额度） | 生成即所有，可商用免署名 | 无（视觉抽查） | 六页导航·模块图卡 | 2026-08-07 |
 | assets/modules/world_sword.jpg | AnyaIGC gpt-image-2（用户授权，备用额度） | 生成即所有，可商用免署名 | 无（视觉抽查） | 六页导航·模块图卡 | 2026-08-07 |
+| assets/modules/world_wander.jpg | AnyaIGC gpt-image-2（用户授权，备用额度） | 生成即所有，可商用免署名 | 无（视觉抽查） | 六页导航·模块图卡（v55 云游悟道） | 2026-08-07 |
 | assets/modules/world_tower.jpg | AnyaIGC gpt-image-2（用户授权，备用额度） | 生成即所有，可商用免署名 | 无（视觉抽查） | 六页导航·模块图卡 | 2026-08-07 |
 

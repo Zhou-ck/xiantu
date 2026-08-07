@@ -159,7 +159,7 @@ function validateQuests(){
 function validateAll(){
   return validateEvents().concat(validateQuests()).concat(validateRegionEvents())
     .concat(validateItemRefs()).concat(validateNpcs()).concat(validateWorld())
-    .concat(validateEquip()).concat(validatePills());
+    .concat(validateEquip()).concat(validatePills()).concat(validateCult());
 }
 function validateRegionEvents(){
   var errs=[];
@@ -289,5 +289,19 @@ function validatePills(){
   if(typeof PILL_TOX==='object'&&PILL_TOX)Object.keys(PILL_TOX).forEach(function(nm){
     if(!cat[nm])errs.push('丹毒表引用物品不存在：'+nm);
   });
+  return errs;
+}
+/* ===== v55 修行深化数据表校验：法门 / 场景 / 顿悟事件 ===== */
+function validateCult(){
+  var errs=[];
+  if(typeof CULT_METHODS==='undefined'||!Array.isArray(CULT_METHODS)||CULT_METHODS.length<4)errs.push('CULT_METHODS 至少 4 种法门');
+  else CULT_METHODS.forEach(function(m,i){
+    if(!m||!_isStr(m.id)||!_isStr(m.n)||typeof m.mult!=='number')errs.push('[method#'+i+'] 字段缺失（id/n/mult）');
+  });
+  if(typeof CULT_SCENES==='undefined'||!Array.isArray(CULT_SCENES)||CULT_SCENES.length<5)errs.push('CULT_SCENES 至少 5 个场景');
+  else CULT_SCENES.forEach(function(s,i){
+    if(!s||!_isStr(s.id)||!_isStr(s.n)||typeof s.mult!=='number')errs.push('[scene#'+i+'] 字段缺失（id/n/mult）');
+  });
+  if(typeof MEDITATION_EVENTS==='undefined'||!Array.isArray(MEDITATION_EVENTS)||MEDITATION_EVENTS.length<8)errs.push('MEDITATION_EVENTS 至少 8 条顿悟事件');
   return errs;
 }

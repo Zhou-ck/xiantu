@@ -143,6 +143,10 @@ function load(){
     if(typeof ensureEquip==='function'){for(const k of ['weapon','armor','trinket'])if(s[k])ensureEquip(s[k]);}
     if(s.flag.danTox===undefined)s.flag.danTox=0;
     if(!Array.isArray(s.flag.danToxLog))s.flag.danToxLog=[];
+    if(s.flag.daoBase===undefined)s.flag.daoBase=0;
+    if(s.flag.impurity===undefined)s.flag.impurity=0;
+    if(!s.flag.cultMethod)s.flag.cultMethod='qi';
+    if(!s.flag.cultScene)s.flag.cultScene='cave';
     if(s.flag.farm&&!Array.isArray(s.flag.farm.plots)&&s.flag.farm.crop){
       s.flag.farm={plots:[{crop:s.flag.farm.crop,planted:s.flag.farm.planted||0,days:s.flag.farm.days||7,notified:!!s.flag.farm.notified,evt:null}]};
     }

@@ -83,7 +83,15 @@ function consume(i){
     if(!cureInjury('shenhun','安神丹'))log('<p class="sys">你神魂无恙，药力沉入识海，化为一丝清明。</p>');
   }else if(it.use==='root3'){
     S.root=clamp(S.root+3,1,100);
+    if((S.flag.impurity||0)>0){S.flag.impurity=Math.max(0,(S.flag.impurity||0)-20);log('<p class="good">洗灵露涤荡周身浊气，灵浊 -20（现 '+(S.flag.impurity||0)+'/100）。</p>')}
     log('<p class="good">洗灵露涤荡灵根，灵根资质 +3（现 '+S.root+'）。</p>');
+  }else if(it.use==='notebook'){
+    const g=rand(200,400)+Math.floor(S.root/3);
+    S.cult+=g;
+    S.fame=S.fame||{zheng:0,mo:0,san:0};
+    S.fame.san=(S.fame.san||0)+2;
+    log('<p class="loot">你展读自己闭关时著成的修行手札，笔下的心得以另一种方式回馈于你（修为 +'+g+'，散修声望 +2）。</p>');
+    if(chance(0.2)){const gw=growWil(0.15,'著书自省，道心愈坚');if(gw)log(gw)}
   }else if(it.use==='lifespan'){
     const g=rand(30,80);S.lifeBonus=(S.lifeBonus||0)+g;
     log('<p class="good">延寿丹入口化作一股暖流，你只觉命轮之上凭空多了 <b>'+g+' 载</b>光阴（寿元上限 +'+g+'）。</p>');
@@ -169,6 +177,12 @@ function restHeal(days){
     let detox=Math.floor(days/10)*3;
     if(S.flag.caveRooms&&S.flag.caveRooms.dan)detox+=Math.floor(days/30);
     if(typeof addDanTox==='function')addDanTox(-detox,'静养排毒');
+  }
+  /* v55 静养排浊：每 10 日 -5 */
+  if((S.flag.impurity||0)>0&&days>=10){
+    const clean=Math.floor(days/10)*5;
+    S.flag.impurity=Math.max(0,(S.flag.impurity||0)-clean);
+    log('<p class="good">静养排浊：灵浊 -'+clean+'（现 '+(S.flag.impurity||0)+'/100）。</p>');
   }
   scene('洞府静养');
   log('<p>你在洞府中静养 <b>'+days+' 日</b>，运功调息，药石温养。</p>'+
