@@ -37,7 +37,7 @@ assert(html.indexOf('class="qi-ambient"')>=0,'修炼窗口含灵气氛围层');
 
 // T3 版本同步
 const sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
-assert(vm.runInContext('GAME_VERSION',ctx)==='81','版本号 v81');
+assert(vm.runInContext('GAME_VERSION',ctx)==='82','版本号 v82');
 assert(sw.indexOf('xiantu2-v'+vm.runInContext('GAME_VERSION',ctx))>=0,'SW 缓存名与版本号同步');
 
 console.log(fails===0?'smoke102: ALL PASS':'smoke102 FAILS: '+fails);

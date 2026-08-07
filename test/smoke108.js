@@ -1,4 +1,4 @@
-/* v71 探索事件台词条化 + 突破跃迁横幅 + 渡劫演出冒烟 */
+/* v82 触屏滤镜层/大阴影移除（闪黄根治）+ 亮化保持 冒烟 */
 const fs=require('fs'),path=require('path'),vm=require('vm');
 const root=path.join(__dirname,'..');
 const js=fs.readFileSync(require('path').join(process.env.TEMP||process.env.TMPDIR||require('os').tmpdir(),'xiantu_game.js'),'utf8');
@@ -19,26 +19,27 @@ const ctx={document,localStorage,window:{},console,setTimeout:fn=>fn(),Math};
 vm.createContext(ctx);vm.runInContext(js,ctx);
 let fails=0;function assert(c,m){if(!c){fails++;console.log('FAIL:',m)}else console.log('ok  :',m)}
 
-vm.runInContext(`S=newState('测试',BACKGROUNDS[0]); S.flag={}; PENDING=0;`,ctx);
-
-// T1 探索故事事件台词条化（说话人 + 引文气泡 + 抉择保留）
-vm.runInContext(`runStoryEvent({id:'v71_t',title:'夜半荒山',t:'一位神秘道人立于坟前：「天机不可泄。」随即隐入夜色。',cat:'rare',opts:[{txt:'跟上',fn:()=>{}}]}); window.__se=document.getElementById('story')._html;`,ctx);
-const se=vm.runInContext('window.__se',ctx);
-assert(se.indexOf('story-line')>=0&&se.indexOf('sl-quote')>=0&&se.indexOf('天机不可泄')>=0,'探索事件以台词条演出（引文气泡）');
-assert(se.indexOf('sl-speaker')>=0&&se.indexOf('神秘道人')>=0,'探索事件识别说话人并挂立绘徽章');
-assert(vm.runInContext('PENDING',ctx)===1,'探索事件保留抉择（PENDING=1）');
-
-// T2 突破跃迁横幅 + 渡劫演出接线
-const bt=fs.readFileSync(path.join(root,'js','systems','breakthrough.js'),'utf8');
-assert(bt.indexOf('bt-realm-up')>=0&&bt.indexOf('realm-jump')>=0,'突破成功渲染跃迁横幅（弹窗+故事流）');
-assert(bt.indexOf('trib-fire')>=0,'渡劫小游戏带天雷演出');
+vm.runInContext(`S=newState('测试',BACKGROUNDS[0]); PENDING=0;`,ctx);
 const css=fs.readFileSync(path.join(root,'css','main.css'),'utf8');
-assert(css.indexOf('.bt-realm-up')>=0&&css.indexOf('.realm-jump')>=0&&css.indexOf('.trib-fire')>=0,'跃迁横幅与天雷演出样式存在');
 
-// T3 版本同步
+// T1 触屏大图层滤镜层全部移除（导航图/地点图/横幅/天象/锁定卡）
+for(const sel of ['.page-hero-img','.mod-img','.loc-img','.cult-banner-img']){
+  assert(css.indexOf('html.fx-touch '+sel+'{filter:none!important}')>=0,'触屏移除滤镜层 '+sel);
+}
+assert(css.indexOf('html.fx-touch #breakScene.break-scene{opacity:.34!important;filter:none!important}')>=0,'触屏移除滤镜层 #breakScene.break-scene');
+assert(css.indexOf('html.fx-touch .mod-card.locked .mod-imgwrap')>=0,'锁定卡改用透明度（无滤镜）');
+
+// T2 触屏面板大阴影移除（大盒阴影是首帧闪光元凶）
+assert(css.indexOf('html.fx-touch #panelBox,html.fx-touch #cultBox,html.fx-touch #battleBox,html.fx-touch #guideBox,html.fx-touch #breakBox{box-shadow:none!important}')>=0,'触屏面板大阴影移除');
+
+// T3 亮化档位保持
+assert(css.indexOf('html.fx-touch .mod-img.ld{opacity:.88}')>=0,'模块图亮化档位保持 .88');
+assert(css.indexOf('.page-hero-img.ld{opacity:.68}')>=0,'横幅亮化档位保持 .68');
+
+// T4 版本同步
 const sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
 assert(vm.runInContext('GAME_VERSION',ctx)==='82','版本号 v82');
 assert(sw.indexOf('xiantu2-v'+vm.runInContext('GAME_VERSION',ctx))>=0,'SW 缓存名与版本号同步');
 
-console.log(fails===0?'smoke97: ALL PASS':'smoke97 FAILS: '+fails);
+console.log(fails===0?'smoke108: ALL PASS':'smoke108 FAILS: '+fails);
 process.exit(fails?1:0);

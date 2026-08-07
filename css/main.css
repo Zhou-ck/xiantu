@@ -363,18 +363,18 @@ html.fx-touch button::after{display:none!important}
 /* v64fix 触屏暖图闪黄收敛：加载成功后才淡入，压暗色温 + 深色面纱 + 关金箔流光 + 突破金环低亮 */
 @media (pointer:coarse),(hover:none){
   .page-hero-img.ld{opacity:.52}
-  .page-hero-img{filter:saturate(.8) brightness(.82)}
+  .page-hero-img{filter:none!important}
   .page-hero::after{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(180deg,rgba(8,11,20,.14),rgba(8,11,20,.34))}
   .mod-img.ld{opacity:.88}
-  .mod-img{filter:saturate(.82) brightness(.84)}
+  .mod-img{filter:none!important}
   .mod-imgwrap::after{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(180deg,rgba(8,11,20,.18),rgba(8,11,20,.36))}
   .bar>i::after{display:none!important}
 }
 html.fx-touch .page-hero-img.ld{opacity:.52}
-html.fx-touch .page-hero-img{filter:saturate(.8) brightness(.82)}
+html.fx-touch .page-hero-img{filter:none!important}
 html.fx-touch .page-hero::after{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(180deg,rgba(8,11,20,.14),rgba(8,11,20,.34))}
 html.fx-touch .mod-img.ld{opacity:.88}
-html.fx-touch .mod-img{filter:saturate(.82) brightness(.84)}
+html.fx-touch .mod-img{filter:none!important}
 html.fx-touch .mod-imgwrap::after{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(180deg,rgba(8,11,20,.18),rgba(8,11,20,.36))}
 html.fx-touch .bar>i::after{display:none!important}
 html.fx-touch #btAura.on{animation:auraBurstT 1s ease-out}
@@ -785,9 +785,9 @@ html.fx-low .loc-img{transition:none!important}
 /* ---------- v68 秘境卡 / 副业卡 / 触屏压暗地点图 ---------- */
 .loc-thumb2{width:100%;max-height:120px;object-fit:cover;border-radius:8px;border:1px solid rgba(201,162,75,.25);margin-bottom:2px}
 @media (pointer:coarse),(hover:none){
-  .loc-img{filter:saturate(.85) brightness(.86)}
+  .loc-img{filter:none!important}
 }
-html.fx-touch .loc-img{filter:saturate(.85) brightness(.86)}
+html.fx-touch .loc-img{filter:none!important}
 
 /* ---------- v69 任务行卡片化 ---------- */
 .quest-row{display:flex;align-items:center;gap:9px;padding:7px 10px;background:linear-gradient(180deg,#1e2338,#191e31);border:1px solid rgba(201,162,75,.18);border-radius:9px;margin:5px 0}
@@ -872,10 +872,10 @@ html.fx-low .bt-realm-up{animation:none!important}
 .cult-banner-img.ld{opacity:.7}
 .cult-banner-tx{position:relative;z-index:2;padding:10px 14px;font-size:12px;color:#e8dcc0;letter-spacing:2px;background:linear-gradient(180deg,transparent,rgba(8,11,20,.78));width:100%}
 @media (pointer:coarse),(hover:none){
-  .cult-banner-img{filter:saturate(.85) brightness(.85)}
+  .cult-banner-img{filter:none!important}
   .cult-banner-img.ld{opacity:.62}
 }
-html.fx-touch .cult-banner-img{filter:saturate(.85) brightness(.85)}
+html.fx-touch .cult-banner-img{filter:none!important}
 html.fx-touch .cult-banner-img.ld{opacity:.62}
 
 /* ---------- v75 突破天象分层：境界场景图 + 天劫色调 ---------- */
@@ -885,9 +885,9 @@ html.fx-touch .cult-banner-img.ld{opacity:.62}
 #breakScene[data-trib="yehuo"]{filter:brightness(.74) saturate(1.18) hue-rotate(-22deg)}
 #breakScene[data-trib="feng"]{filter:brightness(.8) saturate(.9) hue-rotate(18deg)}
 @media (pointer:coarse),(hover:none){
-  #breakScene.break-scene{opacity:.3!important;filter:brightness(.82) saturate(.85)!important}
+  #breakScene.break-scene{opacity:.34!important;filter:none!important}
 }
-html.fx-touch #breakScene.break-scene{opacity:.3!important;filter:brightness(.82) saturate(.85)!important}
+html.fx-touch #breakScene.break-scene{opacity:.34!important;filter:none!important}
 
 /* ---------- v76 战斗挥砍弧光 / 闭关灵气氛围 ---------- */
 .bside.fig-side{position:relative}
@@ -958,12 +958,14 @@ html.fx-low .loot-chip{animation:none!important}
   *{-webkit-tap-highlight-color:transparent!important}
   button:active{transform:scale(.97);transition:none!important}
   #panelBody,#cultLog,#battleLog,#breakLog,#side,#story{overscroll-behavior:contain!important}
-  #panelBox,#cultBox,#battleBox,#guideBox,#breakBox{box-shadow:0 0 40px rgba(0,0,0,.62)!important}
+  #panelBox,#cultBox,#battleBox,#guideBox,#breakBox{box-shadow:none!important}
+  .mod-card.locked .mod-imgwrap,.loc-card.locked .loc-imgwrap{filter:none!important;opacity:.7}
 }
 html.fx-touch *{-webkit-tap-highlight-color:transparent!important}
 html.fx-touch button:active{transform:scale(.97);transition:none!important}
 html.fx-touch #panelBody,html.fx-touch #cultLog,html.fx-touch #battleLog,html.fx-touch #breakLog,html.fx-touch #side,html.fx-touch #story{overscroll-behavior:contain!important}
-html.fx-touch #panelBox,html.fx-touch #cultBox,html.fx-touch #battleBox,html.fx-touch #guideBox,html.fx-touch #breakBox{box-shadow:0 0 40px rgba(0,0,0,.62)!important}
+html.fx-touch #panelBox,html.fx-touch #cultBox,html.fx-touch #battleBox,html.fx-touch #guideBox,html.fx-touch #breakBox{box-shadow:none!important}
+html.fx-touch .mod-card.locked .mod-imgwrap,html.fx-touch .loc-card.locked .loc-imgwrap{filter:none!important;opacity:.7}
 /* 强敌登场卡：守关大妖 */
 .boss-intro{display:flex;align-items:center;gap:12px;margin:10px 0 8px;padding:12px 13px;background:linear-gradient(180deg,#262c46,#1a1f33);border:1px solid rgba(232,200,106,.5);border-radius:12px;box-shadow:0 0 18px rgba(232,200,106,.14)}
 .boss-intro .bi-img{width:58px;height:58px;border-radius:10px;object-fit:cover;border:1px solid rgba(232,200,106,.45);flex:0 0 auto}

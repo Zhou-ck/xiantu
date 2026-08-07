@@ -24,9 +24,9 @@ vm.runInContext(`S=newState('测试',BACKGROUNDS[0]); PENDING=0;`,ctx);
 // T1 图片亮化：触屏档位整体上调
 const css=fs.readFileSync(path.join(root,'css','main.css'),'utf8');
 assert(css.indexOf('.page-hero-img.ld{opacity:.68}')>=0,'页横幅亮化至 .68');
-assert(css.indexOf('html.fx-touch .mod-img{filter:saturate(.82) brightness(.84)}')>=0,'模块图亮化（brightness .84）');
-assert(css.indexOf('html.fx-touch .loc-img{filter:saturate(.85) brightness(.86)}')>=0,'地点图亮化（brightness .86）');
-assert(css.indexOf('html.fx-touch #breakScene.break-scene{opacity:.3!important')>=0,'突破天象亮化至 .3');
+assert(css.indexOf('html.fx-touch .mod-img{filter:none!important}')>=0,'触屏模块图去掉滤镜层（防合成闪）');
+assert(css.indexOf('html.fx-touch .loc-img{filter:none!important}')>=0,'触屏地点图去掉滤镜层');
+assert(css.indexOf('html.fx-touch #breakScene.break-scene{opacity:.34!important')>=0,'突破天象亮化至 .34（无滤镜）');
 
 // T2 闪黄彻底加固：全局点击高亮透明 / 按钮即时反馈无过渡 / 面板去暖色内辉 / 滚动防回弹 / 触屏切屏免卷帘
 assert(css.indexOf('*{-webkit-tap-highlight-color:transparent!important}')>=0,'触屏全局点击高亮透明');
@@ -45,7 +45,7 @@ assert(css.indexOf('.boss-intro')>=0&&css.indexOf('.heart-intro')>=0,'登场卡�
 
 // T4 版本同步
 const sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
-assert(vm.runInContext('GAME_VERSION',ctx)==='81','版本号 v81');
+assert(vm.runInContext('GAME_VERSION',ctx)==='82','版本号 v82');
 assert(sw.indexOf('xiantu2-v'+vm.runInContext('GAME_VERSION',ctx))>=0,'SW 缓存名与版本号同步');
 
 console.log(fails===0?'smoke107: ALL PASS':'smoke107 FAILS: '+fails);
