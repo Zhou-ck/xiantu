@@ -135,6 +135,13 @@ const STORY_EVENTS=[
   {id:'st_v61_6',cat:'calm',weight:2,title:'道侣同行',t:'下山路上，道侣与你并肩而行，忽然笑道：「你走路总爱走左边，是为了让我走靠山的一侧？」',opts:[{txt:'😳 被看穿心事，低头认了',cls:'primary',fx:{mood:8,luck:1,once:'st_v61_6'}},{txt:'🫡 正色道：「护道侣，天经地义」',fx:{merit:2,mood:5}}]},
   {id:'st_v61_7',cat:'rare',weight:2,title:'道侣夜话',t:'夜宿山间，篝火噼啪。道侣说起小时候偷吃供果被追了半个村的事，笑得前仰后合。',opts:[{txt:'🔥 添柴续话，聊到东方既白',cls:'primary',fx:{mood:8,insight:1,once:'st_v61_7'}},{txt:'🌙 笑罢，各自静坐观星',fx:{mood:6,cult:60}}]},
   {id:'st_v61_8',cat:'rare',weight:2,title:'道侣赠剑',t:'道侣将一柄旧剑递给你：「这是我入道时第一柄剑，剑钝了，剑心没钝。送给你。」',opts:[{txt:'🗡️ 郑重接剑，以剑护她',cls:'primary',fx:{luck:1,insight:1,once:'st_v61_8'}},{txt:'🤝 收下，也赠她一枚护身符',fx:{merit:3,mood:4}}]},
+  /* —— v62 宗门经营/道侣进阶向扩充（6 条）—— */
+  {id:'st_v62_1',cat:'calm',weight:2,title:'宗门灵田丰收',t:'宗门灵田迎来丰收，药香漫过山门。掌事弟子笑呵呵：「今年雨水好，能多炼几炉丹。」',opts:[{txt:'🌾 帮忙收药半日',cls:'primary',fx:{mat:{sherb:1},merit:2}},{txt:'📜 记下收成账目',fx:{insight:1,once:'st_v62_1'}}]},
+  {id:'st_v62_2',cat:'rare',weight:2,title:'弟子告假',t:'一名入门弟子红着眼眶来告假：「家中老母病重，弟子想下山尽孝。」',opts:[{txt:'🎁 批假并赠些灵石盘缠',cls:'primary',fx:{merit:4,stones:-60}},{txt:'🧭 替他安排同门轮流照看家中',fx:{merit:3,luck:1,flag:{sectGrace:1}}}]},
+  {id:'st_v62_3',cat:'rare',weight:2,title:'宗门夜祭',t:'祖师忌辰，宗门于后山设夜祭。灵牌前的长明灯忽明忽灭，像是有人有话要说。',opts:[{txt:'🕯️ 上前添灯，听一段祖师旧事',cls:'primary',fx:{insight:1,merit:2,once:'st_v62_3'}},{txt:'🧘 于祭台前静坐一夜',fx:{cult:110}}]},
+  {id:'st_v62_4',cat:'rare',weight:2,title:'道侣出师礼',t:'道侣修行有成，出师在即。她将一册亲手抄的剑诀放在你案头：「送你的，留个念想。」',opts:[{txt:'📜 收下剑诀，亦赠她一物',cls:'primary',fx:{insight:1,mood:6,luck:1,once:'st_v62_4'}},{txt:'🤝 陪她走完出师最后一课',fx:{mood:6,merit:2}}]},
+  {id:'st_v62_5',cat:'calm',weight:2,title:'双修纪念日',t:'你们定情的日子到了。道侣早早备好一桌菜，桌上还放着一坛她亲手酿的酒。',opts:[{txt:'🍶 开坛共饮，说到月落',cls:'primary',fx:{mood:10,insight:1,once:'st_v62_5'}},{txt:'💞 以双修代酒，静夜同心',fx:{mood:8,luck:1}}]},
+  {id:'st_v62_6',cat:'danger',weight:2,title:'情劫夜话',t:'道侣忽然问你：「若有一日，仙凡有别，你当如何？」夜风骤停，她盯着你的眼睛。',opts:[{txt:'💍 握住她的手：「我选你。」',cls:'primary',fx:{mood:10,luck:1,once:'st_v62_6'}},{txt:'🤝 如实相告：「我会先守完此世」',fx:{merit:3,mood:4}}]},
 ];
 /* v48 赛季主题：风 / 雷 / 火 / 水（每 3 游戏年轮换） */
 const THEMES=[

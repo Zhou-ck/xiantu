@@ -4,7 +4,7 @@
 ====================================================== */
 'use strict';
 /* 游戏版本号：与 sw.js 的 CACHE 版本保持同步（发布前审计核对） */
-const GAME_VERSION='61';
+const GAME_VERSION='62';
 function isNativeApp(){
   try{return !!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform())}catch(e){return false}
 }
