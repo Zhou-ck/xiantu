@@ -928,3 +928,15 @@ html.fx-low .craft-result{animation:none!important}
 .exp-banner .eb-tx b{font-size:14.5px;font-weight:normal;color:var(--gold2);letter-spacing:2px}
 .exp-banner .eb-tx small{font-size:11.5px;color:#8f9cb8}
 html.fx-low .loot-chip{animation:none!important}
+
+/* ---------- v79 收藏图鉴图标化 ---------- */
+.tome-cell.atlas-item{border:1px solid rgba(201,162,75,.2);border-radius:10px;padding:8px 6px;background:linear-gradient(180deg,#1e2338,#191e31)}
+.tome-cell.atlas-item.qc0{border-color:#8f9cb8}
+.tome-cell.atlas-item.qc1{border-color:#6fae6f}
+.tome-cell.atlas-item.qc2{border-color:#6f9fcf}
+.tome-cell.atlas-item.qc3{border-color:#c78fd8}
+.tome-cell.atlas-item.qc4{border-color:#ffd75e}
+.tome-cell.atlas-item .ai-ico{font-size:22px;display:block;margin-bottom:2px;line-height:1.2}
+.tome-cell.atlas-enemy{padding:8px 6px}
+.tome-cell.atlas-enemy .ae-img{width:44px;height:44px;border-radius:50%;object-fit:cover;border:1px solid rgba(201,162,75,.4);margin:0 auto 3px;display:block;box-shadow:0 0 8px rgba(201,162,75,.14)}
+.tome-cell.atlas-enemy .ae-emoji{font-size:24px;display:block;line-height:1.3}

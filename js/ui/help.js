@@ -93,12 +93,18 @@ function collectionAtlas(){
   const c=atlasCounts();
   const itemRows=Object.keys(S.seenI||{}).sort().map(nm=>{
     const q=atlasItemQuality(nm);
-    return '<div class="tome-cell">'+(q!=null?'<span class="q'+q+'">'+QNAMES[q]+'</span>':'')+'<b>'+esc(nm)+'</b><span>×'+(S.seenI[nm])+'</span></div>';
+    const meta=(typeof itemCatalog==='function'&&itemCatalog()[nm])||{};
+    return '<div class="tome-cell atlas-item qc'+(q!=null?clamp(q,0,4):0)+'">'+
+      '<span class="ai-ico">'+itemIcon({name:nm,type:meta.type})+'</span>'+
+      '<b>'+esc(nm)+'</b><span>'+(q!=null?('<span class="q'+q+'">'+QNAMES[q]+'</span> '):'')+'×'+(S.seenI[nm])+'</span></div>';
   }).join('');
-  const enemyRows=Object.keys(S.seenE||{}).sort().map(nm=>'<div class="tome-cell"><b>'+esc(nm)+'</b><span>击退 ×'+(S.seenE[nm])+'</span></div>').join('');
+  const enemyRows=Object.keys(S.seenE||{}).sort().map(nm=>{
+    const art=(typeof ENEMY_ART!=='undefined'&&ENEMY_ART[nm])||'';
+    return '<div class="tome-cell atlas-enemy'+(art?' has-art':'')+'">'+(art?'<img class="ae-img" src="'+art+'" alt="" loading="lazy">':'<span class="ae-emoji">👹</span>')+'<b>'+esc(nm)+'</b><span>击退 ×'+(S.seenE[nm])+'</span></div>';
+  }).join('');
   const prof=RECIPES[S.prof||'alchemy']||[];
   const mastered=atlasRecipeCount();
-  const recipeRows=prof.map(r=>'<div class="tome-cell'+(recipeKnown(r)?'':' locked')+'">'+(recipeKnown(r)?'✅':'🔒')+'<b>'+esc(r.name)+'</b><span>'+(r.lv||1)+'阶</span></div>').join('');
+  const recipeRows=prof.map(r=>'<div class="tome-cell atlas-item qc'+(r.q!=null?clamp(r.q,0,4):0)+(recipeKnown(r)?'':' locked')+'">'+(recipeKnown(r)?'✅':'🔒')+'<span class="ai-ico">'+(typeof PROF_ICON!=='undefined'?(PROF_ICON[S.prof]||'⚗️'):'⚗️')+'</span><b>'+esc(r.name)+'</b><span>'+(r.lv||1)+'阶</span></div>').join('');
   const milesHtml=ATLAS_MILES.map(m=>{
     const val=m.k==='item'?c.items:m.k==='enemy'?c.enemies:c.recipes;
     const got=(S.flag.atlasMiles||[]).indexOf(m.k+':'+m.n)>=0;

@@ -42,7 +42,7 @@ assert(ca.indexOf('class="bar"')>=0,'收藏图鉴含进度条');
 
 // T4 版本同步
 const sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
-assert(vm.runInContext('GAME_VERSION',ctx)==='78','版本号 v78');
+assert(vm.runInContext('GAME_VERSION',ctx)==='79','版本号 v79');
 assert(sw.indexOf('xiantu2-v'+vm.runInContext('GAME_VERSION',ctx))>=0,'SW 缓存名与版本号同步');
 
 console.log(fails===0?'smoke99: ALL PASS':'smoke99 FAILS: '+fails);
