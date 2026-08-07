@@ -193,7 +193,7 @@ header .spacer{flex:1}
 
 #panel{
   position:fixed;inset:0;z-index:52;display:none;align-items:center;justify-content:center;
-  background:rgba(5,7,12,.72);backdrop-filter:blur(3px);
+  background:rgba(5,7,12,.72);
 }
 #panelBox{
   width:min(680px,94vw);max-height:86vh;display:flex;flex-direction:column;
@@ -308,14 +308,14 @@ header .spacer{flex:1}
 .quest-item{display:flex;justify-content:space-between;font-size:12px;margin:3px 0;color:#a99a72;gap:8px}
 .quest-item.done{color:#5c8a5c}
 .quest-item b{font-weight:normal}
-#guide{position:fixed;inset:0;z-index:80;display:none;align-items:center;justify-content:center;background:rgba(5,7,12,.78);backdrop-filter:blur(3px)}
+#guide{position:fixed;inset:0;z-index:80;display:none;align-items:center;justify-content:center;background:rgba(5,7,12,.78)}
 #guideBox{width:min(640px,94vw);max-height:88vh;overflow:auto;background:linear-gradient(180deg,#232940,#171b2b);border:1px solid var(--gold);border-radius:14px;padding:26px 30px;box-shadow:0 0 50px rgba(0,0,0,.7);-webkit-overflow-scrolling:touch}
 #guideBox h3{color:var(--gold2);font-weight:normal;letter-spacing:3px;text-align:center;font-size:20px;margin-bottom:12px}
 #guideBox p{color:#cfc3a0;line-height:1.9;font-size:14.5px;margin:8px 0}
 #guideBox .tip{background:#1b1f31;border-left:3px solid var(--gold);padding:10px 12px;border-radius:4px;margin:10px 0;color:#c9b98e;font-size:13.5px;line-height:1.8}
 #guideNav{display:flex;justify-content:space-between;align-items:center;margin-top:22px;gap:10px}
 #guideDots{color:#5d5f74;font-size:13px}
-#battle{position:fixed;inset:0;z-index:55;display:none;align-items:center;justify-content:center;background:rgba(5,7,12,.82);backdrop-filter:blur(3px)}
+#battle{position:fixed;inset:0;z-index:55;display:none;align-items:center;justify-content:center;background:rgba(5,7,12,.82)}
 #battleBox{width:min(560px,94vw);max-height:92vh;display:flex;flex-direction:column;background:linear-gradient(180deg,#232940,#141724);border:1px solid var(--gold);border-radius:14px;box-shadow:0 0 60px rgba(0,0,0,.8);overflow:hidden}
 #battleHead{padding:11px 16px;text-align:center;color:var(--gold2);letter-spacing:3px;font-size:16px;border-bottom:1px solid #3a3f5c;background:rgba(0,0,0,.22)}
 .bside{padding:10px 18px 4px}
@@ -335,7 +335,18 @@ header .spacer{flex:1}
 #battleResult p b{font-weight:normal;color:#f0e6c8;text-align:right}
 #battleResult{max-height:26vh;overflow-y:auto}
 #battleFoot{padding:0 14px 14px;display:flex;justify-content:center;position:sticky;bottom:0;background:linear-gradient(180deg,#141724 60%,#10131d);z-index:2}
-#cultivate{position:fixed;inset:0;z-index:54;display:none;align-items:center;justify-content:center;background:rgba(5,7,12,.82);backdrop-filter:blur(3px)}
+#cultivate{position:fixed;inset:0;z-index:54;display:none;align-items:center;justify-content:center;background:rgba(5,7,12,.82)}
+/* v49fix 手机端：全屏遮罩去掉 backdrop-filter（部分手机合成器淡入时整屏闪亮），桌面保留模糊质感 */
+@media (hover:hover){
+  #panel,#guide,#battle,#cultivate{backdrop-filter:blur(3px)}
+}
+/* v52fix 触屏降级：整屏特效不再触发合成器暖色泛光（切屏 blur / 按钮金箔流光 / hover 金光） */
+@media (pointer:coarse),(hover:none){
+  #screen-create.fx-in,#screen-game.fx-in{filter:none!important}
+  button::after{display:none!important}
+  button:hover{transform:none;box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 2px 6px rgba(0,0,0,.35)}
+  button.primary:hover{box-shadow:0 0 14px rgba(201,162,75,.25),inset 0 1px 0 rgba(255,255,255,.18)}
+}
 #cultBox{width:min(560px,94vw);max-height:92vh;display:flex;flex-direction:column;background:linear-gradient(180deg,#232940,#141724);border:1px solid var(--gold);border-radius:14px;box-shadow:0 0 60px rgba(0,0,0,.8);overflow:hidden}
 #cultHead{padding:11px 16px;text-align:center;color:var(--gold2);letter-spacing:3px;font-size:16px;border-bottom:1px solid #3a3f5c;background:rgba(0,0,0,.22)}
 .cult-partner{display:flex;align-items:center;gap:10px;padding:8px 12px;margin:8px 14px 2px;background:linear-gradient(180deg,#232a47,#1a2036);border:1px solid rgba(201,162,75,.25);border-radius:10px}
