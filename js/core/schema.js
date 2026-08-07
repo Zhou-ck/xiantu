@@ -277,6 +277,7 @@ function eventTotalCount(){
   let n=0;
   if(Array.isArray(DATA.events))n+=DATA.events.length;
   if(typeof REGION_EVENTS!=='undefined')n+=REGION_EVENTS.length;
+  if(typeof MEDITATION_EVENTS!=='undefined')n+=MEDITATION_EVENTS.length;
   if(typeof STORY_EVENTS!=='undefined')n+=STORY_EVENTS.length;
   if(typeof THEME_EVENTS!=='undefined')n+=THEME_EVENTS.length;
   if(typeof PARTNER_EVENTS!=='undefined')n+=PARTNER_EVENTS.length;

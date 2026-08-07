@@ -20,8 +20,8 @@ assert(vm.runInContext('eventTotalCount()>=300',ctx),'事件总量 ≥300（'+vm
 assert(vm.runInContext('validateAll().length===0',ctx),'全部数据表校验 0 错误');
 
 // T3 赛季事件各主题 4 条、可抽取
-vm.runInContext(`window.__miss=THEMES.filter(t=>THEME_EVENTS.filter(e=>e.theme===t.id).length!==4).map(t=>t.id);`,ctx);
-assert(vm.runInContext('window.__miss.length===0',ctx),'每主题恰有 4 条赛季事件');
+vm.runInContext(`window.__miss=THEMES.filter(t=>THEME_EVENTS.filter(e=>e.theme===t.id).length<4).map(t=>t.id);`,ctx);
+assert(vm.runInContext('window.__miss.length===0',ctx),'每主题 ≥4 条赛季事件（v95 已扩至 10/主题）');
 
 // T4 故事事件五类齐全、有战斗与无战斗分支
 vm.runInContext(`window.__cats=[...new Set(STORY_EVENTS.map(e=>e.cat))].sort().join(','); window.__fights=STORY_EVENTS.filter(e=>e.opts.some(o=>o.fx&&o.fx.fight)).length;`,ctx);

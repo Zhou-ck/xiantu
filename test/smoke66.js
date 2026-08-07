@@ -10,9 +10,10 @@ const ctx={document,localStorage,window:{},console,setTimeout:fn=>fn(),Math};
 vm.createContext(ctx);vm.runInContext(js,ctx);
 let fails=0;function assert(c,m){if(!c){fails++;console.log('FAIL:',m)}else console.log('ok  :',m)}
 
-// T1 四个主题 + 16 个赛季事件
-vm.runInContext(`window.__th=THEMES.map(t=>t.id); window.__n=THEME_EVENTS.length;`,ctx);
-assert(vm.runInContext('window.__th.join(",")==="feng,lei,huo,shui"&&window.__n===16',ctx),'风雷火水四季主题各 4 事件（共 16）');
+// T1 四个主题 + 赛季事件池（v95 起 ≥10/主题，动态断言）
+vm.runInContext(`window.__th=THEMES.map(t=>t.id); window.__n=THEME_EVENTS.length; window.__cnt={}; THEME_EVENTS.forEach(e=>{window.__cnt[e.theme]=(window.__cnt[e.theme]||0)+1});`,ctx);
+assert(vm.runInContext('window.__th.join(",")==="feng,lei,huo,shui"',ctx),'四季主题齐全');
+assert(vm.runInContext('["feng","lei","huo","shui"].every(t=>(window.__cnt[t]||0)>=4)',ctx),'四季主题各 ≥4 事件（共 '+vm.runInContext('window.__n',ctx)+'）');
 
 // T2 每 3 游戏年轮换
 vm.runInContext(`
