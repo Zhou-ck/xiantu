@@ -179,8 +179,11 @@ function questFindNpc(name){
 }
 /* 剧情事件通用演出：标题 + 台词 + 抉择（fx 效果器复用区域记忆语义） */
 function runStoryLines(title,lines,opts,after){
-  log('<p class="scene">📖 〖 '+esc(title)+' 〗</p>');
+  const sc=sceneThumb(title);
+  log('<p class="scene">'+(sc?sc+' ':'')+'📖 〖 '+esc(title)+' 〗</p>');
   try{if(typeof setSceneImg==='function')setSceneImg(title)}catch(e){}
+  const cast=storyCastBar(pickCastNames(title+' '+(lines||[]).join(' ')));
+  if(cast)log(cast);
   for(const ln of lines)log('<p>'+ln+'</p>');
   logChoices((opts||[]).map(o=>({
     txt:o.txt,cls:o.cls||'',

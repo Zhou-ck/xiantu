@@ -188,6 +188,37 @@ function startCombat(enemy,onEnd,spar){
   if(hasEscape)btns.push({txt:'📜 燃遁地符',fn:()=>{useItem('遁地符');log('<p>符箓燃尽，你化作遁光瞬息远去。</p>');passTime(1);renderAll()}});
   logChoices(btns);
 }
+/* v65 战斗形象：敌方可视化（已知敌人立绘/场景图映射，未知则五行色头像兜底） */
+const ENEMY_ART={
+  '荒坟厉鬼':'assets/scenes/death.jpg',
+  '血魔宗伏杀者':'assets/scenes/darksect.jpg',
+  '正道剑修':'assets/portraits/npc_swordsman.jpg',
+  '守库尸傀':'assets/scenes/dungeon.jpg',
+  '青鳞蟒':'assets/scenes/tide.jpg',
+  '魔道巡察使':'assets/scenes/darksect.jpg',
+  '雷蛟':'assets/scenes/tribulation.jpg',
+  '古修残魂':'assets/scenes/ghostgate.jpg',
+  '化形妖王':'assets/scenes/beast.jpg',
+  '幽冥鬼帅':'assets/scenes/death.jpg',
+  '合体魔君':'assets/scenes/darksect.jpg',
+  '大乘老祖':'assets/scenes/sect.jpg',
+  '渡劫天尊':'assets/scenes/tribulation.jpg',
+};
+function enemyFigHtml(e){
+  e=e||{};
+  const art=ENEMY_ART[e.name]||((typeof NPC_ART!=='undefined'&&NPC_ART[e.name])||'');
+  const ei=e.elem?elemInfo(e.elem):null;
+  const ec=ei&&ei.c?ei.c:'';
+  if(art)return '<div class="bfig bfig-has"'+(ec?' style="--ec:'+ec+'"':'')+'><img class="bfig-img" src="'+art+'" alt="" loading="lazy"></div>';
+  const emoji=(e.boss?'🐲':(ei?ei.i:'👹'));
+  return '<div class="bfig bfig-emoji"'+(ec?' style="color:'+ec+';border-color:'+ec+'"':'')+'>'+emoji+'</div>';
+}
+function playerFigHtml(s){
+  let k='';
+  if(typeof charArtKey==='function'){try{k=charArtKey(s)}catch(e){}}
+  if(!k&&typeof ART!=='undefined')k=ART.hero;
+  return k?'<div class="bfig bfig-has"><img class="bfig-img" src="'+k+'" alt="" loading="lazy"></div>':'<div class="bfig bfig-emoji">🧙</div>';
+}
 function battle(enemy,onEnd,spar){
   return new Promise(resolve=>{
     closePanel();
@@ -439,8 +470,11 @@ function battle(enemy,onEnd,spar){
     $('battleResult').style.display='none';
     $('battleContinue').style.display='none';
     $('battleLog').innerHTML='';
-    $('bEnemyName').textContent='👹 '+enemy.name;
+    const enemyEi=enemy.elem?elemInfo(enemy.elem):null;
+    $('bEnemyName').innerHTML=(enemyEi?'<span style="color:'+enemyEi.c+'">'+enemyEi.i+'</span> ':'')+'👹 '+esc(enemy.name);
     $('bPlayerName').textContent='🧙 '+S.name;
+    if($('bEnemyFig'))$('bEnemyFig').innerHTML=enemyFigHtml(enemy);
+    if($('bPlayerFig'))$('bPlayerFig').innerHTML=playerFigHtml(S);
     $('battleHead').textContent='⚔️ '+enemy.name+' · 战术：'+tac.i+' '+tac.n;
     if(es)pushLog('<p class="bl">对方是<b>'+es.n+'</b>之敌（'+es.desc+'）。</p>');
     if(skill)pushLog('<p class="bl">你主修功法<strong>《'+esc(S.arts[0].name)+'》</strong>的<b>'+skill.n+'</b>每 3 回合自动施展（'+skill.desc+'）。</p>');

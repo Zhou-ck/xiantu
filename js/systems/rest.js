@@ -6,9 +6,9 @@
 /* ================= 物品使用 / 休整 ================= */
 function panelInventory(){
   const inv=S.items.map((it,i)=>{
-    const useBtn=(it.use&&it.use!=='fire'&&it.use!=='escape'&&it.use!=='thunder'&&it.use!=='rewind')?'<button class="small" onclick="consume('+i+')">使用</button> ':'';
-    const eqBtn=(it.type==='weapon'||it.type==='armor'||it.type==='trinket')?'<button class="small" onclick="equipItem('+i+')">装备</button> ':'';
-    return '<div class="item-card"><div class="nm"><span class="q'+it.quality+'">'+esc(it.name)+'</span></div><div class="ds">'+esc(it.desc)+'</div><div style="margin-top:6px">'+useBtn+eqBtn+'<button class="small" onclick="sellItem('+i+')">出售</button></div></div>';
+    const useBtn=(it.use&&it.use!=='fire'&&it.use!=='escape'&&it.use!=='thunder'&&it.use!=='rewind')?'<button class="small" onclick="consume('+i+')">使用</button> ':''; 
+    const eqBtn=(it.type==='weapon'||it.type==='armor'||it.type==='trinket')?'<button class="small" onclick="equipItem('+i+')">装备</button> ':''; 
+    return itemCardHtml(it,useBtn+eqBtn+'<button class="small" onclick="sellItem('+i+')">出售</button>'); 
   }).join('');
   const arts=S.arts.map(a=>'<span class="tag">'+esc(a.name)+'</span>').join('');
   const eq='<p>装备中：法器 <b>'+(S.weapon?esc(S.weapon.name):'—')+'</b> · 防具 <b>'+(S.armor?esc(S.armor.name):'—')+'</b> · 佩饰 <b>'+(S.trinket?esc(S.trinket.name):'—')+'</b></p>';
@@ -329,8 +329,9 @@ function panelRest(){
   const artsHtml=S.arts.map((a,i)=>{
     const lv=a.level||1;
     const maxLv=Math.min(5,bigStage(S.realm)+1);
-    return '<div class="item-card"><div class="nm">'+esc(a.name)+' <span class="tag">'+artGradeName(a)+'</span> <span class="tag">'+(a.elem?elemInfo(a.elem).i+' '+elemInfo(a.elem).n:'无属')+'</span> <span class="tag">第'+lv+'重</span>'+(lv>=maxLv?' <span class="tag">圆满</span>':'')+(i===0?' <span class="tag" style="color:#d8b45a">主修</span>':' <span class="tag">辅修×0.5</span>')+'</div><div class="ds">'+esc(a.desc)+' · 效率 ×'+((a.mult+(lv-1)*0.05)*artGradeMult(a)*(i===0?1:0.5)).toFixed(2)+'</div>'+
-      (lv<maxLv?'<div style="margin-top:6px"><button class="small" onclick="cultivateArt('+i+')">参悟 · 30日（'+(100*lv)+'灵石）</button></div>':'')+'</div>';
+    const eff=((a.mult+(lv-1)*0.05)*artGradeMult(a)*(i===0?1:0.5)).toFixed(2);
+    const tags='<span class="tag">'+artGradeName(a)+'</span>'+(a.elem?' <span class="tag" style="color:'+elemInfo(a.elem).c+'">'+elemInfo(a.elem).i+' '+elemInfo(a.elem).n+'</span>':' <span class="tag">无属</span>')+' <span class="tag">第'+lv+'重</span>'+(lv>=maxLv?' <span class="tag">圆满</span>':'')+(i===0?' <span class="tag" style="color:#d8b45a">主修</span>':' <span class="tag">辅修×0.5</span>');
+    return qcardHtml({name:a.name,icon:a.elem?elemInfo(a.elem).i:'📖',quality:Math.min(4,artGrade(a)-1),elem:a.elem,showQ:false,tags:tags,sub:'效率 ×'+eff,desc:esc(a.desc),foot:(lv<maxLv?'<button class="small" onclick="cultivateArt('+i+')">参悟 · 30日（'+(100*lv)+'灵石）</button>':'')});
   }).join('');
   openPanel('🏡 洞府',
     '<p>山中方一日，世上已千年。此处是你的道场：歇息、种药、参悟功法、求问天机。</p>'+

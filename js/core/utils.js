@@ -61,3 +61,68 @@ function artImg(key,w,h,cls){
   if(h)st+='height:'+h+'px;';
   return '<img class="art-img'+(cls?' '+cls:'')+'" src="'+key+'" alt="" loading="lazy" style="'+st+'">';
 }
+/* ================= v65 卡面化：物品 / 功法统一卡片 ================= */
+const ITEM_ICONS={consumable:'💊',weapon:'⚔️',armor:'🛡️',trinket:'📿',mat:'🌿',gem:'💎',craft:'⚗️',collect:'📜',egg:'🥚',item:'📦'};
+function itemIcon(it){
+  if(it&&it.elem&&typeof ELEMS!=='undefined'&&ELEMS[it.elem])return ELEMS[it.elem].i;
+  return (it&&ITEM_ICONS[it.type])||'📦';
+}
+function itemQName(q){
+  if(typeof QNAMES==='undefined')return '';
+  const i=q!=null?clamp(q,0,4):0;
+  return QNAMES[i];
+}
+/* 统一品质卡：图标 + 名称 + 标签 + 说明 + 底部按钮区；五行物品带元素色 */
+function qcardHtml(o){
+  o=o||{};
+  const q=o.quality!=null?clamp(o.quality,0,4):0;
+  const qn=itemQName(q);
+  const ei=o.elem?elemInfo(o.elem):null;
+  const ec=ei&&ei.c?ei.c:'';
+  return '<div class="item-card qcard qc'+q+(ei?' qcard-elem':'')+'"'+(ec?' style="--ec:'+ec+'"':'')+'>'+
+    '<div class="qcard-head">'+
+      '<span class="qcard-ico"'+(ec?' style="color:'+ec+'"':'')+'>'+(o.icon||'📦')+'</span>'+
+      '<div class="qcard-tx">'+
+        '<div class="nm"><span class="q'+q+'">'+esc(o.name)+'</span>'+(o.showQ===false?'':(qn?' <span class="tag qtag q'+q+'">'+qn+'</span>':''))+(o.tags||'')+'</div>'+
+        (o.sub?'<div class="qcard-sub">'+o.sub+'</div>':'')+
+      '</div>'+
+    '</div>'+
+    (o.desc?'<div class="ds">'+o.desc+'</div>':'')+
+    (o.foot?'<div class="qcard-foot">'+o.foot+'</div>':'')+
+  '</div>';
+}
+function itemCardHtml(it,foot){
+  it=it||{};
+  const tags=[];
+  if(it.count&&it.count>1)tags.push('<span class="tag">×'+it.count+'</span>');
+  if(it.elem&&typeof ELEMS!=='undefined'&&ELEMS[it.elem])tags.push('<span class="tag" style="color:'+ELEMS[it.elem].c+'">'+ELEMS[it.elem].i+' '+ELEMS[it.elem].n+'</span>');
+  return qcardHtml({
+    name:it.name,icon:itemIcon(it),quality:it.quality,elem:it.elem,tags:tags.join(''),
+    desc:it.desc?'<span style="color:#a99a72">'+esc(it.desc)+'</span>':'',foot:foot||''
+  });
+}
+/* 剧情人物栏：从文本中识别已知立绘角色，返回登场条 HTML */
+function pickCastNames(text){
+  if(!text)return [];
+  const hit=[];
+  const pool=[];
+  if(typeof NPC_ART!=='undefined')for(const k in NPC_ART)pool.push(k);
+  if(typeof SECT_PERSON_ART!=='undefined')for(const k in SECT_PERSON_ART)pool.push(k);
+  pool.sort((a,b)=>b.length-a.length);
+  for(const k of pool)if(text.indexOf(k)>=0){hit.push(k);if(hit.length>=2)break}
+  return hit;
+}
+function storyCastBar(keys){
+  if(!keys||!keys.length)return '';
+  const cells=keys.slice(0,2).map(k=>{
+    const src=((typeof NPC_ART!=='undefined'&&NPC_ART[k])||(typeof SECT_PERSON_ART!=='undefined'&&SECT_PERSON_ART[k]));
+    return src?'<div class="cast-cell"><img class="cast-img" src="'+src+'" alt="" loading="lazy"><span>'+esc(k)+'</span></div>':'';
+  }).filter(Boolean).join('');
+  return cells?'<div class="story-cast">'+cells+'</div>':'';
+}
+/* 场景缩略章：匹配标题到场景图，返回小图章（无匹配返回空） */
+function sceneThumb(title){
+  if(!title||typeof SCENE_IMG==='undefined')return '';
+  for(const [re,k] of SCENE_IMG)if(re.test(title))return '<img class="scn-thumb" src="'+k+'" alt="" loading="lazy">';
+  return '';
+}

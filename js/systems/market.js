@@ -49,16 +49,13 @@ function panelMarket(){
   const items=MARKET_ITEMS.map((m,i)=>{
     const tag=m.type==='mat'?'材料':'物品';
     const price=buyPrice(m);
-    return '<div class="item-card"><div class="nm">'+esc(m.name)+' <span class="tag">'+tag+'</span>'+(m.quality!=null?'<span class="q'+m.quality+'" style="font-size:12px;margin-left:6px">'+QNAMES[m.quality]+'</span>':'')+'</div>'+
-      '<div class="ds">'+(m.desc||'炼丹炼器之材。')+'</div>'+
-      '<div style="margin-top:6px"><button class="small" onclick="buyItem('+i+')">购 · '+price+' 灵石</button></div></div>';
+    const mm=Object.assign({},m,{desc:m.desc||'炼丹炼器之材。'});
+    return itemCardHtml(mm,'<span class="tag">'+tag+'</span><button class="small primary" onclick="buyItem('+i+')">购 · '+price+' 灵石</button>');
   }).join('');
-  const inv=S.items.map((it,j)=>
-    '<div class="item-card"><div class="nm"><span class="q'+it.quality+'">'+esc(it.name)+'</span></div><div class="ds">'+esc(it.desc)+'</div>'+
-    '<div style="margin-top:6px"><button class="small" onclick="sellItem('+j+')">售 · '+sellPrice(it)+' 灵石</button></div></div>').join('');
+  const inv=S.items.map((it,j)=>itemCardHtml(it,'<button class="small" onclick="sellItem('+j+')">售 · '+sellPrice(it)+' 灵石</button>')).join('');
   const mats=Object.entries(S.mats).map(([k,v])=>'<span class="tag">'+MAT_NAMES[k]+' ×'+v+'</span>').join('')||'<span style="color:#6f7a94">空空如也</span>';
   const auc=getAuction();
-  const aucHtml=auc.sold?'<p style="color:#6f7a94">本届奇珍已售出，来年再会。</p>':'<div class="item-card"><div class="nm"><span class="q'+auc.it.quality+'">'+esc(auc.it.name)+'</span> <span class="tag">奇珍</span></div><div class="ds">'+esc(auc.it.desc)+'</div><div style="margin-top:6px"><button class="small primary" onclick="buyAuction()">🏆 进入竞拍 · 当前 '+auc.price+' 灵石（第 '+(auc.rounds+1)+'/'+AUCTION_ROUNDS+' 轮）</button></div></div>';
+  const aucHtml=auc.sold?'<p style="color:#6f7a94">本届奇珍已售出，来年再会。</p>':itemCardHtml(auc.it,'<span class="tag">奇珍</span><button class="small primary" onclick="buyAuction()">🏆 进入竞拍 · 当前 '+auc.price+' 灵石（第 '+(auc.rounds+1)+'/'+AUCTION_ROUNDS+' 轮）</button>');
   openPanel('🏮 坊市','<p>凡尘与修真界交汇之地，商贩吆喝，灵光流转。</p><p class="sys">📈 行情：'+note+'</p><h4>💎 灵石：'+S.stones+'</h4>'+
     '<h4>🌾 善举</h4><div class="row"><button class="small" onclick="giveAlms()">施粥棚 · 50灵石（功德+2）</button></div>'+
     '<h4>💎 宝石兑换</h4><div class="row"><button class="small" onclick="exchangeGem()">妖丹 ×2 换随机宝石</button></div>'+

@@ -134,7 +134,9 @@ function closePanel(){$('panel').style.display='none'}
 function openEventModal(title,html,opts){
   const list=(opts||[]).map((o,i)=>'<button class="small" style="margin:4px 4px 0 0" onclick="resolveEventModal('+i+')">'+esc(o.txt)+'</button>').join('');
   window._eventModalOpts=opts||[];
-  openPanel(title,html+list);
+  /* v65：事件弹窗识别标题中的已知人物，先渲染登场立绘条 */
+  const cast=storyCastBar(pickCastNames(title));
+  openPanel(title,(cast?cast:'')+html+list);
 }
 function resolveEventModal(i){
   const opts=window._eventModalOpts||[];

@@ -90,7 +90,7 @@
 
 <div id="panel">
   <div id="panelBox">
-    <div id="panelHead"><span id="panelTitle"></span><button class="small" onclick="closePanel()">收起</button></div>
+    <div id="panelHead"><span class="panel-seal">⚜️</span><span id="panelTitle"></span><button class="small" onclick="closePanel()">收起</button></div>
     <div id="panelBody"></div>
   </div>
 </div>
@@ -134,16 +134,22 @@
 <div id="battle">
   <div id="battleBox">
     <div id="battleHead">⚔️ 遭遇战</div>
-    <div class="bside">
-      <div class="bname" id="bEnemyName"></div>
-      <div class="bar bhp"><i id="bEnemyBar" style="width:100%"></i></div>
-      <div class="bhpnum" id="bEnemyHp"></div>
+    <div class="bside fig-side">
+      <div id="bEnemyFig"></div>
+      <div style="flex:1;min-width:0">
+        <div class="bname" id="bEnemyName"></div>
+        <div class="bar bhp"><i id="bEnemyBar" style="width:100%"></i></div>
+        <div class="bhpnum" id="bEnemyHp"></div>
+      </div>
     </div>
     <div class="bvs">⚔ 战 ⚔</div>
-    <div class="bside">
-      <div class="bname" id="bPlayerName"></div>
-      <div class="bar bhp mine"><i id="bPlayerBar" style="width:100%"></i></div>
-      <div class="bhpnum" id="bPlayerHp"></div>
+    <div class="bside fig-side">
+      <div id="bPlayerFig"></div>
+      <div style="flex:1;min-width:0">
+        <div class="bname" id="bPlayerName"></div>
+        <div class="bar bhp mine"><i id="bPlayerBar" style="width:100%"></i></div>
+        <div class="bhpnum" id="bPlayerHp"></div>
+      </div>
     </div>
     <div id="battleLog"></div>
     <div id="battleResult" style="display:none"></div>
