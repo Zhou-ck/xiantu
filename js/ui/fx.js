@@ -59,6 +59,19 @@ function fxShake(intensity,duration){
   }
   requestAnimationFrame(frame);
 }
+/* v76 挥砍弧光：攻击命中时于敌我形象位划过光弧（低特效/测试桩自动跳过） */
+function fxSlash(side,color){
+  if(!fxOn())return;
+  try{
+    const host=(side==='player')?document.getElementById('bPlayerFig'):document.getElementById('bEnemyFig');
+    if(!host||!host.parentNode)return;
+    const el=document.createElement('i');
+    el.className='fx-slash '+(side==='player'?'to-enemy':'to-player');
+    if(color)el.style.background=color;
+    host.parentNode.appendChild(el);
+    setTimeout(()=>{try{if(el.parentNode)el.parentNode.removeChild(el)}catch(e){}},430);
+  }catch(e){}
+}
 /* 手机端检测：触屏 + 窄屏。整屏金色闪光在手机上观感最重，做收敛 */
 let _fxMobile=null;
 function fxMobile(){

@@ -888,3 +888,21 @@ html.fx-touch .cult-banner-img.ld{opacity:.45}
   #breakScene.break-scene{opacity:.16!important;filter:brightness(.72) saturate(.78)!important}
 }
 html.fx-touch #breakScene.break-scene{opacity:.16!important;filter:brightness(.72) saturate(.78)!important}
+
+/* ---------- v76 战斗挥砍弧光 / 闭关灵气氛围 ---------- */
+.bside.fig-side{position:relative}
+.fx-slash{position:absolute;top:50%;left:8%;height:3px;width:0;pointer-events:none;z-index:6;border-radius:2px;background:linear-gradient(90deg,transparent,#ffd76a,transparent);box-shadow:0 0 10px rgba(255,215,106,.75);animation:fxSlashL .38s ease-out forwards}
+.fx-slash.to-player{right:8%;left:auto}
+@keyframes fxSlashL{0%{width:0;opacity:.9}55%{width:80%;opacity:1}100%{width:88%;opacity:0}}
+html.fx-low .fx-slash{display:none!important}
+#cultBox{position:relative;z-index:2}
+.qi-ambient{position:absolute;inset:0;z-index:1;pointer-events:none;overflow:hidden;background:radial-gradient(ellipse at 50% 112%,rgba(160,190,255,.10),transparent 62%)}
+.qi-ambient::before,.qi-ambient::after{content:'';position:absolute;width:6px;height:6px;border-radius:50%;background:radial-gradient(circle,#ffe9a8,rgba(255,233,168,0));animation:qiRise 7s linear infinite}
+.qi-ambient::before{left:28%;bottom:-8px}
+.qi-ambient::after{left:66%;bottom:-12px;width:9px;height:9px;animation-delay:3.2s}
+@keyframes qiRise{0%{transform:translateY(0);opacity:0}12%{opacity:.75}100%{transform:translateY(-520px);opacity:0}}
+@media (pointer:coarse),(hover:none){
+  .qi-ambient{display:none!important}
+}
+html.fx-touch .qi-ambient{display:none!important}
+html.fx-low .qi-ambient{display:none!important}

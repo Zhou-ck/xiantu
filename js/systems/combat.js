@@ -333,7 +333,7 @@ function battle(enemy,onEnd,spar){
           let dmg=Math.floor(baseDmg*mult)+karmaAtkBonus;
           const myElem=(S.weapon&&S.weapon.elem)?S.weapon.elem:elemOf(S);
           if(enemy.elem&&elemBeat(myElem,enemy.elem))dmg=Math.floor(dmg*1.25*(1+beatBonus));
-          eh=Math.max(0,eh-dmg);st.dmgDealt+=dmg;st.crits++;bfigHit('enemy');
+          eh=Math.max(0,eh-dmg);st.dmgDealt+=dmg;st.crits++;bfigHit('enemy');fxSlash('enemy','#ffd76a');
           fxShake(2);fxFloatText('-'+dmg,'#ffd76a',true);
           pushLog('<p class="bl">⚡ 绝杀命中！<b>'+esc(enemy.name)+'</b> 受创 <span class="bhit">-'+dmg+'</span>。</p>');
           if(eh<=0){renderBars();pushLog('');finish(true,false);return}
@@ -372,7 +372,7 @@ function battle(enemy,onEnd,spar){
       const rndTxt=ot?('⚔️ 加时赛第 '+(rnd-10)+' 回合'):('第 '+rnd+' 回合');
       const op=!enemy.boss&&(atkBonus(S)*2>=enemy.hp);
       /* 持续状态：灼烧 / 中毒（加时赛伤害同步 ×1.2） */
-      if(burn>0&&eh>0){let bd=Math.max(1,Math.floor(enemy.hp*0.06));if(ot)bd=Math.max(1,Math.floor(bd*1.2));eh=Math.max(0,eh-bd);st.dmgDealt+=bd;bfigHit('enemy');html.push('<p class="bl">🔥 灼烧蔓延，<b>'+esc(enemy.name)+'</b> 受创 <span class="bhit">-'+bd+'</span>。</p>')}
+      if(burn>0&&eh>0){let bd=Math.max(1,Math.floor(enemy.hp*0.06));if(ot)bd=Math.max(1,Math.floor(bd*1.2));eh=Math.max(0,eh-bd);st.dmgDealt+=bd;bfigHit('enemy');fxSlash('enemy','#e87a3a');html.push('<p class="bl">🔥 灼烧蔓延，<b>'+esc(enemy.name)+'</b> 受创 <span class="bhit">-'+bd+'</span>。</p>')}
       if(poison>0){let pd=Math.max(1,Math.floor(S.maxHp*0.05));if(ot)pd=Math.max(1,Math.floor(pd*1.2));ph=Math.max(1,ph-pd);st.dmgTaken+=pd;html.push('<p class="bhit">☠️ 毒素侵蚀，你受创 -'+pd+'（剩余 '+poison+' 回合）。</p>');poison--}
       if(ph<=0){renderBars();pushLog(html.join(''));finish(false,false);return}
       const skCd=skillCd();
@@ -433,6 +433,8 @@ function battle(enemy,onEnd,spar){
         if(eGuard)dmg=Math.floor(dmg*0.6);
         if(ot)dmg=Math.floor(dmg*1.2); /* 加时赛：双方伤害 ×1.2 */
         eh-=dmg;st.dmgDealt+=dmg;st.petDmg+=pDmg;st.compDmg+=cDmg;bfigHit('enemy');
+        fxSlash('enemy',beatHit?'#e8c86a':(crit?'#ffd76a':'#d8e0f0'));
+        if(beatHit)fxFloatText('⚡ 克敌','#e8c86a',false);
         if(eset.drain){const h=Math.max(1,Math.floor(dmg*eset.drain));ph=Math.min(S.maxHp,ph+h);html.push('<p class="bl">🩸 噬血魔纹汲取 '+h+' 点气血！</p>')}
         if(flow.drain){const h=Math.max(1,Math.floor(dmg*flow.drain));ph=Math.min(S.maxHp,ph+h);html.push('<p class="bl">🌑 噬血夺元，你汲取 '+h+' 点气血！</p>')}
         if(crit){fxShake(2);fxBurst(22,'#ffd76a');fxHitstop(110);fxFloatText('暴击 -'+dmg,'#ffd76a',true);fxVibrate([50,40,60])}
@@ -463,7 +465,7 @@ function battle(enemy,onEnd,spar){
           const beatByHit=enemy.elem&&elemBeat(enemy.elem,myElem2);
           if(beatByHit){d=Math.max(1,Math.floor(d*1.15*(1-(eset.beatDef||0))));st.beatBy++}
           if(ot)d=Math.floor(d*1.2); /* 加时赛：敌方伤害 ×1.2 */
-          ph-=d;st.dmgTaken+=d;bfigHit('player');
+          ph-=d;st.dmgTaken+=d;bfigHit('player');fxSlash('player','#e08a8a');
           html.push('<p class="bhit">'+rndTxt+'：'+esc(enemy.name)+' 反扑而至'+(beatByHit?'【五行反克 ×1.15】':'')+(ot?'【加时赛 ×1.2】':'')+'，你受创 <span class="bhit">-'+d+'</span>。</p>');
           if(ph<=0){renderBars();pushLog(html.join(''));finish(false,false);return}
         }else{
