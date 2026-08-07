@@ -158,7 +158,7 @@ function contentCheck(){
 
 /* 道侣/宗门池 fx 键白名单与结构校验 */
 var PARTNER_FX_KEYS=['aff','affF','affA','favor','affinity','bond','mem','flag','stones','cult','mood','merit','roll','combat'];
-var SECT_FX_KEYS=['favor','bond','contrib','contribVal','merit','insight','fame','stones','cult','mood','hp','flag','roll','combat'];
+var SECT_FX_KEYS=['favor','bond','contrib','contribVal','merit','insight','fame','stones','cult','mood','hp','flag','roll','combat','mat'];
 function _validateFxPool(arr,poolName,allowedFx,allowStage){
   var errs=[];
   if(!Array.isArray(arr)||!arr.length)return errs;

@@ -422,6 +422,7 @@ function runSectFx(fx){
   if(fx.stones!=null)S.stones=(S.stones||0)+fx.stones;
   if(fx.cult!=null)S.cult=(S.cult||0)+fx.cult;
   if(fx.mood!=null)S.mood=clamp((S.mood||0)+fx.mood,0,100);
+  if(fx.mat!=null){S.mats=S.mats||{};for(const k in fx.mat)S.mats[k]=(S.mats[k]||0)+fx.mat[k]}
   if(fx.hp!=null&&fx.hp<0)S.hp=Math.max(1,S.hp-Math.floor(S.maxHp*(-fx.hp)/100));
   if(fx.flag){if(typeof fx.flag==='string')S.flag[fx.flag]=true;else for(const k in fx.flag)S.flag[k]=fx.flag[k]}
   if(fx.roll){
