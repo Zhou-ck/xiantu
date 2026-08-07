@@ -169,19 +169,23 @@ function setFontSize(k){
 }
 function openTome(){
   const s=S;
-  const stats='<h4>生平</h4><p>境界：'+REALMS[s.realm]+' · 年岁：'+Math.floor(s.years)+' 载 · 击杀：'+s.kills+' · 轮回：'+s.rebirths+' 世 · 秘境：'+(s.flag.dungeons||0)+' 座 · 心魔：'+s.heartDemons+' 道 · 功德：'+s.merit+' · 业力：'+s.karma+(s.sect?' · 门派：'+esc(s.sect.name):'')+'</p>'+
+  const sc=(a,b)=>'<div class="stat-cell"><b>'+b+'</b><span>'+a+'</span></div>';
+  const stats='<h4>生平</h4><div class="stat-grid">'+
+    sc('境界',REALMS[s.realm])+sc('年岁',Math.floor(s.years)+' 载')+sc('击杀',s.kills)+sc('轮回',s.rebirths+' 世')+
+    sc('秘境',(s.flag.dungeons||0)+' 座')+sc('心魔',s.heartDemons+' 道')+sc('功德',s.merit)+sc('业力',s.karma)+
+    (s.sect?sc('门派',esc(s.sect.name)):'')+'</div>'+
     '<p style="font-size:12.5px;color:#a99a72">2S 生涯：总修炼 '+(s.flag.cultDaysTotal||0)+' 日 · 奇遇 '+(s.flag.exploreCount||0)+' 次 · 道侣 '+(s.flag.partnerCount||0)+' 位 · 速通计时 '+Math.floor(s.days-(s.flag.speedStart||0))+' 日'+(s.flag.seed?' · 本局种子 '+s.flag.seed:'')+'</p>';
   const personaHtml=(s.persona?personaTomeHtml():'');
-  const ends=s.endings.length?'<h4>已证结局</h4><p>'+s.endings.map(esc).join('、')+'</p>':'';
-  const mem=s.memories.length?'<h4>前世记忆</h4><p>'+s.memories.map(esc).join('；')+'</p>':'';
-  const titles=s.titles.length?'<h4>🏅 称号</h4><p>'+s.titles.map(id=>{const t=TITLES.find(x=>x.id===id);return t?t.name:''}).filter(Boolean).join('、')+'</p>':'<h4>🏅 称号</h4><p style="color:#6f7a94">尚未获得称号</p>';
+  const ends=s.endings.length?'<h4>已证结局</h4><div class="chip-row">'+s.endings.map(e=>'<span class="chip end-chip">'+esc(e)+'</span>').join('')+'</div>':'';
+  const mem=s.memories.length?'<h4>前世记忆</h4><div class="chip-row">'+s.memories.map(m=>'<span class="chip mem-chip">'+esc(m)+'</span>').join('')+'</div>':'';
+  const titles=s.titles.length?'<h4>🏅 称号</h4><div class="title-wall">'+s.titles.map(id=>{const t=TITLES.find(x=>x.id===id);return t?'<span class="title-badge">🏅 '+esc(t.name)+'</span>':''}).filter(Boolean).join('')+'</div>':'<h4>🏅 称号</h4><p style="color:#6f7a94">尚未获得称号</p>';
   const petHtml=s.pet?'<h4>🐾 灵兽</h4><p>'+esc(s.pet.species+'「'+s.pet.name+'」')+' · '+s.pet.level+'级 · '+s.pet.form+'阶 · '+PET_TALENT_DESC[s.pet.talent]+'</p>':'';
   const atlas='<h4>📖 图鉴 · 生涯 · 天下</h4><div class="row"><button class="small primary" onclick="collectionAtlas()">📖 收藏图鉴（物品 '+Object.keys(s.seenI||{}).length+' · 敌人 '+Object.keys(s.seenE||{}).length+'）</button><button class="small" onclick="careerWall()">📊 生涯</button><button class="small" onclick="worldPanel()">🌍 天下</button></div>';
   const sectHtml=s.sect?'<h4>🏯 宗门</h4>'+artImg(SECT_ART[s.sect.id],0,0,'sect-banner')+'<p>'+esc(s.sect.name)+' · '+esc(secRank(s))+'</p>':'';
   const ppl=s.npcs.map((n,i)=>'<div class="tome-cell" onclick="npcProfile('+i+')">'+artImg(NPC_ART[n.role],64,64,'tome')+esc(n.name)+'<br><span>'+esc(n.role)+'</span></div>').join('');
   const pplHtml=ppl?'<h4>👥 人物志 <button class="small" onclick="relationWeb()">🕸️ 关系图谱</button></h4><div class="tome-grid">'+ppl+'</div>':'';
   const marks=[['dreamDone','上古残梦 · 因果了却'],['foeAmbush','仇家现身'],['matrix','聚灵阵'],['maze','迷踪阵'],['teleport','传送阵']].filter(([k])=>s.flag[k]).map(([,n])=>n);
-  const flagHtml=(marks.length?'<h4>因果印记</h4><p>'+marks.map(esc).join('、')+'</p>':'')+(typeof foreshadowHtml==='function'?foreshadowHtml():'');
+  const flagHtml=(marks.length?'<h4>因果印记</h4><div class="chip-row">'+marks.map(m=>'<span class="chip flag-chip">'+esc(m)+'</span>').join('')+'</div>':'')+(typeof foreshadowHtml==='function'?foreshadowHtml():'');
   const recHtml='<h4>🏆 本机纪录</h4>'+recordsHtml();
   const famHtml=(S.children&&S.children.length)?'<h4>🏮 家族</h4>'+childrenHtml():'';
   openPanel('📖 仙途录','<div class="row" style="margin-bottom:8px"><button class="small primary" onclick="daoPathPage()">🗺️ 道途 · 下一步做什么</button><button class="small" onclick="titleWall()">🏅 称号墙</button></div>'+stats+personaHtml+sectHtml+titles+petHtml+atlas+pplHtml+famHtml+ends+mem+flagHtml+causeHtml()+recHtml+'<p style="font-size:12.5px;color:#6f7a94">仙途漫漫，一念之差便是不同结局。仙途录将记下你这一世的足迹。</p>');

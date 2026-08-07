@@ -321,5 +321,5 @@ function breakPrepHtml(nxt){
   if(bn.active)rows.push({n:'⚓ 瓶颈未破：悟性 '+s.wis+'/'+bn.wisNeed+' · 历练 '+s.trail+'/'+bn.trailNeed,ok:false});
   const done=rows.filter(r=>r.ok).length;
   return '<div class="bd-box prep"><div class="bd-head">⚡ 突破筹备 · '+esc(REALMS[nxt])+'（'+done+'/'+rows.length+'）</div>'+
-    rows.map(r=>'<div class="bd-row'+(r.ok?' ok':' no')+'"><span>'+(r.ok?'✅ ':'❌ ')+esc(r.n)+'</span></div>').join('')+'</div>';
+    rows.map(r=>'<div class="prep-row'+(r.ok?' ok':' no')+'"><span class="prep-mark">'+(r.ok?'✅':'❌')+'</span><span class="prep-tx">'+esc(r.n)+'</span></div>').join('')+'</div>';
 }

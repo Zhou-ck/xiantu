@@ -23,7 +23,8 @@ function panelCult(){
   const bnHtml=bn.active?'<div class="item-card"><div class="nm">⚓ 瓶颈压制 · '+bnStageText()+'</div><div class="ds">修为已至下一境界 '+(Math.floor(bn.progress*100))+'%，然<b>'+
     [bn.missingWis>0?'悟性（'+(S.wis||0)+'/'+bn.wisNeed+'）':null,bn.missingTrail>0?'历练（'+(S.trail||0)+'/'+bn.trailNeed+'）':null].filter(Boolean).join('、')+
     '</b>未足，闭关效率降至 ×0.6。'+bnStageAdvice()+'</div>'+(bnBtns.length?'<div class="row">'+bnBtns.join('')+'</div>':'')+'</div>':(bn.progress>=0.9?'<p style="color:#8fd0a0">⚓ 修为已足，悟性与历练兼备——瓶颈已破，可全力冲关，准备突破。</p>':'');
-  openPanel('🧘 闭关修炼','<p>山中无甲子，寒尽不知年。'+realmTxt+'闭关可稳步增长修为，效率受<b>灵根</b>与<b>功法</b>影响'+(S.pillBuff>0?'，聚灵丹之力尚余 '+S.pillBuff+' 日（效率×1.5）':'')+'。</p>'+
+  openPanel('🧘 闭关修炼','<div class="cult-banner"><img class="cult-banner-img" src="assets/scenes/cult.jpg" alt="" loading="lazy" onload="this.classList.add(\'ld\')"><span class="cult-banner-tx">灵气汇聚 · 闭关之地</span></div>'+
+    '<p>山中无甲子，寒尽不知年。'+realmTxt+'闭关可稳步增长修为，效率受<b>灵根</b>与<b>功法</b>影响'+(S.pillBuff>0?'，聚灵丹之力尚余 '+S.pillBuff+' 日（效率×1.5）':'')+'。</p>'+
     '<p style="font-size:14px;color:#e8d9a8">📈 基准收益 <b>×'+cultMultDisplay()+'</b>（灵根/功法/境界/季节/洞府等乘区合计；瓶颈压制/灵潮/苦修等临时增减见对应卡片）</p>'+
     (nxt<THRESHOLDS.length?'<div class="item-card"><div class="nm">📈 修为进度</div><div class="ds">'+fmtNum(S.cult)+' / '+fmtNum(THRESHOLDS[nxt])+'（'+progPct+'%）· 距「'+REALMS[nxt]+'」还需 '+fmtNum(needCult)+' 修为 · 小境界精进 ×'+smallStageMult(S.realm).toFixed(2)+'</div><div class="bar"><i style="width:'+progPct+'%"></i></div></div>':'')+
     artSynergyHtml()+
