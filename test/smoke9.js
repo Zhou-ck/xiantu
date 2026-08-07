@@ -36,6 +36,8 @@ assert(vm.runInContext('window.__r.realm===2&&window.__r.disp==="none"&&window._
 vm.runInContext(`{ S=newState('测',BACKGROUNDS[0]); S.attrs.wil=40; S.cult=3500; S.realm=12; S.kills=3; S.heartDemons=0; S.demonMarks=[]; S.temp={break:0}; PENDING=0; tryBreak(); window.__p1=PENDING; }`,ctx);
 assert(vm.runInContext('window.__p1>0',ctx),'金丹突破先进入心魔试炼');
 for(let k=0;k<3;k++)clickChoice(0);
+// v97：金丹突破成功后会弹「道心三问」中期节点，选其一
+if(lastChoices())clickChoice(0);
 vm.runInContext(`window.__r2={realm:S.realm,disp:document.getElementById('breakthrough').style.display,pend:PENDING};`,ctx);
 assert(vm.runInContext('window.__r2.realm===13&&window.__r2.disp==="none"&&window.__r2.pend===0',ctx),'金丹突破：天劫动画流程完成并晋升');
 // 9) 飞升：心魔劫动画后成仙

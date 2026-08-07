@@ -31,8 +31,8 @@ const mval=vm.runInContext('window.__mval',ctx);
 assert(vm.runInContext('window.__ph.indexOf("基准收益")>=0&&window.__ph.indexOf("×'+mval+'")>=0',ctx),'修炼面板显示基准收益 ×'+mval);
 // T4 苦修按钮旁标注走火概率
 assert(vm.runInContext('window.__ph.indexOf("走火 ≈22%")>=0',ctx),'修炼面板苦修区标注走火 ≈22%');
-// T5 心魔历练入口标注致死风险（筑基后可进，realm>=9）
-vm.runInContext(`S.realm=9; S.hp=S.maxHp; PENDING=0; panelCult(); window.__ph2=document.getElementById('panelBody')._html;`,ctx);
+// T5 心魔历练入口标注致死风险（筑基后可进，realm>=9；v97 起位于养心页）
+vm.runInContext(`S.realm=9; S.hp=S.maxHp; PENDING=0; panelCult('mind'); window.__ph2=document.getElementById('panelBody')._html;`,ctx);
 assert(vm.runInContext('window.__ph2.indexOf("判定大失败可致死")>=0',ctx),'修炼面板心魔历练按钮标注致死风险');
 // T6 突破·心魔试炼入口标注失败后果（影子战，失败重伤不致死）
 vm.runInContext(`S=newState('测',BACKGROUNDS[0]); S.flag={}; heartTrialStart(9,16,0); window.__st=document.getElementById('story')._html;`,ctx);

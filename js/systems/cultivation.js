@@ -4,37 +4,31 @@
 ====================================================== */
 'use strict';
 /* ================= 修炼 ================= */
-function panelCult(){
-  const dim=(S.cultStreak||0)>=60?'<p class="danger">⚠️ 你已连续闭关 '+S.cultStreak+' 日，道基渐惰——此后每闭关 30 日收益再降 10%（最低 40%）。外出探索、访友、办事可重置此状态。</p>':'';
+/* v97 修炼页功能式 4 Tab：闭关 / 破境 / 养心 / 盘点 */
+let _cultTab='cult';
+function panelCult(tab){
+  if(tab)_cultTab=tab;
+  const tabs=['cult','break','mind','stats'];
+  if(tabs.indexOf(_cultTab)<0)_cultTab='cult';
+  const labels={cult:['🧘 闭关',''],break:['⚡ 破境',''],mind:['🪷 养心',''],stats:['📊 盘点','']};
+  const head='<div class="row sub-tabs" style="margin-bottom:8px">'+tabs.map(t=>'<button class="small'+(t===_cultTab?' primary':'')+'" onclick="panelCult(\''+t+'\')">'+labels[t][0]+'</button>').join('')+'</div>';
+  const body=_cultTab==='break'?_cultHtmlBreak():_cultTab==='mind'?_cultHtmlMind():_cultTab==='stats'?_cultHtmlStats():_cultHtmlCult();
+  openPanel('🧘 闭关修炼',head+body);
+}
+/* —— 页1 闭关（默认）：修炼本体 —— */
+function _cultHtmlCult(){
   const sg=signNow();
   const realmTxt=S.realm<9?'炼气如溪流，缓缓汇入丹田，正是打根基之时。':S.realm<17?'道基已筑，金丹在望，灵气如潮，须步步为营。':S.realm<29?'元婴既成，念动而天地应，闭关之效远胜从前。':'合体大乘之资，每一分修为，皆是自天地间争来的造化。';
-  const bn=bottleneckInfo(S);
   const nxt=S.realm+1;
   const needCult=nxt<THRESHOLDS.length?Math.max(0,THRESHOLDS[nxt]-S.cult):0;
   const progPct=nxt<THRESHOLDS.length?clamp(Math.floor(S.cult/THRESHOLDS[nxt]*100),0,100):100;
-  const bnBtns=[];
-  if(bn.active){
-    if(bn.missingWis>0){
-      bnBtns.push('<button class="small" onclick="panelRest()">📖 功法参悟 · 增悟性</button>');
-      if(S.master)bnBtns.push('<button class="small" onclick="panelMaster()">🎓 请教师尊 · 增悟性</button>');
-    }
-    if(bn.missingTrail>0)bnBtns.push('<button class="small" onclick="panelExplore()">🗺️ 探索历练 · 增历练</button>');
-  }
-  const bnHtml=bn.active?'<div class="item-card"><div class="nm">⚓ 瓶颈压制 · '+bnStageText()+'</div><div class="ds">修为已至下一境界 '+(Math.floor(bn.progress*100))+'%，然<b>'+
-    [bn.missingWis>0?'悟性（'+(S.wis||0)+'/'+bn.wisNeed+'）':null,bn.missingTrail>0?'历练（'+(S.trail||0)+'/'+bn.trailNeed+'）':null].filter(Boolean).join('、')+
-    '</b>未足，闭关效率降至 ×0.6。'+bnStageAdvice()+'</div>'+(bnBtns.length?'<div class="row">'+bnBtns.join('')+'</div>':'')+'</div>':(bn.progress>=0.9?'<p style="color:#8fd0a0">⚓ 修为已足，悟性与历练兼备——瓶颈已破，可全力冲关，准备突破。</p>':'');
-  openPanel('🧘 闭关修炼','<div class="cult-banner"><img class="cult-banner-img" src="assets/scenes/cult.jpg" alt="" loading="lazy" onload="this.classList.add(\'ld\')"><span class="cult-banner-tx">灵气汇聚 · 闭关之地</span></div>'+
+  const dim=(S.cultStreak||0)>=60?'<p class="danger">⚠️ 你已连续闭关 '+S.cultStreak+' 日，道基渐惰——此后每闭关 30 日收益再降 10%（最低 40%）。外出探索、访友、办事可重置此状态。</p>':'';
+  return '<div class="cult-banner"><img class="cult-banner-img" src="assets/scenes/cult.jpg" alt="" loading="lazy" onload="this.classList.add(\'ld\')"><span class="cult-banner-tx">灵气汇聚 · 闭关之地</span></div>'+
     '<p>山中无甲子，寒尽不知年。'+realmTxt+'闭关可稳步增长修为，效率受<b>灵根</b>与<b>功法</b>影响'+(S.pillBuff>0?'，聚灵丹之力尚余 '+S.pillBuff+' 日（效率×1.5）':'')+'。</p>'+
     '<p style="font-size:14px;color:#e8d9a8">📈 基准收益 <b>×'+cultMultDisplay()+'</b>（灵根/功法/境界/季节/洞府等乘区合计；瓶颈压制/灵潮/苦修等临时增减见对应卡片）</p>'+
     (nxt<THRESHOLDS.length?'<div class="item-card"><div class="nm">📈 修为进度</div><div class="ds">'+fmtNum(S.cult)+' / '+fmtNum(THRESHOLDS[nxt])+'（'+progPct+'%）· 距「'+REALMS[nxt]+'」还需 '+fmtNum(needCult)+' 修为 · 小境界精进 ×'+smallStageMult(S.realm).toFixed(2)+'</div><div class="bar"><i style="width:'+progPct+'%"></i></div></div>':'')+
-    artSynergyHtml()+
-    moodTuneHtml()+
-    '<div class="item-card"><div class="nm">🧿 真元 '+(S.spirit!==undefined?S.spirit:maxSpirit(S))+' / '+maxSpirit(S)+'</div><div class="ds">法力随休整、静心养神与时光缓缓恢复；可消耗 30 真元淬体换修为，或在炼制选材时「以真元控火」提升判定。</div><div class="row"><button class="small" onclick="spiritQuench()">🧿 真元淬体（30 真元）</button></div></div>'+
-    '<p style="font-size:13px;color:#a99a72">闭关将进入<b>修炼窗口</b>：按真实时间缓缓推进，途中或有异动需当场抉择，可随时「提前出关」按进度结算；若有道侣相伴，可在窗口中切换<b>双人同修</b>。</p>'+
-    bnHtml+
-    (bn.progress>=0.9?breakPrepHtml(nxt):'')+
     cultMethodSceneHtml()+
-    bnBreakHtml()+
+    '<p style="font-size:13px;color:#a99a72">闭关将进入<b>修炼窗口</b>：按真实时间缓缓推进，途中或有异动需当场抉择，可随时「提前出关」按进度结算；若有道侣相伴，可在窗口中切换<b>双人同修</b>。</p>'+
     '<h4>☯️ 静修（稳妥）</h4>'+
     '<div class="row">'+
     '<button onclick="doCultivate(7,\'quiet\')">⏳ 7 日</button>'+
@@ -49,15 +43,47 @@ function panelCult(){
     '<button class="danger" onclick="doCultivate(90,\'bitter\')">🔥 90 日</button>'+
     '<button class="danger" onclick="doCultivate(365,\'bitter\')">🔥 一年</button>'+
     '</div>'+
-    (S.realm>=9?'<div class="row"><button class="danger" onclick="heartTraining()">😈 心魔历练 · 15日（凶险 · 判定大失败可致死）</button></div>':'')+
-    '<div class="row"><button onclick="settleMind()">🧘 静心养神 · 30日'+(S.heartDemons>0?'（涤心魔，养道心）':'（养道心）')+'</button></div>'+
     (S.flag.boostNext?'<p style="font-size:13px;color:#a8d5a8">灵潮涌动：下一次闭关修炼效率 ×1.5。</p>':'')+
     (sg?'<p style="font-size:13px;color:#e8c86a">📜 本季天机签：'+signDesc(sg.k)+'</p>':'')+
-    dim+
+    dim;
+}
+/* —— 页2 破境：瓶颈 → 破障 → 突破准备 —— */
+function _cultHtmlBreak(){
+  const bn=bottleneckInfo(S);
+  const nxt=S.realm+1;
+  const bnBtns=[];
+  if(bn.active){
+    if(bn.missingWis>0){
+      bnBtns.push('<button class="small" onclick="panelRest()">📖 功法参悟 · 增悟性</button>');
+      if(S.master)bnBtns.push('<button class="small" onclick="panelMaster()">🎓 请教师尊 · 增悟性</button>');
+    }
+    if(bn.missingTrail>0)bnBtns.push('<button class="small" onclick="panelExplore()">🗺️ 探索历练 · 增历练</button>');
+  }
+  const bnHtml=bn.active?'<div class="item-card"><div class="nm">⚓ 瓶颈压制 · '+bnStageText()+'</div><div class="ds">修为已至下一境界 '+(Math.floor(bn.progress*100))+'%，然<b>'+
+    [bn.missingWis>0?'悟性（'+(S.wis||0)+'/'+bn.wisNeed+'）':null,bn.missingTrail>0?'历练（'+(S.trail||0)+'/'+bn.trailNeed+'）':null].filter(Boolean).join('、')+
+    '</b>未足，闭关效率降至 ×0.6。'+bnStageAdvice()+'</div>'+(bnBtns.length?'<div class="row">'+bnBtns.join('')+'</div>':'')+'</div>':(bn.progress>=0.9?'<p style="color:#8fd0a0">⚓ 修为已足，悟性与历练兼备——瓶颈已破，可全力冲关，准备突破。</p>':'');
+  return '<p style="font-size:13px;color:#a99a72">冲击更高境界前，先看清此路：瓶颈、破障之法与突破筹备，尽在此页。</p>'+
+    bnHtml+
+    (bn.progress>=0.9?breakPrepHtml(nxt):'')+
+    bnBreakHtml();
+}
+/* —— 页3 养心：心魔 / 静心 / 心境调控 —— */
+function _cultHtmlMind(){
+  return '<p style="font-size:13px;color:#a99a72">道心如水，需时时拂拭。涤心魔、养道心、调心境，皆在此处。</p>'+
+    moodTuneHtml()+
+    '<div class="row">'+
+    (S.realm>=9?'<button class="danger" onclick="heartTraining()">😈 心魔历练 · 15日（凶险 · 判定大失败可致死）</button>':'')+
+    '<button onclick="settleMind()">🧘 静心养神 · 30日'+(S.heartDemons>0?'（涤心魔，养道心）':'（养道心）')+'</button>'+
+    '</div>';
+}
+/* —— 页4 盘点：真元 / 加成分解 / 功法相生 / 统计 / 日志 —— */
+function _cultHtmlStats(){
+  return '<div class="item-card"><div class="nm">🧿 真元 '+(S.spirit!==undefined?S.spirit:maxSpirit(S))+' / '+maxSpirit(S)+'</div><div class="ds">法力随休整、静心养神与时光缓缓恢复；可消耗 30 真元淬体换修为，或在炼制选材时「以真元控火」提升判定。</div><div class="row"><button class="small" onclick="spiritQuench()">🧿 真元淬体（30 真元）</button></div></div>'+
+    artSynergyHtml()+
     cultBreakdown()+
     '<div class="item-card"><div class="nm">📊 闭关与双修统计</div><div class="ds">闭关总计 '+(S.flag.cultDaysTotal||0)+' 日 · 双修 '+(S.flag.dualCount||0)+' 次 · 双修 '+(S.flag.dualDays||0)+' 日 · 独修 '+(S.flag.soloDays||0)+' 日'+(S.daoPartner?'<br>本次闭关可切换独修/双修（上限 3 次，间隔 ≥10 日，切换耗时 3 日）':'')+'</div></div>'+
     cultLogMini()+
-    '<p style="font-size:13px;color:#6f7a94">当前效率：静修每 10 日约 '+Math.floor((8+S.root/6)*cultMult(S))+' 修为；苦修约 '+Math.floor((8+S.root/6)*cultMult(S)*1.4)+'。连续闭关越久，收益越低——出去走走，机缘与顿悟往往在天地之间。</p>');
+    '<p style="font-size:13px;color:#6f7a94">当前效率：静修每 10 日约 '+Math.floor((8+S.root/6)*cultMult(S))+' 修为；苦修约 '+Math.floor((8+S.root/6)*cultMult(S)*1.4)+'。连续闭关越久，收益越低——出去走走，机缘与顿悟往往在天地之间。</p>';
 }
 /* 瓶颈文案随境界变化（14） */
 function bnStageText(){
@@ -821,7 +847,9 @@ function settleMind(){
   log('<p>心性判定：'+rollBadge(R.r,R.mod,R.t,R.dc)+'</p>');
   if(R.hit){
     addMood(8);
-    const g=Math.floor(30+S.root/8);S.cult+=g;
+    /* v97 A1 因果抉择·封印前尘：静心养神修为 +20% */
+    const sealMult=(S.flag&&S.flag.cause==='seal')?1.2:1;
+    const g=Math.floor((30+S.root/8)*sealMult);S.cult+=g;
     const sp=addSpirit(Math.floor(maxSpirit(S)*0.5));
     if(hadDemon){S.heartDemons=Math.max(0,S.heartDemons-1);log('<p class="good">尘念渐消，一道心魔烙印缓缓褪去（心魔-1）。</p>')}
     if((S.demonMarks||[]).length&&chance(0.6)){

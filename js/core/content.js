@@ -101,6 +101,13 @@ const TITLES=[
   {id:'t_quest_huxian',name:'狐缘',desc:'完成支线「狐仙报恩」，草木亲近',check:s=>!!(s.quest&&s.quest.side&&s.quest.side.sq_huxian==='done'),effect:s=>{s.attrs.cha=clamp(s.attrs.cha+1,1,40)}},
   {id:'t_quest_mozong',name:'卧底',desc:'完成支线「魔道卧底」，正魔难辨',check:s=>!!(s.quest&&s.quest.side&&s.quest.side.sq_mozong==='done'),effect:s=>{s.attrs.int=clamp(s.attrs.int+1,1,40)}},
   {id:'t_main_ask',name:'问心无悔',desc:'主线「天道问心」：问心三问后道心愈坚',check:s=>!!(s.quest&&s.quest.main&&(s.quest.main.done||[]).indexOf('m9s2')>=0),effect:s=>{s.attrs.wil=clamp(s.attrs.wil+1,1,40)}},
+  /* v97 A1 轮回印记称号（执念达成授予，荣誉向，效果为空） */
+  {id:'t_karma_ascend',name:'飞升者',desc:'轮回印记 · 亲手推开天门',check:s=>!!(s.flag&&s.flag.karmaGoal==='ascend'&&s.endings&&s.endings.indexOf('飞升成仙')>=0),effect:()=>{}},
+  {id:'t_karma_sect',name:'开宗之祖',desc:'轮回印记 · 白手起家，香火不绝',check:s=>!!(s.flag&&s.flag.karmaGoal==='sect'&&s.flag&&s.flag.ownSect),effect:()=>{}},
+  {id:'t_karma_dao',name:'情深不渝',desc:'轮回印记 · 三生石上，同心相守',check:s=>!!(s.flag&&s.flag.karmaGoal==='dao'&&s.daoPartner&&s.daoPartner.married),effect:()=>{}},
+  {id:'t_karma_kill',name:'百战余生',desc:'轮回印记 · 斩敌过百，战意长存',check:s=>!!(s.flag&&s.flag.karmaGoal==='kill'&&(s.kills||0)>=100),effect:()=>{}},
+  {id:'t_karma_merit',name:'功德圆满',desc:'轮回印记 · 泽被苍生，功德无量',check:s=>!!(s.flag&&s.flag.karmaGoal==='merit'&&(s.merit||0)>=100),effect:()=>{}},
+  {id:'t_karma_main',name:'天衍传人',desc:'轮回印记 · 了却天衍之劫',check:s=>!!(s.flag&&s.flag.karmaGoal==='main'&&s.quest&&s.quest.main&&s.quest.main.finished),effect:()=>{}},
 ];
 /* v44 轮回道途 2.0：前世执念（每世一个目标，轮回结算加成） */
 const KARMA_GOALS=[
@@ -196,6 +203,8 @@ function goodEvilInfo(){
   return ['大恶之徒','#e06a6a'];
 }
 function addMerit(n){
+  /* v97 A1 道心三问·重义：功德获取 +20% */
+  if(n>0&&S.flag&&S.flag.daoHeart==='yi')n=Math.floor(n*1.2);
   S.merit=Math.max(0,S.merit+n);
   S.flag.goodDeeds=(S.flag.goodDeeds||0)+n;
   if(S.persona&&n>0)addDrift(n>0?Math.ceil(n/5):0);

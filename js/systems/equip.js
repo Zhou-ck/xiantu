@@ -92,6 +92,8 @@ function equipStats(s){
   }
   const sb=equipSetBonuses(s);
   for(const k in sb)o[k]+=sb[k];
+  /* v97 A1 三途抉择·剑修：攻势 +1 */
+  if(s.flag&&s.flag.santu==='sword')o.atk+=1;
   return o;
 }
 function equipAtk(s){return equipStats(s).atk}

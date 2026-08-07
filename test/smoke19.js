@@ -20,6 +20,7 @@ assert(vm.runInContext('window.__st2==="outer"&&window.__hasArt',ctx),'三件杂
 vm.runInContext(`{ S=newState('测',BACKGROUNDS[0]); S.attrs.wil=40; S.cult=3500; S.realm=12; S.kills=3; S.heartDemons=0; S.demonMarks=[]; S.temp={break:0}; PENDING=0; tryBreak(); window.__p=PENDING; }`,ctx);
 assert(vm.runInContext('window.__p>0',ctx),'金丹突破进入心魔试炼');
 for(let k=0;k<3;k++)clickChoice(0);
+if(lastChoices())clickChoice(0); /* v97 道心三问节点 */
 assert(vm.runInContext('S.realm===13&&PENDING===0',ctx),'试炼通过后晋升金丹');
 // 3) 烙印类型化
 vm.runInContext(`{ S=newState('测',BACKGROUNDS[0]); S.heartDemons=0; addDemonMark('obsess',60); window.__m={marks:S.demonMarks.length,hd:S.heartDemons,pen:demonObsessPenalty(S)}; removeDemonMark('obsess'); window.__m2={marks:S.demonMarks.length,hd:S.heartDemons}; }`,ctx);
@@ -27,6 +28,7 @@ assert(vm.runInContext('window.__m.marks===1&&window.__m.hd===1&&window.__m.pen=
 // 4) 天劫类型化
 vm.runInContext(`{ S=newState('测',BACKGROUNDS[0]); S.attrs.wil=40; S.cult=3500; S.realm=12; S.kills=3; S.heartDemons=0; S.demonMarks=[]; S.temp={break:0}; S.flag.tribType='thunder'; PENDING=0; tryBreak(); }`,ctx);
 for(let k=0;k<3;k++)clickChoice(0);
+if(lastChoices())clickChoice(0); /* v97 道心三问节点 */
 assert(vm.runInContext('S.realm===13&&S.flag.tribType===null',ctx),'指定天雷劫类型后突破正常');
 // 5) 守关 BOSS
 vm.runInContext(`{ S=newState('测',BACKGROUNDS[0]); window.__b=bossOf(0); bossBattle(0); window.__opts=0; }`,ctx);

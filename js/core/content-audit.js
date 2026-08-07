@@ -153,12 +153,48 @@ function contentCheck(){
   /* 道侣/宗门池结构 + fx 白名单 */
   if(typeof validatePartnerEvents==='function')errs=errs.concat(validatePartnerEvents());
   if(typeof validateSectEvents==='function')errs=errs.concat(validateSectEvents());
+  /* v97 轮回节点/印记 */
+  if(typeof validateKarmaNodes==='function')errs=errs.concat(validateKarmaNodes());
   return errs;
 }
 
 /* 道侣/宗门池 fx 键白名单与结构校验 */
 var PARTNER_FX_KEYS=['aff','affF','affA','favor','affinity','bond','mem','flag','stones','cult','mood','merit','roll','combat'];
 var SECT_FX_KEYS=['favor','bond','contrib','contribVal','merit','insight','fame','stones','cult','mood','hp','flag','roll','combat','mat'];
+/* v97 轮回节点/印记表校验 */
+function validateKarmaNodes(){
+  var errs=[];
+  /* 新增节点 ≥4（筑基择道/化神问道为既有代码节点，单轮回合计 ≥6） */
+  if(typeof KARMA_NODES==='undefined'||!Array.isArray(KARMA_NODES)||KARMA_NODES.length<4){
+    errs.push('KARMA_NODES 至少 4 个新增节点（+ 筑基择道/化神问道 = 单轮回 6 节点）');
+    return errs;
+  }
+  var seen={};
+  KARMA_NODES.forEach(function(n,i){
+    if(!n||!n.id){errs.push('[node#'+i+'] 缺 id');return}
+    if(seen[n.id])errs.push('[node] id 重复：'+n.id);
+    seen[n.id]=1;
+    if(typeof n.flagKey!=='string'||!n.flagKey)errs.push('['+n.id+'] 缺 flagKey');
+    if(typeof n.realm!=='number'||!n.title||!n.q)errs.push('['+n.id+'] 缺 realm/title/q');
+    if(!Array.isArray(n.opts)||n.opts.length<2)errs.push('['+n.id+'] opts 至少 2 项');
+    else n.opts.forEach(function(o,j){
+      if(!o||!o.k||!o.n||!o.desc)errs.push('['+n.id+'] opts['+j+'] 缺 k/n/desc');
+      if(typeof o.apply!=='function')errs.push('['+n.id+'] opts['+j+'].apply 必须为函数');
+    });
+  });
+  if(typeof LOOP_MARKS==='undefined'||!Array.isArray(LOOP_MARKS)||LOOP_MARKS.length<6)errs.push('LOOP_MARKS 至少 6 枚');
+  else{
+    var gSeen={};
+    LOOP_MARKS.forEach(function(m,i){
+      if(!m||!m.id||!m.goal)errs.push('[mark#'+i+'] 缺 id/goal');
+      if(m&&m.goal)gSeen[m.goal]=(gSeen[m.goal]||0)+1;
+    });
+    if(typeof KARMA_GOALS!=='undefined')KARMA_GOALS.forEach(function(g){
+      if(!gSeen[g.id])errs.push('执念 '+g.id+' 缺少对应印记');
+    });
+  }
+  return errs;
+}
 function _validateFxPool(arr,poolName,allowedFx,allowStage){
   var errs=[];
   if(!Array.isArray(arr)||!arr.length)return errs;

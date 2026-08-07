@@ -5,6 +5,8 @@
 'use strict';
 /* ================= 死亡 / 结局 / 轮回 ================= */
 function die(reason){
+  /* v92：任何身陨路径先解除事件/抉择锁定，防止重生后 PENDING 残留卡死 */
+  try{if(typeof PENDING!=='undefined')PENDING=0}catch(e){}
   if(typeof wearEquip==='function')wearEquip(S,20); /* v49 身陨耐久 -20 */
   /* v43 保命道具：致死时自动消耗，以「重伤濒死」替代身陨（寿元耗尽与自绝不救） */
   if(reason!=='寿元耗尽'&&reason!=='自绝心脉'&&(S.items||[]).some(i=>i.use==='save')){
@@ -50,6 +52,8 @@ function endEnding(title,desc,stats,extraBtns){
     '</div>';
   $('ending').style.display='flex';
   if(typeof T!=='undefined'&&T.reveal)T.reveal($('ending'));
+  /* v92：结局弹出即解除一切抉择锁定，重生/重开不残留 PENDING */
+  try{if(typeof PENDING!=='undefined')PENDING=0}catch(e){}
   save();
 }
 /* 2H 轮回结算：境界 × 结局 × 称号 × 天道枷锁 → 全局轮回点与轮回值 */
@@ -63,7 +67,22 @@ function settleLoop(ending){
   const pts=Math.floor((base+hidden)*mult);
   const lo=loopLoad();
   const goalMet=karmaGoalMet();
-  const finalPts=goalMet?Math.floor(pts*1.5):pts;
+  /* v97 A1 因果抉择·解封记忆：轮回结算 +10% */
+  const causeMult=(S.flag&&S.flag.cause==='open')?1.1:1;
+  let finalPts=Math.floor(pts*causeMult);
+  if(goalMet)finalPts=Math.floor(finalPts*1.5);
+  /* v97 A1 轮回印记：执念达成即授予，跨世保留 */
+  if(goalMet){
+    const goal=karmaGoal();
+    const mark=(typeof LOOP_MARKS!=='undefined'?LOOP_MARKS:[]).find(m=>m&&m.goal===goal.id);
+    if(mark){
+      S.flag.loopMarks=S.flag.loopMarks||[];
+      if(S.flag.loopMarks.indexOf(mark.id)<0){
+        S.flag.loopMarks.push(mark.id);
+        log('<p class="loot">🌀 获得轮回印记「'+mark.i+' '+mark.n+'」——'+mark.desc+'（跨世保留）。</p>');
+      }
+    }
+  }
   lo.points=(lo.points||0)+finalPts;
   lo.value=(lo.value||0)+finalPts;
   lo.history=lo.history||[];
@@ -72,9 +91,10 @@ function settleLoop(ending){
   if(lo.history.length>12)lo.history.length=12;
   if(S.arts&&S.arts[0])lo.art=S.arts[0].name;
   loopSave(lo);
-  log('<p class="sys">🌀 轮回结算：轮回点 <b>+'+finalPts+'</b>'+(goalMet?'（执念「'+goal.n+'」得偿，×1.5）':'')+'（累计 '+lo.points+'）· 轮回值 <b>'+lo.value+'</b>。天道枷锁 ×'+mult+'。</p>');
+  log('<p class="sys">🌀 轮回结算：轮回点 <b>+'+finalPts+'</b>'+(goalMet?'（执念「'+goal.n+'」得偿，×1.5）':'')+(causeMult>1?'（解封记忆 ×1.1）':'')+'（累计 '+lo.points+'）· 轮回值 <b>'+lo.value+'</b>。天道枷锁 ×'+mult+'。</p>');
 }
 function rebirth(){
+  try{if(typeof PENDING!=='undefined')PENDING=0}catch(e){}
   const old=S;
   const name=randomName();
   const bg=pick(BACKGROUNDS.filter(b=>b.id!==old.bg.id));
@@ -87,6 +107,7 @@ function rebirth(){
   ns.memories=old.memories.concat(old.endings);
   if(ns.memories.length>=6)ns.flag.memCue=2;else if(ns.memories.length>=3)ns.flag.memCue=1;
   ns.flag.memory=old.endings.join('、')||'无';
+  ns.flag.loopMarks=(old.flag&&old.flag.loopMarks||[]).slice(); /* v97 印记跨世保留 */
   ns.flag.speedStart=0;
   S=ns;
   $('ending').style.display='none';
@@ -114,6 +135,7 @@ function rebirthAsChild(){
   ns.memories=old.memories.concat(old.endings).concat(['血脉传承 · 父母'+old.name+'与'+best.mom]);
   ns.flag.memory='生于仙家，血脉承续';
   ns.flag.inherited='血脉子嗣';
+  ns.flag.loopMarks=(old.flag&&old.flag.loopMarks||[]).slice(); /* v97 印记跨世保留 */
   ns.flag.speedStart=0;
   S=ns;
   $('ending').style.display='none';
@@ -140,6 +162,7 @@ function rebirthAsDisciple(){
   ns.memories=old.memories.concat(old.endings).concat(['道统传承 · '+best.name]);
   ns.flag.memory='道统传承于弟子'+best.name+'：'+(old.endings.join('、')||'一世修行');
   ns.flag.inherited=best.name;
+  ns.flag.loopMarks=(old.flag&&old.flag.loopMarks||[]).slice(); /* v97 印记跨世保留 */
   S=ns;
   $('ending').style.display='none';
   $('screen-game').style.display='flex';
@@ -172,6 +195,7 @@ function softReset(){
   ns.memories=(old.memories||[]).concat(old.endings||[]).concat(['软重启：重铸道基，前尘犹在']);
   ns.flag.memory='重铸道基，收藏/称号/关系皆存';
   ns.flag.inherited='软重启';
+  ns.flag.loopMarks=(old.flag&&old.flag.loopMarks||[]).slice(); /* v97 印记跨世保留 */
   ns.quest=old.quest?JSON.parse(JSON.stringify(old.quest)):{main:{ch:0,step:0,done:[],chDone:[],log:[]},side:{},sideStep:{},sideDone:{}};
   if(old.sect)ns.flag.oldSect=old.sect.name;
   S=ns;

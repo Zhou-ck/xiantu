@@ -59,10 +59,10 @@ vm.runInContext(`
 assert(vm.runInContext('window.__met===true&&window.__unmet===false',ctx),'执念达成/未达成判定正确');
 assert(vm.runInContext('window.__path.indexOf("前世执念")>=0&&window.__path.indexOf("道途统计")>=0',ctx),'道途页展示前世执念与道途统计');
 
-// T6 心境调控卡渲染
+// T6 心境调控卡渲染（v97 起位于养心页）
 vm.runInContext(`
   S.mood=40; S.items.push({name:'安神香',type:'consumable',quality:1,use:'mood'});
-  PENDING=0; panelCult(); window.__cult=document.getElementById('panelBody')._html;
+  PENDING=0; panelCult('mind'); window.__cult=document.getElementById('panelBody')._html;
 `,ctx);
 assert(vm.runInContext('window.__cult.indexOf("心境调控")>=0&&window.__cult.indexOf("焚安神香")>=0',ctx),'修炼面板展示心境调控卡与快捷按钮');
 

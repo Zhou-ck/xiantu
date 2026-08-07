@@ -59,7 +59,10 @@ function calcMaxHp(s){
   const hpBonus=(typeof equipHpBonus==='function')?equipHpBonus(s):0;
   const toxPen=(typeof danToxHpPenalty==='function')?danToxHpPenalty(s):0;
   const impPen=(typeof impurityHpPenalty==='function')?impurityHpPenalty(s):0;
-  return Math.max(1,40+s.attrs.str*3+Math.floor(powR(s.realm)*15)-injuryHpPenalty(s)+hpBonus-toxPen-impPen);
+  let base=Math.max(1,40+s.attrs.str*3+Math.floor(powR(s.realm)*15)-injuryHpPenalty(s)+hpBonus-toxPen-impPen);
+  /* v97 A1 三途抉择·体修：气血上限 +5% */
+  if(s.flag&&s.flag.santu==='body')base=Math.floor(base*1.05);
+  return Math.max(1,base);
 }
 function attrVal(s,k){return s.attrs[k]+bonusAttr(s,k)+injuryAttrPenalty(s,k)}
 function bonusAttr(s,k){let b=0;for(const a of s.arts)b+=(a.bonus&&a.bonus[k])||0;return b}
@@ -67,7 +70,10 @@ function bonusAttr(s,k){let b=0;for(const a of s.arts)b+=(a.bonus&&a.bonus[k])||
 function maxSpirit(s){
   s=s||S;
   const dec=typeof decorBonus==='function'?decorBonus().spirit:0;
-  return Math.max(30,30+bigStage(s.realm||0)*10+Math.floor(((s.attrs&&s.attrs.int)||0)*2)+dec);
+  let base=Math.max(30,30+bigStage(s.realm||0)*10+Math.floor(((s.attrs&&s.attrs.int)||0)*2)+dec);
+  /* v97 A1 三途抉择·法修：真元上限 +10% */
+  if(s.flag&&s.flag.santu==='spirit')base=Math.floor(base*1.1);
+  return Math.max(30,base);
 }
 function addSpirit(n){
   if(!S)return 0;
@@ -160,6 +166,8 @@ function cultMult(s){
   m*=smallStageMult(s.realm);
   /* v44 择道流派：同流派主修功法效率 +5% */
   if(s.flag&&s.flag.flowChoice&&typeof flowType==='function'&&s.arts&&s.arts[0]&&flowType(s).id===s.flag.flowChoice)m*=1.05;
+  /* v97 A1 道心三问·重道：修炼效率 +3% */
+  if(s.flag&&s.flag.daoHeart==='dao')m*=1.03;
   /* v50 丹毒压制：30/60/90 各 -5% 修炼效率 */
   if(typeof danToxCultPenalty==='function')m*=danToxCultPenalty(s);
   /* v55 灵浊压制：速修代价，阈值同构丹毒 */

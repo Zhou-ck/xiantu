@@ -39,10 +39,11 @@ vm.runInContext(`S.realm=8; window.__parts=cultMultParts(S); window.__has=window
 assert(vm.runInContext('window.__has',ctx),'cultMultParts 包含小境界精进分解项');
 assert(Math.abs(vm.runInContext('window.__part.m',ctx)-1.096)<1e-9,'小境界精进分解值 = smallStageMult');
 
-// T4 修炼面板展示小境界精进与功法相生卡片
+// T4 修炼面板展示小境界精进（闭关页）与功法相生卡片（v97 起在盘点页）
 vm.runInContext(`S=newState('测',BACKGROUNDS[0]); S.flag={}; S.root=50; S.days=0; panelCult(); window.__ph=document.getElementById('panelBody')._html;`,ctx);
 assert(vm.runInContext('window.__ph.indexOf("小境界精进 ×1.00")>=0',ctx),'修炼面板展示「小境界精进 ×1.00」');
-assert(vm.runInContext('window.__ph.indexOf("功法相生")>=0',ctx),'修炼面板展示功法相生卡片');
+vm.runInContext(`panelCult('stats'); window.__ps=document.getElementById('panelBody')._html;`,ctx);
+assert(vm.runInContext('window.__ps.indexOf("功法相生")>=0',ctx),'修炼面板展示功法相生卡片（盘点页）');
 
 // T5 功法相生：同属相合 / 五行相生 / 相克
 vm.runInContext(`

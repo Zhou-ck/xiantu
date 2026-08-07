@@ -198,6 +198,9 @@ function openTome(){
   const personaHtml=(s.persona?personaTomeHtml():'');
   const ends=s.endings.length?'<h4>已证结局</h4><div class="chip-row">'+s.endings.map(e=>'<span class="chip end-chip">'+esc(e)+'</span>').join('')+'</div>':'';
   const mem=s.memories.length?'<h4>前世记忆</h4><div class="chip-row">'+s.memories.map(m=>'<span class="chip mem-chip">'+esc(m)+'</span>').join('')+'</div>':'';
+  /* v97 A1 轮回印记：执念达成收集，跨世保留 */
+  const marksGot=(s.flag&&s.flag.loopMarks)||[];
+  const markHtml=marksGot.length?'<h4>🌀 轮回印记</h4><div class="title-wall">'+(typeof loopMarksOf==='function'?loopMarksOf(s).filter(x=>x.got).map(x=>'<span class="title-badge">'+x.mark.i+' '+esc(x.mark.n)+'</span>').join(''):'')+'</div>':'';
   const titles=s.titles.length?'<h4>🏅 称号</h4><div class="title-wall">'+s.titles.map(id=>{const t=TITLES.find(x=>x.id===id);return t?'<span class="title-badge">🏅 '+esc(t.name)+'</span>':''}).filter(Boolean).join('')+'</div>':'<h4>🏅 称号</h4><p style="color:#6f7a94">尚未获得称号</p>';
   const petHtml=s.pet?'<h4>🐾 灵兽</h4><p>'+esc(s.pet.species+'「'+s.pet.name+'」')+' · '+s.pet.level+'级 · '+s.pet.form+'阶 · '+PET_TALENT_DESC[s.pet.talent]+'</p>':'';
   const atlas='<h4>📖 图鉴 · 生涯 · 天下</h4><div class="row"><button class="small primary" onclick="collectionAtlas()">📖 收藏图鉴（物品 '+Object.keys(s.seenI||{}).length+' · 敌人 '+Object.keys(s.seenE||{}).length+'）</button><button class="small" onclick="careerWall()">📊 生涯</button><button class="small" onclick="worldPanel()">🌍 天下</button></div>';
@@ -208,7 +211,7 @@ function openTome(){
   const flagHtml=(marks.length?'<h4>因果印记</h4><div class="chip-row">'+marks.map(m=>'<span class="chip flag-chip">'+esc(m)+'</span>').join('')+'</div>':'')+(typeof foreshadowHtml==='function'?foreshadowHtml():'');
   const recHtml='<h4>🏆 本机纪录</h4>'+recordsHtml();
   const famHtml=(S.children&&S.children.length)?'<h4>🏮 家族</h4>'+childrenHtml():'';
-  openPanel('📖 仙途录','<div class="row" style="margin-bottom:8px"><button class="small primary" onclick="daoPathPage()">🗺️ 道途 · 下一步做什么</button><button class="small" onclick="titleWall()">🏅 称号墙</button></div>'+stats+personaHtml+sectHtml+titles+petHtml+atlas+pplHtml+famHtml+ends+mem+flagHtml+causeHtml()+recHtml+'<p style="font-size:12.5px;color:#6f7a94">仙途漫漫，一念之差便是不同结局。仙途录将记下你这一世的足迹。</p>');
+  openPanel('📖 仙途录','<div class="row" style="margin-bottom:8px"><button class="small primary" onclick="daoPathPage()">🗺️ 道途 · 下一步做什么</button><button class="small" onclick="titleWall()">🏅 称号墙</button></div>'+stats+personaHtml+sectHtml+titles+markHtml+petHtml+atlas+pplHtml+famHtml+ends+mem+flagHtml+causeHtml()+recHtml+'<p style="font-size:12.5px;color:#6f7a94">仙途漫漫，一念之差便是不同结局。仙途录将记下你这一世的足迹。</p>');
 }
 /* 2O 因果图谱：NPC 记忆与未了之缘 */
 function causeHtml(){

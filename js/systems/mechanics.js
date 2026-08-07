@@ -206,6 +206,8 @@ function tickInjuries(days){
 /* ---------- 好感 / 决裂 / 仇视 ---------- */
 function favorChange(n,delta,reason){
   if(!n)return false;
+  /* v97 A1 道心三问·重情：正向好感获取 +20% */
+  if(delta>0&&S&&S.flag&&S.flag.daoHeart==='qing')delta=Math.floor(delta*1.2);
   /* 自建宗门 · 会客厅：正向好感 +2/级（不含道侣） */
   if(delta>0&&n!==S.daoPartner&&typeof ownSectFavorBonus==='function'){
     const hk=ownSectFavorBonus();

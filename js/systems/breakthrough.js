@@ -394,6 +394,11 @@ function applyBreakSuccess(nxt,R,kMod,pre){
   if(S.bg.traits.some(t=>t.id==='blood')){S.luck=clamp(S.luck+1,1,100);log('<p class="good">家族血脉隐隐苏醒，气运 +1。</p>')}
   if(nxt===9&&!S.flag.flowChosen){flowChoice();return}
   if(nxt===21&&!S.flag.daoDone){daoChoice()}
+  /* v97 A1 轮回道途 2.0：中期选择节点（金丹/元婴/化神/炼虚） */
+  if(nxt===13&&!S.flag.daoHeart){nodeChoice('n_jindan');return}
+  if(nxt===17&&!S.flag.santu){nodeChoice('n_yuanying');return}
+  if(nxt===25&&!S.flag.zhengmo){nodeChoice('n_huashen');return}
+  if(nxt===29&&!S.flag.cause){nodeChoice('n_lianxu');return}
   S.flag.lifeWarn=false;
   if(nxt===41){
     const ok=pre.xinmoFails.every(x=>!x.fail);
@@ -407,7 +412,7 @@ function applyBreakSuccess(nxt,R,kMod,pre){
   }
   if(nxt===9)recordScore('fastZhuji',Math.floor(S.days));
   if(nxt===13)recordScore('fastJindan',Math.floor(S.days));
-  if(S.sect&&S.sect.dark&&S.heartDemons>=2&&S.realm>=17&&!S.flag.darkEndOffer){
+  if(S.sect&&S.sect.dark&&S.heartDemons>=(S.flag.zhengmo==='mo'?1:2)&&S.realm>=17&&!S.flag.darkEndOffer&&S.flag.zhengmo!=='zheng'){
     S.flag.darkEndOffer=true;
     logChoices([{txt:'🌑 彻底坠入魔道，成就魔尊之位',cls:'danger',fn:()=>endEnding('堕入魔道','你弃了正道，以众生为薪，终成一代魔尊。','你终以魔证道，踏碎仙门，九界为之战栗。')},
     {txt:'🌟 守住本心，以魔道之法行正道之事',fn:()=>log('<p class="good">你闭目良久，拂去眉间魔意。魔道可入，本心不移。</p>')}]);
@@ -514,6 +519,25 @@ function flowChoice(){
       S.flag.insights=(S.flag.insights||0)+1;
       log('<p class="good">你踏上了<b>'+o.n+'</b>之路。道心既定，万法随行（流派加成生效，悟道 +1）。</p>');
       log('<p class="sys">流派加成：同流派功法修炼效率 +5%；战斗时流派克制/风格加成按「机制·六大流派」生效；日后可花轮回点重选。</p>');
+      breakClose();
+      if(!passTime(5)){renderAll();return}
+      checkQuests();renderAll();
+    }
+  })));
+}
+/* v97 A1 中期选择节点：数据表驱动（KARMA_NODES），仿 flowChoice 演出 */
+function nodeChoice(nodeId){
+  const nd=karmaNodeById(nodeId);
+  if(!nd)return;
+  scene(nd.title);
+  log('<p>'+nd.q+'</p>');
+  logChoices(nd.opts.map(o=>({
+    txt:o.i+' '+o.n+'——'+o.desc,cls:'primary',
+    fn:()=>{
+      S.flag[nd.flagKey]=o.k;
+      o.apply(S);
+      S.flag.insights=(S.flag.insights||0)+1;
+      log('<p class="good">'+o.i+' 你选择了<b>'+o.n+'</b>——'+o.desc+'（悟道 +1）。</p>');
       breakClose();
       if(!passTime(5)){renderAll();return}
       checkQuests();renderAll();
