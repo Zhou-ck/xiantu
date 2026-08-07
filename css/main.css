@@ -877,3 +877,14 @@ html.fx-low .bt-realm-up{animation:none!important}
 }
 html.fx-touch .cult-banner-img{filter:saturate(.8) brightness(.72)}
 html.fx-touch .cult-banner-img.ld{opacity:.45}
+
+/* ---------- v75 突破天象分层：境界场景图 + 天劫色调 ---------- */
+#breakScene.break-scene{position:absolute;inset:0;z-index:1;background-size:cover;background-position:center;opacity:.32;filter:brightness(.72) saturate(.85);pointer-events:none}
+#breakScene[data-trib="thunder"]{filter:brightness(.76) saturate(1) hue-rotate(-8deg)}
+#breakScene[data-trib="xinmo"]{filter:brightness(.68) saturate(1.12) hue-rotate(38deg)}
+#breakScene[data-trib="yehuo"]{filter:brightness(.74) saturate(1.18) hue-rotate(-22deg)}
+#breakScene[data-trib="feng"]{filter:brightness(.8) saturate(.9) hue-rotate(18deg)}
+@media (pointer:coarse),(hover:none){
+  #breakScene.break-scene{opacity:.16!important;filter:brightness(.72) saturate(.78)!important}
+}
+html.fx-touch #breakScene.break-scene{opacity:.16!important;filter:brightness(.72) saturate(.78)!important}

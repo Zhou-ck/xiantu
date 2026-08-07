@@ -6,11 +6,29 @@
 
 /* ---------- 突破动画弹窗工具 ---------- */
 let _breakSteps=null,_breakDone=null;
-function breakOpen(title,realmName){
+/* v75 突破天象分层：按目标境界映射场景图（炼气→筑基→金丹→元婴→化神→大乘/飞升） */
+function breakSceneKey(nxt){
+  if(nxt>=41)return 'tianmen.jpg';
+  if(nxt>=29)return 'tianyan.jpg';
+  if(nxt>=21)return 'ghostgate.jpg';
+  if(nxt>=17)return 'faceless.jpg';
+  if(nxt>=13)return 'heart.jpg';
+  if(nxt>=9)return 'tribulation.jpg';
+  return 'cult.jpg';
+}
+function breakOpen(title,realmName,sceneKey){
   $('breakthrough').style.display='flex';
   if(typeof T!=='undefined'&&T.reveal)T.reveal($('breakthrough'));
   $('breakName').textContent=S.name;
   $('breakRealm').textContent='冲击 · '+realmName;
+  const sc=$('breakScene');
+  if(sc){
+    try{
+      sc.className='break-scene';
+      sc.setAttribute('data-trib','');
+      sc.style.backgroundImage="url('assets/scenes/"+(sceneKey||'cult.jpg')+"')";
+    }catch(e){}
+  }
   const artKey=S.bg?(BG_ART[S.bg.id+(S.gender==='女'?'_f':'')]||BG_ART[S.bg.id]||ART.hero):ART.hero;
   $('breakPortrait').innerHTML=artImg(artKey,96,124,'');
   $('breakLog').innerHTML='';
@@ -249,7 +267,8 @@ function doBigBreakCore(nxt,dc,kMod,bonus){
     }
     if(nxt===41){for(let i=1;i<=3;i++){const r2=d20()+effWil(S)+kMod;pre.xinmoFails.push({r2,fail:r2<22});}}
     S.flag.preBreak={attrs:Object.assign({},S.attrs),life:LIFESPANS[Math.max(0,nxt-1)]};
-    breakOpen('大境界突破',REALMS[nxt]);
+    breakOpen('大境界突破',REALMS[nxt],breakSceneKey(nxt));
+    const bsc=$('breakScene');if(bsc&&typeof bsc.setAttribute==='function')bsc.setAttribute('data-trib',trib);
     const steps=[{t:'<span class="bt-scene">◈ 蓄势引气</span><br>灵气如潮，道门在前。你深吸一口气，以毕生道心凝于一念。'+(kMod?'<br><span class="bt-roll">功德与业力交织，天意微有偏倚 '+kMod+'</span>':'')+(insB>0?'<br><span class="bt-roll">💡 渡劫感悟加持：判定 +'+insB+'</span>':''),b:10}];
     steps.push({t:'<span class="bt-scene">◈ 道心冲关</span><br>心性判定：'+rollBadge(R.r,R.mod,R.t,R.dc),b:45,d:950});
     if(nxt>=13){
@@ -282,7 +301,8 @@ function doBigBreakCore(nxt,dc,kMod,bonus){
     const lossPct=nxt<13?10:(nxt>=21?25:rand(10,30));
     const loss=Math.floor(S.cult*lossPct/100);
     const failHd=chance(0.3);
-    breakOpen('大境界突破',REALMS[nxt]);
+    breakOpen('大境界突破',REALMS[nxt],breakSceneKey(nxt));
+    const bsc2=$('breakScene');if(bsc2&&typeof bsc2.setAttribute==='function')bsc2.setAttribute('data-trib',trib);
     breakRun([
       {t:'<span class="bt-scene">◈ 蓄势引气</span><br>灵气如潮，道门在前，你凝神以待。',b:15},
       {t:'<span class="bt-scene">◈ 道心冲关</span><br>心性判定：'+rollBadge(R.r,R.mod,R.t,R.dc),b:58,d:950},

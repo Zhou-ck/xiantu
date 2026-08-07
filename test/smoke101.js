@@ -1,4 +1,4 @@
-/* v71 探索事件台词条化 + 突破跃迁横幅 + 渡劫演出冒烟 */
+/* v75 突破天象分层：境界场景图 + 天劫色调冒烟 */
 const fs=require('fs'),path=require('path'),vm=require('vm');
 const root=path.join(__dirname,'..');
 const js=fs.readFileSync(require('path').join(process.env.TEMP||process.env.TMPDIR||require('os').tmpdir(),'xiantu_game.js'),'utf8');
@@ -19,26 +19,33 @@ const ctx={document,localStorage,window:{},console,setTimeout:fn=>fn(),Math};
 vm.createContext(ctx);vm.runInContext(js,ctx);
 let fails=0;function assert(c,m){if(!c){fails++;console.log('FAIL:',m)}else console.log('ok  :',m)}
 
-vm.runInContext(`S=newState('测试',BACKGROUNDS[0]); S.flag={}; PENDING=0;`,ctx);
+vm.runInContext(`S=newState('测试',BACKGROUNDS[0]); PENDING=0;`,ctx);
 
-// T1 探索故事事件台词条化（说话人 + 引文气泡 + 抉择保留）
-vm.runInContext(`runStoryEvent({id:'v71_t',title:'夜半荒山',t:'一位神秘道人立于坟前：「天机不可泄。」随即隐入夜色。',cat:'rare',opts:[{txt:'跟上',fn:()=>{}}]}); window.__se=document.getElementById('story')._html;`,ctx);
-const se=vm.runInContext('window.__se',ctx);
-assert(se.indexOf('story-line')>=0&&se.indexOf('sl-quote')>=0&&se.indexOf('天机不可泄')>=0,'探索事件以台词条演出（引文气泡）');
-assert(se.indexOf('sl-speaker')>=0&&se.indexOf('神秘道人')>=0,'探索事件识别说话人并挂立绘徽章');
-assert(vm.runInContext('PENDING',ctx)===1,'探索事件保留抉择（PENDING=1）');
+// T1 境界→场景图映射
+assert(vm.runInContext("breakSceneKey(8)",ctx)==='cult.jpg','炼气突破→闭关场景图');
+assert(vm.runInContext("breakSceneKey(9)",ctx)==='tribulation.jpg','筑基→天劫场景图');
+assert(vm.runInContext("breakSceneKey(13)",ctx)==='heart.jpg','金丹→心魔场景图');
+assert(vm.runInContext("breakSceneKey(17)",ctx)==='faceless.jpg','元婴→无面天象');
+assert(vm.runInContext("breakSceneKey(21)",ctx)==='ghostgate.jpg','化神→九幽之门');
+assert(vm.runInContext("breakSceneKey(41)",ctx)==='tianmen.jpg','飞升→天门');
 
-// T2 突破跃迁横幅 + 渡劫演出接线
+// T2 弹窗接线：breakOpen 设置背景图
 const bt=fs.readFileSync(path.join(root,'js','systems','breakthrough.js'),'utf8');
-assert(bt.indexOf('bt-realm-up')>=0&&bt.indexOf('realm-jump')>=0,'突破成功渲染跃迁横幅（弹窗+故事流）');
-assert(bt.indexOf('trib-fire')>=0,'渡劫小游戏带天雷演出');
-const css=fs.readFileSync(path.join(root,'css','main.css'),'utf8');
-assert(css.indexOf('.bt-realm-up')>=0&&css.indexOf('.realm-jump')>=0&&css.indexOf('.trib-fire')>=0,'跃迁横幅与天雷演出样式存在');
+assert(bt.indexOf('function breakSceneKey')>=0&&bt.indexOf("url('assets/scenes/\"")>=0,'突破弹窗按境界设置天象背景');
+assert(bt.indexOf("setAttribute('data-trib'")>=0,'天劫类型色调接线');
+const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
+assert(html.indexOf('id="breakScene"')>=0,'突破壳含天象背景层');
 
-// T3 版本同步
+// T3 样式：天象层 + 四劫色调 + 触屏压暗
+const css=fs.readFileSync(path.join(root,'css','main.css'),'utf8');
+assert(css.indexOf('#breakScene.break-scene')>=0,'天象背景层样式存在');
+assert(css.indexOf('[data-trib="thunder"]')>=0&&css.indexOf('[data-trib="xinmo"]')>=0&&css.indexOf('[data-trib="yehuo"]')>=0&&css.indexOf('[data-trib="feng"]')>=0,'四类天劫色调齐全');
+assert(css.indexOf('html.fx-touch #breakScene.break-scene')>=0,'触屏压暗天象背景');
+
+// T4 版本同步
 const sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
 assert(vm.runInContext('GAME_VERSION',ctx)==='75','版本号 v75');
 assert(sw.indexOf('xiantu2-v'+vm.runInContext('GAME_VERSION',ctx))>=0,'SW 缓存名与版本号同步');
 
-console.log(fails===0?'smoke97: ALL PASS':'smoke97 FAILS: '+fails);
+console.log(fails===0?'smoke101: ALL PASS':'smoke101 FAILS: '+fails);
 process.exit(fails?1:0);
