@@ -362,20 +362,20 @@ html.fx-touch #panel,html.fx-touch #guide,html.fx-touch #battle,html.fx-touch #c
 html.fx-touch button::after{display:none!important}
 /* v64fix 触屏暖图闪黄收敛：加载成功后才淡入，压暗色温 + 深色面纱 + 关金箔流光 + 突破金环低亮 */
 @media (pointer:coarse),(hover:none){
-  .page-hero-img.ld{opacity:.52}
+  .page-hero-img.ld{opacity:.62}
   .page-hero-img{filter:none!important}
-  .page-hero::after{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(180deg,rgba(8,11,20,.14),rgba(8,11,20,.34))}
-  .mod-img.ld{opacity:.88}
+  .page-hero::after{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(180deg,rgba(8,11,20,.1),rgba(8,11,20,.26))}
+  .mod-img.ld{opacity:.95}
   .mod-img{filter:none!important}
-  .mod-imgwrap::after{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(180deg,rgba(8,11,20,.18),rgba(8,11,20,.36))}
+  .mod-imgwrap::after{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(180deg,rgba(8,11,20,.12),rgba(8,11,20,.26))}
   .bar>i::after{display:none!important}
 }
-html.fx-touch .page-hero-img.ld{opacity:.52}
+html.fx-touch .page-hero-img.ld{opacity:.62}
 html.fx-touch .page-hero-img{filter:none!important}
-html.fx-touch .page-hero::after{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(180deg,rgba(8,11,20,.14),rgba(8,11,20,.34))}
-html.fx-touch .mod-img.ld{opacity:.88}
+html.fx-touch .page-hero::after{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(180deg,rgba(8,11,20,.1),rgba(8,11,20,.26))}
+html.fx-touch .mod-img.ld{opacity:.95}
 html.fx-touch .mod-img{filter:none!important}
-html.fx-touch .mod-imgwrap::after{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(180deg,rgba(8,11,20,.18),rgba(8,11,20,.36))}
+html.fx-touch .mod-imgwrap::after{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(180deg,rgba(8,11,20,.12),rgba(8,11,20,.26))}
 html.fx-touch .bar>i::after{display:none!important}
 html.fx-touch #btAura.on{animation:auraBurstT 1s ease-out}
 html.fx-touch #panel.fx-in #panelBox,html.fx-touch #cultivate.fx-in #cultBox,html.fx-touch #battle.fx-in #battleBox,html.fx-touch #guide.fx-in #guideBox,html.fx-touch #breakthrough.fx-in #breakBox{animation:overlayIn .18s ease-out both!important}
@@ -766,7 +766,7 @@ html.fx-low .talk-bubble,html.fx-low .talk-avatar{animation:none!important}
 .loc-card.locked .loc-imgwrap{filter:grayscale(.85) brightness(.65)}
 .loc-imgwrap{position:relative;width:100%;aspect-ratio:16/9;background:linear-gradient(160deg,#252c4a,#171b2e);display:flex;align-items:center;justify-content:center;overflow:hidden}
 .loc-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .4s ease}
-.loc-img.ld{opacity:.92}
+.loc-img.ld{opacity:.96}
 .loc-emoji{position:relative;z-index:2;font-size:30px;line-height:1;filter:drop-shadow(0 0 6px rgba(0,0,0,.8))}
 .loc-tx{display:flex;flex-direction:column;gap:3px;padding:8px 10px 10px;min-width:0}
 .loc-tx b{font-size:13.5px;font-weight:normal;color:var(--gold2)}
@@ -885,9 +885,9 @@ html.fx-touch .cult-banner-img.ld{opacity:.62}
 #breakScene[data-trib="yehuo"]{filter:brightness(.74) saturate(1.18) hue-rotate(-22deg)}
 #breakScene[data-trib="feng"]{filter:brightness(.8) saturate(.9) hue-rotate(18deg)}
 @media (pointer:coarse),(hover:none){
-  #breakScene.break-scene{opacity:.34!important;filter:none!important}
+  #breakScene.break-scene{opacity:.42!important;filter:none!important}
 }
-html.fx-touch #breakScene.break-scene{opacity:.34!important;filter:none!important}
+html.fx-touch #breakScene.break-scene{opacity:.42!important;filter:none!important}
 
 /* ---------- v76 战斗挥砍弧光 / 闭关灵气氛围 ---------- */
 .bside.fig-side{position:relative}
@@ -966,6 +966,24 @@ html.fx-touch button:active{transform:scale(.97);transition:none!important}
 html.fx-touch #panelBody,html.fx-touch #cultLog,html.fx-touch #battleLog,html.fx-touch #breakLog,html.fx-touch #side,html.fx-touch #story{overscroll-behavior:contain!important}
 html.fx-touch #panelBox,html.fx-touch #cultBox,html.fx-touch #battleBox,html.fx-touch #guideBox,html.fx-touch #breakBox{box-shadow:none!important}
 html.fx-touch .mod-card.locked .mod-imgwrap,html.fx-touch .loc-card.locked .loc-imgwrap{filter:none!important;opacity:.7}
+/* v83 触屏关闭全部入场动画层（安卓 GPU 区域泛黄的最后元凶：日志行/场景标题/模块卡/弹层/奖励条） */
+@media (pointer:coarse),(hover:none){
+  .log{animation:none!important}
+  .scene{animation:none!important}
+  .mod-card{animation:none!important}
+  #panel.fx-in,#battle.fx-in,#cultivate.fx-in,#guide.fx-in,#breakthrough.fx-in,#ending.fx-in{animation:none!important}
+  #panel.fx-in #panelBox,#cultivate.fx-in #cultBox,#battle.fx-in #battleBox,#guide.fx-in #guideBox,#breakthrough.fx-in #breakBox{animation:none!important}
+  .loot-chip,.craft-result,.bt-realm-up,.realm-jump{animation:none!important}
+}
+html.fx-touch .log{animation:none!important}
+html.fx-touch .scene{animation:none!important}
+html.fx-touch .mod-card{animation:none!important}
+html.fx-touch #panel.fx-in,html.fx-touch #battle.fx-in,html.fx-touch #cultivate.fx-in,html.fx-touch #guide.fx-in,html.fx-touch #breakthrough.fx-in,html.fx-touch #ending.fx-in{animation:none!important}
+html.fx-touch #panel.fx-in #panelBox,html.fx-touch #cultivate.fx-in #cultBox,html.fx-touch #battle.fx-in #battleBox,html.fx-touch #guide.fx-in #guideBox,html.fx-touch #breakthrough.fx-in #breakBox{animation:none!important}
+html.fx-touch .loot-chip{animation:none!important}
+html.fx-touch .craft-result{animation:none!important}
+html.fx-touch .bt-realm-up{animation:none!important}
+html.fx-touch .realm-jump{animation:none!important}
 /* 强敌登场卡：守关大妖 */
 .boss-intro{display:flex;align-items:center;gap:12px;margin:10px 0 8px;padding:12px 13px;background:linear-gradient(180deg,#262c46,#1a1f33);border:1px solid rgba(232,200,106,.5);border-radius:12px;box-shadow:0 0 18px rgba(232,200,106,.14)}
 .boss-intro .bi-img{width:58px;height:58px;border-radius:10px;object-fit:cover;border:1px solid rgba(232,200,106,.45);flex:0 0 auto}

@@ -26,19 +26,19 @@ const css=fs.readFileSync(path.join(root,'css','main.css'),'utf8');
 for(const sel of ['.page-hero-img','.mod-img','.loc-img','.cult-banner-img']){
   assert(css.indexOf('html.fx-touch '+sel+'{filter:none!important}')>=0,'触屏移除滤镜层 '+sel);
 }
-assert(css.indexOf('html.fx-touch #breakScene.break-scene{opacity:.34!important;filter:none!important}')>=0,'触屏移除滤镜层 #breakScene.break-scene');
+assert(css.indexOf('html.fx-touch #breakScene.break-scene{opacity:.42!important;filter:none!important}')>=0,'触屏移除滤镜层 #breakScene.break-scene');
 assert(css.indexOf('html.fx-touch .mod-card.locked .mod-imgwrap')>=0,'锁定卡改用透明度（无滤镜）');
 
 // T2 触屏面板大阴影移除（大盒阴影是首帧闪光元凶）
 assert(css.indexOf('html.fx-touch #panelBox,html.fx-touch #cultBox,html.fx-touch #battleBox,html.fx-touch #guideBox,html.fx-touch #breakBox{box-shadow:none!important}')>=0,'触屏面板大阴影移除');
 
 // T3 亮化档位保持
-assert(css.indexOf('html.fx-touch .mod-img.ld{opacity:.88}')>=0,'模块图亮化档位保持 .88');
-assert(css.indexOf('.page-hero-img.ld{opacity:.68}')>=0,'横幅亮化档位保持 .68');
+assert(css.indexOf('html.fx-touch .mod-img.ld{opacity:.95}')>=0,'模块图亮化档位 .95');
+assert(css.indexOf('html.fx-touch .page-hero-img.ld{opacity:.62}')>=0,'横幅亮化档位 .62');
 
 // T4 版本同步
 const sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
-assert(vm.runInContext('GAME_VERSION',ctx)==='82','版本号 v82');
+assert(vm.runInContext('GAME_VERSION',ctx)==='83','版本号 v83');
 assert(sw.indexOf('xiantu2-v'+vm.runInContext('GAME_VERSION',ctx))>=0,'SW 缓存名与版本号同步');
 
 console.log(fails===0?'smoke108: ALL PASS':'smoke108 FAILS: '+fails);

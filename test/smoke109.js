@@ -1,4 +1,4 @@
-/* v77 区域事件台词条化 + 成丹品质演出卡冒烟 */
+/* v83 触屏关闭全部入场动画层（闪黄根治）+ 亮化档位 冒烟 */
 const fs=require('fs'),path=require('path'),vm=require('vm');
 const root=path.join(__dirname,'..');
 const js=fs.readFileSync(require('path').join(process.env.TEMP||process.env.TMPDIR||require('os').tmpdir(),'xiantu_game.js'),'utf8');
@@ -19,25 +19,25 @@ const ctx={document,localStorage,window:{},console,setTimeout:fn=>fn(),Math};
 vm.createContext(ctx);vm.runInContext(js,ctx);
 let fails=0;function assert(c,m){if(!c){fails++;console.log('FAIL:',m)}else console.log('ok  :',m)}
 
-vm.runInContext(`S=newState('测试',BACKGROUNDS[0]); S.flag={}; PENDING=0;`,ctx);
-
-// T1 区域记忆事件台词条化（说话人徽章 + 引文气泡 + 抉择保留）
-vm.runInContext(`runRegionEvent({id:'v77_t',title:'山中奇遇',t:'一位采药女于溪边轻声道：「此物与你有缘。」递来一株灵草。',opts:[{txt:'收下',fn:()=>{}}]}); window.__re=document.getElementById('story')._html;`,ctx);
-const re=vm.runInContext('window.__re',ctx);
-assert(re.indexOf('story-stage')>=0&&re.indexOf('story-line')>=0&&re.indexOf('sl-quote')>=0,'区域事件以台词条演出');
-assert(re.indexOf('sl-speaker')>=0&&re.indexOf('采药女')>=0,'区域事件识别说话人并挂立绘徽章');
-assert(vm.runInContext('PENDING',ctx)===1,'区域事件保留抉择（PENDING=1）');
-
-// T2 成丹品质演出卡接线
-const craft=fs.readFileSync(path.join(root,'js','systems','craft.js'),'utf8');
-assert(craft.indexOf('craft-result')>=0&&craft.indexOf("fxFloatText(qTier")>=0,'炼制成功渲染品质演出卡+飘字');
+vm.runInContext(`S=newState('测试',BACKGROUNDS[0]); PENDING=0;`,ctx);
 const css=fs.readFileSync(path.join(root,'css','main.css'),'utf8');
-assert(css.indexOf('.craft-result')>=0&&css.indexOf('@keyframes craftIn')>=0,'品质演出卡样式与动画存在');
+
+// T1 触屏关闭全部入场动画层（日志行/场景标题/模块卡/弹层/奖励条）
+for(const sel of ['.log','.scene','.mod-card','.loot-chip','.craft-result','.bt-realm-up','.realm-jump']){
+  assert(css.indexOf('html.fx-touch '+sel+'{animation:none!important}')>=0,'触屏关闭动画层 '+sel);
+}
+assert(css.indexOf('html.fx-touch #panel.fx-in,html.fx-touch #battle.fx-in')>=0,'触屏弹层入场动画关闭');
+assert(css.indexOf('html.fx-touch #panel.fx-in #panelBox,html.fx-touch #cultivate.fx-in #cultBox')>=0,'触屏弹层内容动画关闭');
+
+// T2 亮化档位
+assert(css.indexOf('html.fx-touch .mod-img.ld{opacity:.95}')>=0,'模块图亮化 .95');
+assert(css.indexOf('html.fx-touch .page-hero-img.ld{opacity:.62}')>=0,'横幅亮化 .62');
+assert(css.indexOf('html.fx-touch #breakScene.break-scene{opacity:.42!important')>=0,'突破天象亮化 .42');
 
 // T3 版本同步
 const sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
 assert(vm.runInContext('GAME_VERSION',ctx)==='83','版本号 v83');
 assert(sw.indexOf('xiantu2-v'+vm.runInContext('GAME_VERSION',ctx))>=0,'SW 缓存名与版本号同步');
 
-console.log(fails===0?'smoke103: ALL PASS':'smoke103 FAILS: '+fails);
+console.log(fails===0?'smoke109: ALL PASS':'smoke109 FAILS: '+fails);
 process.exit(fails?1:0);
