@@ -1,4 +1,4 @@
-/* v70 剧情台词条（视觉小说式演出）冒烟 */
+/* v71 探索事件台词条化 + 突破跃迁横幅 + 渡劫演出冒烟 */
 const fs=require('fs'),path=require('path'),vm=require('vm');
 const root=path.join(__dirname,'..');
 const js=fs.readFileSync(require('path').join(process.env.TEMP||process.env.TMPDIR||require('os').tmpdir(),'xiantu_game.js'),'utf8');
@@ -19,26 +19,26 @@ const ctx={document,localStorage,window:{},console,setTimeout:fn=>fn(),Math};
 vm.createContext(ctx);vm.runInContext(js,ctx);
 let fails=0;function assert(c,m){if(!c){fails++;console.log('FAIL:',m)}else console.log('ok  :',m)}
 
-vm.runInContext(`S=newState('测试',BACKGROUNDS[0]); PENDING=0;`,ctx);
+vm.runInContext(`S=newState('测试',BACKGROUNDS[0]); S.flag={}; PENDING=0;`,ctx);
 
-// T1 台词条：说话人立绘 + 引文气泡 + 动作描述
-vm.runInContext(`window.__s1=storyLineHtml('神秘道人缓缓开口：「天机不可泄。」随即拂袖而去');`,ctx);
-const s1=vm.runInContext('window.__s1',ctx);
-assert(s1.indexOf('sl-speaker')>=0&&s1.indexOf('daoist.jpg')>=0,'台词条识别说话人并带立绘');
-assert(s1.indexOf('sl-quote')>=0&&s1.indexOf('天机不可泄')>=0,'台词引文渲染为气泡');
-assert(s1.indexOf('sl-pre')>=0&&s1.indexOf('sl-post')>=0,'动作描写前后缀分离');
-assert(vm.runInContext("storyLineHtml('你独自跋涉在荒山之上。')",ctx).indexOf('sl-text')>=0,'无引文台词走正文样式');
+// T1 探索故事事件台词条化（说话人 + 引文气泡 + 抉择保留）
+vm.runInContext(`runStoryEvent({id:'v71_t',title:'夜半荒山',t:'一位神秘道人立于坟前：「天机不可泄。」随即隐入夜色。',cat:'rare',opts:[{txt:'跟上',fn:()=>{}}]}); window.__se=document.getElementById('story')._html;`,ctx);
+const se=vm.runInContext('window.__se',ctx);
+assert(se.indexOf('story-line')>=0&&se.indexOf('sl-quote')>=0&&se.indexOf('天机不可泄')>=0,'探索事件以台词条演出（引文气泡）');
+assert(se.indexOf('sl-speaker')>=0&&se.indexOf('神秘道人')>=0,'探索事件识别说话人并挂立绘徽章');
+assert(vm.runInContext('PENDING',ctx)===1,'探索事件保留抉择（PENDING=1）');
 
-// T2 剧情演出整体：场景横幅 + 台词条入故事流
-vm.runInContext(`PENDING=0; runStoryLines('遭遇战 · 破庙惊变',['神秘道人立于残碑前：「此物与你有缘。」','你心头微震，俯身拾起半卷残页。'],[]); window.__st=document.getElementById('story')._html;`,ctx);
-const st=vm.runInContext('window.__st',ctx);
-assert(st.indexOf('story-stage')>=0&&st.indexOf('scn-thumb')>=0,'剧情标题为场景横幅（带缩略章）');
-assert(st.indexOf('story-line')>=0&&st.indexOf('sl-quote')>=0&&st.indexOf('此物与你有缘')>=0,'剧情台词以台词条入流');
+// T2 突破跃迁横幅 + 渡劫演出接线
+const bt=fs.readFileSync(path.join(root,'js','systems','breakthrough.js'),'utf8');
+assert(bt.indexOf('bt-realm-up')>=0&&bt.indexOf('realm-jump')>=0,'突破成功渲染跃迁横幅（弹窗+故事流）');
+assert(bt.indexOf('trib-fire')>=0,'渡劫小游戏带天雷演出');
+const css=fs.readFileSync(path.join(root,'css','main.css'),'utf8');
+assert(css.indexOf('.bt-realm-up')>=0&&css.indexOf('.realm-jump')>=0&&css.indexOf('.trib-fire')>=0,'跃迁横幅与天雷演出样式存在');
 
 // T3 版本同步
 const sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
 assert(vm.runInContext('GAME_VERSION',ctx)==='71','版本号 v71');
 assert(sw.indexOf('xiantu2-v'+vm.runInContext('GAME_VERSION',ctx))>=0,'SW 缓存名与版本号同步');
 
-console.log(fails===0?'smoke96: ALL PASS':'smoke96 FAILS: '+fails);
+console.log(fails===0?'smoke97: ALL PASS':'smoke97 FAILS: '+fails);
 process.exit(fails?1:0);

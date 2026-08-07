@@ -275,7 +275,7 @@ function doBigBreakCore(nxt,dc,kMod,bonus){
         steps.push({t:'<span class="bt-roll">心魔幻象第 '+(i+1)+' 重：'+rollBadge(x.r2-d20(),d20(),x.r2,22)+'</span>',f:'heart',d:1000});
       });
     }
-    steps.push({t:'<span class="bt-good">✨ 道门轰然洞开！你迈入 <b>'+REALMS[nxt]+'</b>，天地为之一阔！</span>',f:'aura',b:100,d:950});
+    steps.push({t:'<div class="bt-realm-up">✨ 道门轰然洞开！你迈入 <b>'+REALMS[nxt]+'</b>，天地为之一阔！</div>',f:'aura',b:100,d:950});
     breakRun(steps,()=>applyBreakSuccess(nxt,R,kMod,pre));
   }else{
     /* 2P 惩罚梯度：炼气-筑基只掉 10%；化神+ 掉 25% 但给「道基感悟」补偿 */
@@ -305,7 +305,7 @@ function logRealmDiff(nxt){
 function tribMiniGame(onDone){
   const st={wave:1,ok:0,perfect:0};
   function wave(){
-    openEventModal('⚡ 渡劫小游戏 · 第 '+st.wave+' 波','<p>雷云压顶，电弧在云层中翻滚积聚——闪避，或硬撼天威！</p><p class="sys">三波皆完美闪避：天雷判定大幅降低；全部硬吃：天雷更难。</p>',[
+    openEventModal('⚡ 渡劫小游戏 · 第 '+st.wave+' 波','<div class="craft-stage"><i class="craft-fire trib-fire">⚡</i></div><p>雷云压顶，电弧在云层中翻滚积聚——闪避，或硬撼天威！</p><p class="sys">三波皆完美闪避：天雷判定大幅降低；全部硬吃：天雷更难。</p>',[
       {txt:'⬅️ 左闪（身法判定）',fn:()=>resolve(doRoll('agi',14))},
       {txt:'➡️ 右闪（身法判定）',fn:()=>resolve(doRoll('agi',14))},
       {txt:'⚔️ 硬撼天雷（力量判定）',fn:()=>resolve(doRoll('str',16))},
@@ -335,6 +335,7 @@ function applyBreakSuccess(nxt,R,kMod,pre){
   if(S.flag.daoInsight>0){S.flag.daoInsight--;log('<p class="good">道基感悟化为突破之力（判定加成已消耗）。</p>')}
   if((S.insight||0)>0){S.insight=0;log('<p class="good">渡劫感悟尽数化为突破之力，烙印消散（判定加成已消耗）。</p>')}
   rewardPush([{name:'晋入 '+REALMS[nxt],src:'突破',rare:true}]);
+  log('<div class="realm-jump"><span class="rj-ico">✨</span><div class="rj-tx"><b>'+esc(REALMS[nxt])+'</b><small>道心冲关 · 天劫洗礼 · 破境成功</small></div></div>');
   const daoProtect=(typeof daoBaseRatio==='function'&&daoBaseRatio(S)>=0.8)?0.9:1;
   for(const x of pre.thunderFails)if(x.fail)S.hp=Math.max(1,S.hp-Math.floor(S.maxHp*0.25*daoProtect));
   if(pre.heartFail)addDemonMark('fear',60);

@@ -193,7 +193,10 @@ function runStoryEvent(ev){
   S.flag.storyEvents=S.flag.storyEvents||{};
   S.flag.storyEvents[ev.id]=(S.flag.storyEvents[ev.id]||0)+1;
   scene(ev.title);
-  log('<p>'+esc(ev.t)+'</p>');
+  /* v70+：探索故事事件同样以台词条演出（说话人立绘 + 引文气泡） */
+  const cast=storyCastBar(pickCastNames(ev.title+' '+ev.t));
+  if(cast)log(cast);
+  log('<p class="story-line">'+storyLineHtml(ev.t)+'</p>');
   logChoices((ev.opts||[]).map(o=>({
     txt:o.txt,cls:o.cls||'',
     fn:()=>{
