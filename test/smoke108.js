@@ -26,7 +26,7 @@ const css=fs.readFileSync(path.join(root,'css','main.css'),'utf8');
 for(const sel of ['.page-hero-img','.mod-img','.loc-img','.cult-banner-img']){
   assert(css.indexOf('html.fx-touch '+sel+'{filter:none!important}')>=0,'触屏移除滤镜层 '+sel);
 }
-assert(css.indexOf('html.fx-touch #breakScene.break-scene{opacity:.42!important;filter:none!important}')>=0,'触屏移除滤镜层 #breakScene.break-scene');
+assert(css.indexOf('html.fx-touch #breakScene.break-scene{opacity:.5!important;filter:none!important}')>=0,'触屏移除滤镜层 #breakScene.break-scene');
 assert(css.indexOf('html.fx-touch .mod-card.locked .mod-imgwrap')>=0,'锁定卡改用透明度（无滤镜）');
 
 // T2 触屏面板大阴影移除（大盒阴影是首帧闪光元凶）
@@ -38,7 +38,7 @@ assert(css.indexOf('html.fx-touch .page-hero-img.ld{opacity:.62}')>=0,'横幅亮
 
 // T4 版本同步
 const sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
-assert(vm.runInContext('GAME_VERSION',ctx)==='83','版本号 v83');
+assert(vm.runInContext('GAME_VERSION',ctx)==='84','版本号 v84');
 assert(sw.indexOf('xiantu2-v'+vm.runInContext('GAME_VERSION',ctx))>=0,'SW 缓存名与版本号同步');
 
 console.log(fails===0?'smoke108: ALL PASS':'smoke108 FAILS: '+fails);

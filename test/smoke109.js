@@ -32,11 +32,11 @@ assert(css.indexOf('html.fx-touch #panel.fx-in #panelBox,html.fx-touch #cultivat
 // T2 亮化档位
 assert(css.indexOf('html.fx-touch .mod-img.ld{opacity:.95}')>=0,'模块图亮化 .95');
 assert(css.indexOf('html.fx-touch .page-hero-img.ld{opacity:.62}')>=0,'横幅亮化 .62');
-assert(css.indexOf('html.fx-touch #breakScene.break-scene{opacity:.42!important')>=0,'突破天象亮化 .42');
+assert(css.indexOf('html.fx-touch #breakScene.break-scene{opacity:.5!important')>=0,'突破天象亮化 .5');
 
 // T3 版本同步
 const sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
-assert(vm.runInContext('GAME_VERSION',ctx)==='83','版本号 v83');
+assert(vm.runInContext('GAME_VERSION',ctx)==='84','版本号 v84');
 assert(sw.indexOf('xiantu2-v'+vm.runInContext('GAME_VERSION',ctx))>=0,'SW 缓存名与版本号同步');
 
 console.log(fails===0?'smoke109: ALL PASS':'smoke109 FAILS: '+fails);

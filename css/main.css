@@ -11,7 +11,7 @@ html,body{height:100%}
 body{
   font-family:'Kaiti SC','STKaiti','KaiTi','SimSun',serif;
   background:
-    radial-gradient(ellipse at 50% -10%,#333b5e 0%,#1a1e30 48%,#0b0e18 100%),
+    radial-gradient(ellipse at 50% -10%,#3a4268 0%,#1d2236 48%,#0d101c 100%),
     repeating-linear-gradient(115deg,rgba(255,255,255,.012) 0 2px,transparent 2px 9px);
   color:#e8dcc0;min-height:100vh;
 }
@@ -113,9 +113,9 @@ header .spacer{flex:1}
   flex:1;overflow:auto;padding:22px 26px;position:relative;
   overscroll-behavior:contain;
   background:
-    radial-gradient(ellipse at 50% -20%,rgba(90,105,160,.16),transparent 55%),
-    linear-gradient(180deg,rgba(15,18,30,.08),rgba(14,17,28,.45)),
-    repeating-linear-gradient(0deg,rgba(201,162,75,.022) 0 1px,transparent 1px 26px);
+    radial-gradient(ellipse at 50% -20%,rgba(110,130,195,.3),transparent 58%),
+    linear-gradient(180deg,rgba(18,22,36,.12),rgba(16,20,32,.55)),
+    repeating-linear-gradient(0deg,rgba(201,162,75,.035) 0 1px,transparent 1px 26px);
 }
 #main{position:relative}
 #sceneLayer{position:absolute;inset:0;z-index:0;background-size:cover;background-position:center;opacity:.40;filter:saturate(.88) brightness(.92);transition:opacity .8s ease;animation:kenburns 26s ease-in-out infinite alternate;pointer-events:none}
@@ -364,18 +364,18 @@ html.fx-touch button::after{display:none!important}
 @media (pointer:coarse),(hover:none){
   .page-hero-img.ld{opacity:.62}
   .page-hero-img{filter:none!important}
-  .page-hero::after{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(180deg,rgba(8,11,20,.1),rgba(8,11,20,.26))}
+  .page-hero::after{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(180deg,rgba(8,11,20,.06),rgba(8,11,20,.16))}
   .mod-img.ld{opacity:.95}
   .mod-img{filter:none!important}
-  .mod-imgwrap::after{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(180deg,rgba(8,11,20,.12),rgba(8,11,20,.26))}
+  .mod-imgwrap::after{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(180deg,rgba(8,11,20,.06),rgba(8,11,20,.16))}
   .bar>i::after{display:none!important}
 }
 html.fx-touch .page-hero-img.ld{opacity:.62}
 html.fx-touch .page-hero-img{filter:none!important}
-html.fx-touch .page-hero::after{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(180deg,rgba(8,11,20,.1),rgba(8,11,20,.26))}
+html.fx-touch .page-hero::after{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(180deg,rgba(8,11,20,.06),rgba(8,11,20,.16))}
 html.fx-touch .mod-img.ld{opacity:.95}
 html.fx-touch .mod-img{filter:none!important}
-html.fx-touch .mod-imgwrap::after{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(180deg,rgba(8,11,20,.12),rgba(8,11,20,.26))}
+html.fx-touch .mod-imgwrap::after{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(180deg,rgba(8,11,20,.06),rgba(8,11,20,.16))}
 html.fx-touch .bar>i::after{display:none!important}
 html.fx-touch #btAura.on{animation:auraBurstT 1s ease-out}
 html.fx-touch #panel.fx-in #panelBox,html.fx-touch #cultivate.fx-in #cultBox,html.fx-touch #battle.fx-in #battleBox,html.fx-touch #guide.fx-in #guideBox,html.fx-touch #breakthrough.fx-in #breakBox{animation:overlayIn .18s ease-out both!important}
@@ -766,7 +766,7 @@ html.fx-low .talk-bubble,html.fx-low .talk-avatar{animation:none!important}
 .loc-card.locked .loc-imgwrap{filter:grayscale(.85) brightness(.65)}
 .loc-imgwrap{position:relative;width:100%;aspect-ratio:16/9;background:linear-gradient(160deg,#252c4a,#171b2e);display:flex;align-items:center;justify-content:center;overflow:hidden}
 .loc-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .4s ease}
-.loc-img.ld{opacity:.96}
+.loc-img.ld{opacity:1}
 .loc-emoji{position:relative;z-index:2;font-size:30px;line-height:1;filter:drop-shadow(0 0 6px rgba(0,0,0,.8))}
 .loc-tx{display:flex;flex-direction:column;gap:3px;padding:8px 10px 10px;min-width:0}
 .loc-tx b{font-size:13.5px;font-weight:normal;color:var(--gold2)}
@@ -885,9 +885,9 @@ html.fx-touch .cult-banner-img.ld{opacity:.62}
 #breakScene[data-trib="yehuo"]{filter:brightness(.74) saturate(1.18) hue-rotate(-22deg)}
 #breakScene[data-trib="feng"]{filter:brightness(.8) saturate(.9) hue-rotate(18deg)}
 @media (pointer:coarse),(hover:none){
-  #breakScene.break-scene{opacity:.42!important;filter:none!important}
+  #breakScene.break-scene{opacity:.5!important;filter:none!important}
 }
-html.fx-touch #breakScene.break-scene{opacity:.42!important;filter:none!important}
+html.fx-touch #breakScene.break-scene{opacity:.5!important;filter:none!important}
 
 /* ---------- v76 战斗挥砍弧光 / 闭关灵气氛围 ---------- */
 .bside.fig-side{position:relative}
@@ -984,6 +984,11 @@ html.fx-touch .loot-chip{animation:none!important}
 html.fx-touch .craft-result{animation:none!important}
 html.fx-touch .bt-realm-up{animation:none!important}
 html.fx-touch .realm-jump{animation:none!important}
+/* v84 触屏弹层稳定图层（translateZ 规避安卓合成闪）+ 亮度最终档 */
+@media (pointer:coarse),(hover:none){
+  #panelBox,#cultBox,#battleBox,#guideBox,#breakBox{transform:translateZ(0);backface-visibility:hidden}
+}
+html.fx-touch #panelBox,html.fx-touch #cultBox,html.fx-touch #battleBox,html.fx-touch #guideBox,html.fx-touch #breakBox{transform:translateZ(0);backface-visibility:hidden}
 /* 强敌登场卡：守关大妖 */
 .boss-intro{display:flex;align-items:center;gap:12px;margin:10px 0 8px;padding:12px 13px;background:linear-gradient(180deg,#262c46,#1a1f33);border:1px solid rgba(232,200,106,.5);border-radius:12px;box-shadow:0 0 18px rgba(232,200,106,.14)}
 .boss-intro .bi-img{width:58px;height:58px;border-radius:10px;object-fit:cover;border:1px solid rgba(232,200,106,.45);flex:0 0 auto}
