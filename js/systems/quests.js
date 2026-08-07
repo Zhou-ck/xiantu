@@ -76,7 +76,9 @@ function grantDaily(q){
 }
 function questRow(q,cur,done){
   const pct=clamp(Math.floor(cur/q.target*100),0,100);
-  return '<div class="quest-item'+(done?' done':'')+'"><span>'+(done?'✅':'⬜')+' '+q.icon+' '+esc(q.name)+'（'+Math.min(cur,q.target)+'/'+q.target+'）</span><b>'+(done?'已领取':q.rewardText)+'</b></div>'+(done?'':'<div class="bar" style="margin:2px 0 8px;height:6px"><i style="width:'+pct+'%"></i></div>');
+  return '<div class="quest-item quest-row'+(done?' done':'')+'"><span class="quest-ico">'+(done?'✅':q.icon)+'</span>'+
+    '<span class="quest-tx"><b>'+esc(q.name)+'</b><small>'+(done?'已领取 · '+esc(q.rewardText):'进度 '+Math.min(cur,q.target)+'/'+q.target+' · '+esc(q.rewardText))+'</small></span>'+
+    (done?'':'<span class="quest-pct">'+pct+'%</span>')+'</div>'+(done?'':'<div class="bar" style="margin:2px 0 8px;height:6px"><i style="width:'+pct+'%"></i></div>');
 }
 function dailyHtml(){
   const d=dC();

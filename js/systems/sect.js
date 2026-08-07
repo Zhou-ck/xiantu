@@ -6,8 +6,12 @@
 /* ================= 宗门 ================= */
 function panelSect(){
   if(!S.sect){
-    const secs=SECTS.map((s,i)=>'<div class="item-card">'+artImg(SECT_ART[s.id],0,0,'sect-thumb')+'<div class="nm">'+s.name+' <span class="tag">'+s.tag+'</span></div><div class="ds">'+s.desc+'</div><div style="margin-top:6px"><button class="small" onclick="joinSect('+i+')">拜山</button></div></div>').join('');
-    const darks=DARK_SECTS.map((s,i)=>'<div class="item-card">'+artImg(SECT_ART[s.id],0,0,'sect-thumb')+'<div class="nm" style="color:#c9a0e0">'+s.name+'</div><div class="ds">'+s.desc+'</div><div style="margin-top:6px"><button class="small" onclick="joinDark('+i+')">投身</button></div></div>').join('');
+    const secs=SECTS.map((s,i)=>qcardHtml({name:s.name,icon:'🏯',quality:2,showQ:false,tags:'<span class="tag">'+esc(s.tag)+'</span>',
+      sub:esc(s.desc),desc:artImg(SECT_ART[s.id],0,0,'sect-thumb'),
+      foot:'<button class="small primary" onclick="joinSect('+i+')">拜山</button>'})).join('');
+    const darks=DARK_SECTS.map((s,i)=>qcardHtml({name:s.name,icon:'🌑',quality:3,showQ:false,tags:'<span class="tag dark">魔道</span>',
+      sub:esc(s.desc),desc:artImg(SECT_ART[s.id],0,0,'sect-thumb'),
+      foot:'<button class="small primary" onclick="joinDark('+i+')">投身</button>'})).join('');
     openPanel('🏯 宗门','<p>修仙之人，或拜入名门正派，或投身魔道。你如今无门无派。</p><h4>☀️ 正道宗门</h4>'+secs+'<h4>🌑 魔道势力</h4>'+darks+'<p style="font-size:13px;color:#6f7a94">投身魔道者，心魔滋生更快，且为正道所不容。</p>');
     return;
   }
@@ -27,7 +31,9 @@ function panelSect(){
   if(!S.tasks)S.tasks=genTasks();
   if(!S.sectNpcs||S.sectNpcs.length===0)S.sectNpcs=genSectPeople(s);
   const tasks=S.tasks;
-  const thtml=tasks.map((t,i)=>'<div class="item-card"><div class="nm">'+t.name+' <span class="tag">'+t.cost+'日</span></div><div class="ds">'+t.desc+' · 奖励：贡献点 +'+t.point+'，贡献值 +'+t.val+(t.stones>0?'，灵石 +'+t.stones:'')+'</div><div style="margin-top:6px"><button class="small" onclick="doTask('+i+')">接取</button></div></div>').join('');
+  const thtml=tasks.map((t,i)=>qcardHtml({name:t.name,icon:'📜',quality:2,showQ:false,tags:'<span class="tag">'+t.cost+'日</span>',
+    sub:esc(t.desc)+' · 奖励：贡献点 +'+t.point+'，贡献值 +'+t.val+(t.stones>0?'，灵石 +'+t.stones:''),
+    desc:'',foot:'<button class="small primary" onclick="doTask('+i+')">接取</button>'})).join('');
   const peopleHtml=(S.sectNpcs||[]).map((p,i)=>{
     const btns='<button class="small" onclick="sectTalk('+i+')">交谈</button> <button class="small" onclick="sectAsk('+i+')">请教</button> <button class="small" onclick="sectGift('+i+')">赠礼</button>'+
       ((p.role==='长老'||p.role==='传功弟子')&&!S.master?' <button class="small primary" onclick="sectMaster('+i+')">拜师</button>':'')+
@@ -38,7 +44,7 @@ function panelSect(){
       '<div class="ds">'+esc(p.desc)+' · '+stageName(p.stage)+' · 好感 '+p.favor+'</div>'+
       '<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">'+btns+'</div></div>';
   }).join('');
-  const shopHtml=SECT_SHOP.map((m,i)=>'<div class="item-card"><div class="nm">'+esc(m.name)+' <span class="tag">'+(m.type==='mat'?'材料':'物品')+'</span>'+(m.quality!=null?'<span class="q'+m.quality+'" style="font-size:12px;margin-left:6px">'+QNAMES[m.quality]+'</span>':'')+'</div><div class="ds">'+(m.desc||'')+'</div><div style="margin-top:6px"><button class="small" onclick="sectExchange('+i+')">兑换 · '+m.cost+' 贡献值</button></div></div>').join('');
+  const shopHtml=SECT_SHOP.map((m,i)=>itemCardHtml(m,'<span class="tag">'+(m.type==='mat'?'材料':'物品')+'</span><button class="small primary" onclick="sectExchange('+i+')">兑换 · '+m.cost+' 贡献值</button>')).join('');
   openPanel((s.dark?'🌑 ':'🏯 ')+s.name+' · '+rank,
     artImg(SECT_ART[s.id],0,0,'sect-banner')+
     '<p>'+(s.dark?'魔道门规，以力为尊。':'宗门道统，薪火相传。')+'</p>'+
@@ -418,7 +424,10 @@ function sectEvent(){
     ]},
   ];
   const ev=pick(pool);
-  openEventModal('🏮 门中事宜','<p>'+ev.t+'</p>',ev.o.map(o=>({txt:o.txt,fn:()=>{o.fn();S.flag.sectEvents=(S.flag.sectEvents||0)+1;passTime(1);renderAll()}})));
+  const person=S.sectNpcs&&S.sectNpcs.length?S.sectNpcs[rand(0,S.sectNpcs.length-1)]:null;
+  const head=person?talkHead(person,person.title||person.role):'<div class="talk-head"><span class="talk-avatar">🏮</span><div class="talk-meta"><b>'+esc(S.sect.name)+'</b><small>门中事宜</small></div></div>';
+  talkModal('🏮 门中事宜',head,[{html:'<span style="color:#a99a72">'+esc(ev.t)+'</span>'}],
+    ev.o.map(o=>({txt:o.txt,fn:()=>{o.fn();S.flag.sectEvents=(S.flag.sectEvents||0)+1;passTime(1);renderAll()}})));
 }
 function sectMaster(i){
   const p=S.sectNpcs[i];
