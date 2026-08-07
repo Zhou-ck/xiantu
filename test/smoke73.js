@@ -16,7 +16,9 @@ vm.runInContext(`S.flag.auctionItem=null; S.flag.auctionYear=-1; getAuction(); S
 assert(vm.runInContext('window._eventModalOpts&&window._eventModalOpts.length>=3',ctx),'拍卖开启 3 轮竞拍弹窗');
 vm.runInContext(`
   for(let k=0;k<3;k++){ if(window._eventModalOpts&&window._eventModalOpts.length)resolveEventModal(0); }
-  window.__sold=S.flag.auctionSold; window.__got=S.items.some(x=>x.name===S.flag.auctionItem.name); window.__spent=99999-S.stones;
+  window.__sold=S.flag.auctionSold;
+  window.__got=(S.items.some(x=>x.name===S.flag.auctionItem.name))||(S.weapon&&S.weapon.name===S.flag.auctionItem.name)||(S.armor&&S.armor.name===S.flag.auctionItem.name)||(S.trinket&&S.trinket.name===S.flag.auctionItem.name);
+  window.__spent=99999-S.stones;
 `,ctx);
 assert(vm.runInContext('window.__sold&&window.__got&&window.__spent>=S.flag.auctionPrice',ctx),'三轮后以当前价成交并获得拍品');
 // T2 多块灵田：扩建加块、种植/成熟/收获
