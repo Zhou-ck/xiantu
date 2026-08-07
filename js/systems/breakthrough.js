@@ -191,7 +191,9 @@ function heartTrialStart(nxt,dc,kMod){
   if(S.bg.traits.some(t=>t.id==='dark'||t.id==='dark2'))mod+=1;
   if(attrVal(S,'wil')>=15)mod-=1; /* 8.3 道心圆融者，心魔有破绽 */
   const trial={round:0,wins:0,mod:mod};
-  log('<p>道门之前，一道与你一模一样的身影自识海深处升起——那是<b>你的心魔</b>。它持着与你相同的法器，周身流转着相同的五行灵光，只一双眼睛比你的更冷。</p>');
+  const heroArt=(typeof charArtKey==='function')?charArtKey(S):'';
+  log('<div class="heart-intro">'+(heroArt?'<img class="hi-img" src="'+heroArt+'" alt="" loading="lazy">':'<span class="hi-emoji">😈</span>')+
+    '<div class="hi-tx"><b>心魔 · 你自己的影子</b><small>持与你相同的法器，流转相同的五行灵光，只一双眼睛比你的更冷。</small></div></div>');
   log('<p class="sys">三回合试炼：正面硬撼（力量）/ 以巧破力（身法）/ 默诵道经（心性）。胜场越多，突破越顺；三战全败将留【心魔烙印】并使突破判定 -2（失败重伤，不致死）。</p>');
   if(mod>0)log('<p class="danger">你杀孽/业力/情债缠身，心魔格外狰狞（试炼难度 +'+mod+'）。</p>');
   if(mod<0)log('<p class="good">你功德在身，心魔露出一线破绽（试炼难度 -1）。</p>');

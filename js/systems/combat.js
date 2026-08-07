@@ -540,7 +540,13 @@ function bossBattle(stage){
   const beat=S.flag.bosses;
   scene('守关试炼 · '+e.name);
   const weakElems=e.elem&&e.elem!=='dark'?Object.keys(ELEMS).filter(x=>ELEMS[x]&&ELEMS[x].beats===e.elem).map(x=>elemInfo(x).i+elemInfo(x).n):[];
-  log('<p>'+(beat[stage]?'你再度来到守关之地，守关大妖一声低吼，旧账新算。':'天地之间荡开一圈涟漪，守关大妖 <b>'+esc(e.name)+'</b> 拦在去路上。')+'</p><p class="sys">'+e.desc+'（'+STAGE_NAMES[stage]+'守关 · 重伤后狂暴）'+(weakElems.length?'<br>🔮 破绽窥探：此妖属 '+elemInfo(e.elem).i+elemInfo(e.elem).n+'，以 <b>'+weakElems.join('/')+'</b> 法器应之，事半功倍。':'')+'</p>');
+  const introTxt=beat[stage]?'你再度来到守关之地，守关大妖一声低吼，旧账新算。':'天地之间荡开一圈涟漪，守关大妖 <b>'+esc(e.name)+'</b> 拦在去路上。';
+  const bArt=(typeof ENEMY_ART!=='undefined'&&ENEMY_ART[e.name])||'';
+  const weakChips=weakElems.map(x=>'<span class="boss-weak">'+x+'</span>').join('');
+  log('<div class="boss-intro">'+(bArt?'<img class="bi-img" src="'+bArt+'" alt="" loading="lazy">':'<span class="bi-emoji">🐲</span>')+
+    '<div class="bi-tx"><b>守关大妖 · '+esc(e.name)+'</b><small>'+esc(e.desc)+' · 属 '+elemInfo(e.elem).n+' · '+STAGE_NAMES[stage]+'守关 · 重伤后狂暴</small>'+
+    (weakChips?'<div class="bi-chips">🔮 破绽窥探：'+weakChips+'</div>':'')+
+    '<small class="bi-note">'+introTxt+'</small></div></div>');
   logChoices([
     {txt:'⚔️ 挑战守关',cls:'primary',fn:()=>{
       startCombat(e,res=>{

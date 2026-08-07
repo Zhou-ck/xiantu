@@ -25,11 +25,11 @@ assert(css.indexOf('#sceneLayer{display:none!important}')>=0,'触屏媒体查询
 assert(css.indexOf('html.fx-touch #sceneLayer{display:none!important}')>=0,'fx-touch 兜底：场景层不渲染');
 // T2 导航图加载成功后才淡入（暗底先呈现，杜绝暖图突现）
 assert(css.indexOf('.page-hero-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .45s ease')>=0,'页横幅图默认透明 + 淡入过渡');
-assert(css.indexOf('.page-hero-img.ld{opacity:.55}')>=0,'页横幅图加载后淡入到 .55');
+assert(css.indexOf('.page-hero-img.ld{opacity:.68}')>=0,'页横幅图加载后淡入到 .68');
 assert(css.indexOf('.mod-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .4s ease}')>=0,'模块图默认透明 + 淡入过渡');
 assert(css.indexOf('.mod-img.ld{opacity:.9}')>=0,'模块图加载后淡入到 .9');
 // T3 触屏压暗 + 深色面纱 + 关金箔流光 + 突破金环低亮
-assert(css.indexOf('html.fx-touch .mod-img{filter:saturate(.78) brightness(.6)}')>=0,'fx-touch 模块图压暗');
+assert(css.indexOf('html.fx-touch .mod-img{filter:saturate(.82) brightness(.84)}')>=0,'fx-touch 模块图轻度压暗（亮化）');
 assert(css.indexOf('html.fx-touch .mod-imgwrap::after')>=0,'fx-touch 模块图深色面纱');
 assert(css.indexOf('html.fx-touch .page-hero::after')>=0,'fx-touch 横幅深色面纱');
 assert(css.indexOf('html.fx-touch .bar>i::after{display:none!important}')>=0,'fx-touch 关闭进度条金箔流光');

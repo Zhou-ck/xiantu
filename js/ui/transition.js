@@ -44,6 +44,8 @@ const T={
       if(after){try{after()}catch(e){}}
     };
     if(!fxOn()){swap();return}
+    /* v81 触屏切屏不再走全屏墨晕卷帘，避免 GPU 整层合成闪黄 */
+    if(typeof fxMobile==='function'&&fxMobile()){swap();return}
     const veil=T._veil();
     if(!veil){swap();return}
     veil.classList.add('veil-in');
