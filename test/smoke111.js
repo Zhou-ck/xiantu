@@ -32,7 +32,7 @@ assert(css.indexOf('radial-gradient(ellipse at 50% -10%,#454f7d 0%,#222842 48%,#
 
 // T2 版本同步
 const sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
-assert(vm.runInContext('GAME_VERSION',ctx)==='87','版本号 v87');
+assert(vm.runInContext('GAME_VERSION',ctx)==='88','版本号 v88');
 assert(sw.indexOf('xiantu2-v'+vm.runInContext('GAME_VERSION',ctx))>=0,'SW 缓存名与版本号同步');
 
 console.log(fails===0?'smoke111: ALL PASS':'smoke111 FAILS: '+fails);

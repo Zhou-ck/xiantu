@@ -999,6 +999,17 @@ html.fx-touch #panelBox,html.fx-touch #cultBox,html.fx-touch #battleBox,html.fx-
 .diag-row .diag-mark{font-size:14px;flex:0 0 auto}
 .diag-row b{font-size:12.5px;font-weight:normal;color:var(--gold2);flex:0 0 auto}
 .diag-row small{font-size:11px;color:#8f9cb8;margin-left:auto;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* ---------- v88 明亮模式（用户可控亮度，纯色阶、无滤镜不闪屏） ---------- */
+html.xt-bright body{background:radial-gradient(ellipse at 50% -10%,#4e5989 0%,#2a3050 48%,#161b30 100%)}
+html.xt-bright #story{background:radial-gradient(ellipse at 50% -20%,rgba(150,170,230,.5),transparent 60%),linear-gradient(180deg,rgba(34,42,66,.2),rgba(32,40,62,.68)),repeating-linear-gradient(0deg,rgba(201,162,75,.06) 0 1px,transparent 1px 26px)}
+html.xt-bright header{background:linear-gradient(180deg,#2d3454,#202640)}
+html.xt-bright #side{background:linear-gradient(180deg,rgba(48,56,86,.97),rgba(34,40,62,.97))}
+html.xt-bright #actions,html.xt-bright #inputrow,html.xt-bright #tabbar{background:linear-gradient(180deg,#2a3050,#20263e)}
+html.xt-bright #panelBox,html.xt-bright #guideBox{background:linear-gradient(180deg,#333a5e,#242a44)}
+html.xt-bright #battleBox,html.xt-bright #cultBox{background:linear-gradient(180deg,#333a5e,#232842)}
+html.xt-bright button{background:linear-gradient(180deg,#3c4570,#2d3454)}
+html.xt-bright .item-card,html.xt-bright .mod-card,html.xt-bright .loc-card,html.xt-bright .quest-row,html.xt-bright .farm-plot,html.xt-bright .pet-card,html.xt-bright .prep-row,html.xt-bright .tab-act,html.xt-bright .qcard{background:linear-gradient(180deg,#2e3556,#242a44)}
+html.xt-bright .talk-head,html.xt-bright .cast-cell,html.xt-bright .exp-banner,html.xt-bright .stat-cell{background:linear-gradient(180deg,#333a5e,#272d48)}
 /* 强敌登场卡：守关大妖 */
 .boss-intro{display:flex;align-items:center;gap:12px;margin:10px 0 8px;padding:12px 13px;background:linear-gradient(180deg,#262c46,#1a1f33);border:1px solid rgba(232,200,106,.5);border-radius:12px;box-shadow:0 0 18px rgba(232,200,106,.14)}
 .boss-intro .bi-img{width:58px;height:58px;border-radius:10px;object-fit:cover;border:1px solid rgba(232,200,106,.45);flex:0 0 auto}

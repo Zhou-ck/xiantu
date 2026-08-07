@@ -190,6 +190,7 @@ function doRoll(stat,dc,extra){
 
 function renderAll(){
   const s=S;
+  try{const b=!!(s&&s.set&&s.set.bright);document.documentElement.classList.toggle('xt-bright',b)}catch(e){}
   if(S.maxHp!==calcMaxHp(S)){S.maxHp=calcMaxHp(S);if(S.hp>S.maxHp)S.hp=S.maxHp}
   const nxt=s.realm+1;
   const nextReq=nxt<THRESHOLDS.length?THRESHOLDS[nxt]:null;

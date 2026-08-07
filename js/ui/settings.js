@@ -11,6 +11,8 @@ function panelSettings(){
   const aiOn=aiEnabled();
   openPanel('⚙️ 设置',
     '<h4>🎬 特效强度</h4><div class="row">'+btn(fx,'high','高（全开）')+btn(fx,'med','中（默认）')+btn(fx,'low','低（仅文字）')+'</div>'+
+    '<h4>☀️ 显示亮度</h4><div class="row"><button class="small'+(s.bright?' primary':'')+'" onclick="setOpt(\'bright\')">明亮模式：'+(s.bright?'开':'关')+'</button></div>'+
+    '<p style="font-size:12px;color:#6f7a94">默认已整体提亮；仍觉偏暗可开启「明亮模式」，底色再亮一档（纯色阶调整，无滤镜、不闪屏）。</p>'+
     '<h4>🧊 3D 形象（预留）</h4><div class="row"><button class="small'+(s.model3d?' primary':'')+'" onclick="setOpt(\'model3d\')">3D 角色卡：'+(s.model3d?'开（插槽预览）':'关（默认立绘）')+'</button></div>'+
     '<p style="font-size:12px;color:#6f7a94">开启后角色卡以 3D 插槽占位渲染，为未来 3D 角色模型引擎预留接入点；默认关闭，完全不影响当前立绘。</p>'+
     '<h4>🤖 微操小游戏</h4>'+
@@ -89,6 +91,7 @@ function setOpt(k){
   else if(k==='audio')S.set.audio=S.set.audio===false?true:false;
   else if(k==='shake')S.set.shake=S.set.shake===false?true:false;
   else if(k==='model3d')S.set.model3d=!S.set.model3d;
+  else if(k==='bright'){S.set.bright=!S.set.bright;try{document.documentElement.classList.toggle('xt-bright',!!S.set.bright)}catch(e){}}
   save();panelSettings();
 }
 function aiSaveForm(){

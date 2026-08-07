@@ -37,7 +37,7 @@ assert(css.indexOf('.bt-realm-up')>=0&&css.indexOf('.realm-jump')>=0&&css.indexO
 
 // T3 版本同步
 const sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
-assert(vm.runInContext('GAME_VERSION',ctx)==='87','版本号 v87');
+assert(vm.runInContext('GAME_VERSION',ctx)==='88','版本号 v88');
 assert(sw.indexOf('xiantu2-v'+vm.runInContext('GAME_VERSION',ctx))>=0,'SW 缓存名与版本号同步');
 
 console.log(fails===0?'smoke97: ALL PASS':'smoke97 FAILS: '+fails);
