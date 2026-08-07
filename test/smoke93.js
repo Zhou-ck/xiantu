@@ -31,7 +31,7 @@ const det=vm.runInContext('window.__det',ctx);
 assert(det.indexOf('map-detail-thumb')>=0&&det.indexOf('tide.jpg')>=0,'选点详情卡带场景缩略图');
 
 // T2 道侣闲谈聊天式
-vm.runInContext(`{ S.daoPartner={name:'苏婉',role:'采药女',gender:'女',favor:80,affinity:80,stage:2,hp:30,atk:6,cd:{}}; S.days=10; PENDING=0; daoChat(); window.__dh=document.getElementById('panelBody')._html; window.__opts=window._eventModalOpts.length; window.__t=document.getElementById('panelTitle')._txt; }`,ctx);
+vm.runInContext(`{ S.daoPartner={name:'苏婉',role:'采药女',gender:'女',favor:80,affinity:80,stage:2,hp:30,atk:6,cd:{}}; S.days=10; PENDING=0; window.__ch=chance; chance=function(){return false}; daoChat(); chance=window.__ch; window.__dh=document.getElementById('panelBody')._html; window.__opts=window._eventModalOpts.length; window.__t=document.getElementById('panelTitle')._txt; }`,ctx);
 const dh=vm.runInContext('window.__dh',ctx);
 assert(dh.indexOf('talk-wrap')>=0&&dh.indexOf('talk-avatar')>=0&&dh.indexOf('苏婉')>=0,'道侣闲谈为聊天式对话（头像+气泡）');
 assert(vm.runInContext('window.__opts>=4&&window.__t.indexOf("闲谈")>=0',ctx),'道侣闲谈保留多话题选项与标题');
@@ -48,7 +48,7 @@ assert(vm.runInContext('window.__ch',ctx).indexOf('craft-stage')>=0,'炼器微�
 
 // T5 版本同步
 const sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
-assert(vm.runInContext('GAME_VERSION',ctx)==='67','版本号 v67');
+assert(vm.runInContext('GAME_VERSION',ctx)==='68','版本号 v68');
 assert(sw.indexOf('xiantu2-v'+vm.runInContext('GAME_VERSION',ctx))>=0,'SW 缓存名与版本号同步');
 
 console.log(fails===0?'smoke93: ALL PASS':'smoke93 FAILS: '+fails);

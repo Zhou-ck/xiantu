@@ -61,7 +61,7 @@ assert(html.indexOf('panel-seal')>=0,'面板标题带印章');
 
 // T5 版本同步
 const sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
-assert(vm.runInContext('GAME_VERSION',ctx)==='67','版本号 v67');
+assert(vm.runInContext('GAME_VERSION',ctx)==='68','版本号 v68');
 assert(sw.indexOf('xiantu2-v'+vm.runInContext('GAME_VERSION',ctx))>=0,'SW 缓存名与版本号同步');
 
 console.log(fails===0?'smoke91: ALL PASS':'smoke91 FAILS: '+fails);

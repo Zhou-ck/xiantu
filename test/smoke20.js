@@ -39,7 +39,7 @@ assert(vm.runInContext('window.__nn&&window.__fav2>90',ctx),'纪念日可获得�
 vm.runInContext(`{ S=newState('测',BACKGROUNDS[0]); S.daoPartner={name:'苏婉',role:'采药女',gender:'女',favor:50,affinity:50,stage:2}; window.__m1=dualCultMult(S.daoPartner); S.daoPartner.married=true; window.__m2=dualCultMult(S.daoPartner); S.daoPartner.affinity=100; window.__m3=dualCultMult(S.daoPartner); }`,ctx);
 assert(vm.runInContext('window.__m2>window.__m1&&window.__m3>window.__m2',ctx),'结缡后双修增益提升，心动越高增益越高');
 // 7) 聊天：多选项弹窗，情话判定不崩溃
-vm.runInContext(`{ S=newState('测',BACKGROUNDS[0]); S.daoPartner={name:'苏婉',role:'采药女',gender:'女',favor:80,affinity:80,stage:2,hp:30,atk:6,cd:{}}; S.days=10; PENDING=0; daoChat(); window.__opts3=window._eventModalOpts.length; window.__t=document.getElementById('panelTitle')._txt; }`,ctx);
+vm.runInContext(`{ S=newState('测',BACKGROUNDS[0]); S.daoPartner={name:'苏婉',role:'采药女',gender:'女',favor:80,affinity:80,stage:2,hp:30,atk:6,cd:{}}; S.days=10; PENDING=0; window.__ch=chance; chance=function(){return false}; daoChat(); chance=window.__ch; window.__opts3=window._eventModalOpts.length; window.__t=document.getElementById('panelTitle')._txt; }`,ctx);
 assert(vm.runInContext('window.__opts3>=4&&window.__t.indexOf("闲谈")>=0',ctx),'聊天弹窗提供多个话题');
 vm.runInContext(`{ window._eventModalOpts[0].fn(); window.__fav3=S.daoPartner.favor; window.__pend=PENDING; }`,ctx);
 assert(vm.runInContext('window.__pend===0&&window.__fav3>=80',ctx),'聊天选择后正常结算');

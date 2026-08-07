@@ -286,7 +286,13 @@ function daoDate(){
   if((p.cd.date||0)>0){log('<p class="sys">'+p.name+'挽着你的手臂：「才同游过不久，先歇歇罢。」</p>');passTime(1);renderAll();return}
   const opts=DATE_SPOTS.filter(s=>((p.favor||0)>=s.need)).map(s=>({txt:s.i+' '+s.n+'（'+s.d+'）',fn:()=>dateResolve(s.id)}));
   opts.push({txt:'🚶 改日再约',fn:()=>{log('<p>你想想还是作罢了。</p>');passTime(1);renderAll()}});
-  openEventModal('🏞️ 与道侣约会','<p>你斟酌着开口：「'+p.name+'，今日得闲，想不想……出去走走？」</p><p class="sys">'+p.name+'眼睛一亮，笑盈盈地应了。</p>',opts);
+  talkModal('🏞️ 与道侣约会',
+    talkHead(p,p.role),
+    [
+      {html:'你斟酌着开口：「'+esc(p.name)+'，今日得闲，想不想……出去走走？」'},
+      {html:esc(p.name+'眼睛一亮，笑盈盈地应了。'),typing:true,id:'talkLine0'},
+    ],
+    opts);
 }
 function dateResolve(id){
   const p=S.daoPartner;
@@ -792,5 +798,8 @@ function partnerEvent(){
     ]},
   ];
   const e=pick(evs);
-  openEventModal('💞 道侣之事','<p>'+e.t+'</p>',e.opts);
+  talkModal('💞 道侣之事',
+    talkHead(p,p.role+(p.gender==='女'?' · ♀':' · ♂')),
+    [{html:'<span style="color:#a99a72">'+esc(e.t)+'</span>'}],
+    e.opts);
 }

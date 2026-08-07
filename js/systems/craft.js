@@ -75,19 +75,26 @@ function craftLvBonus(){const l=S.profLevel||1;let b=Math.floor((l-1));if(l>=5)b
 function recipeKnown(r){return !!r&&(S.profLevel||1)>=((r.lv||1))&&(!r.research||(S.flag&&S.flag.researchDone&&S.flag.researchDone[r.name]))}
 function panelCraft(){
   if(!S.prof){
-    const learn='<p>副职业需拜师学艺，或于坊市购得传承玉简（800 灵石）。</p><div class="row">'+
-      Object.keys(PROF_NAMES).map((k,i)=>'<button onclick="learnProf(\''+k+'\')">学'+PROF_NAMES[k]+'（800灵石）</button>').join('')+'</div>';
+    const learn='<p>副职业需拜师学艺，或于坊市购得传承玉简（800 灵石）。</p>'+
+      Object.keys(PROF_NAMES).map(k=>{
+        const desc={alchemy:'成丹 12% 概率双份',forge:'品质保底上限 +1（最差不坠凡品）',talisman:'失败返还 60% 材料',array:'布阵成功 15% 概率顿悟'}[k]||'';
+        return qcardHtml({name:PROF_NAMES[k],icon:PROF_ICON[k],quality:2,showQ:false,tags:'',sub:desc,
+          desc:'习得后可开炉炼制，判定随造诣提升；灵石 800 可学。',
+          foot:'<button class="small primary" onclick="learnProf(\''+k+'\')">拜师学艺 · 800 灵石</button>'});
+      }).join('');
     openPanel('🔧 副业',learn);return;
   }
   const list=RECIPES[S.prof].map((r,i)=>{
     const known=recipeKnown(r);
     const need=Object.entries(r.need).map(([k,v])=>MAT_NAMES[k]+'×'+v+matSourceHint(k)).join('，')||'无';
-    return '<div class="item-card'+(known?'':' locked')+'"><div class="nm">'+r.name+' <span class="q'+r.q+'">'+QNAMES[r.q]+'</span>'+(known?'':' <span class="tag" style="color:#e08a8a">造诣'+(r.lv||1)+'阶</span>')+'</div><div class="ds">'+r.desc+'<br>所需：'+need+' · '+r.cost+' 灵石 · 成功率与智慧、造诣相关</div>'+
-      (known?'<div style="margin-top:6px"><button class="small" onclick="craft('+i+')">炼制</button></div>':'<p style="font-size:11.5px;color:#e08a8a;margin-top:4px">未掌握：将造诣提升至 '+(r.lv||1)+' 阶后解锁</p>')+'</div>';
+    return qcardHtml({name:r.name,icon:PROF_ICON[S.prof],quality:r.q,tags:(known?'':' <span class="tag" style="color:#e08a8a">造诣'+(r.lv||1)+'阶</span>'),
+      sub:esc(r.desc)+'<br>所需：'+need+' · '+r.cost+' 灵石 · 成功率与智慧、造诣相关',
+      desc:'',showQ:false,
+      foot:(known?'<button class="small primary" onclick="craft('+i+')">炼制</button>':'<p style="font-size:11.5px;color:#e08a8a;margin:0">未掌握：将造诣提升至 '+(r.lv||1)+' 阶后解锁</p>')});
   }).join('');
   const eqHtml=[['weapon','法器',S.weapon],['armor','防具',S.armor],['trinket','佩饰',S.trinket]]
     .filter(([, ,it])=>it)
-    .map(([k,nm,it])=>'<div class="item-card"><div class="nm">'+esc(it.name)+' <span class="tag">'+nm+'</span>'+(it.strengthen?' <span class="tag">强化+'+it.strengthen+'</span>':'')+'</div><div class="ds">当前加成：+'+(it.bonus||0)+' · 强化需 灵石150 + 铁矿石×1（智慧判定，失败不降级）</div><div style="margin-top:6px"><button class="small" onclick="forgeStrengthen(\''+k+'\')">⚒️ 强化</button></div></div>').join('');
+    .map(([k,nm,it])=>itemCardHtml(it,'<span class="tag">'+nm+'</span>'+(it.strengthen?' <span class="tag">强化+'+it.strengthen+'</span>':'')+'<button class="small" onclick="forgeStrengthen(\''+k+'\')">⚒️ 强化</button>')).join('');
   const bondHtml='<h4>🔮 本命法宝</h4>'+(S.bond?'<div class="item-card"><div class="nm">'+esc(S.bond.name)+' <span class="tag">Lv.'+S.bond.level+'</span></div><div class="ds">与你的'+elemInfo(S.bond.elem).n+'同根同源 · 战斗攻势 +'+(1+S.bond.level)+'（每破一大境界 +1）</div></div>':(S.realm>=13?'<div class="row"><button class="small primary" onclick="refineBondWeapon()">祭炼本命法宝（妖丹×1 + 寒玉×1 + 500灵）</button></div>':'<p style="color:#6f7a94">金丹期方可祭炼本命法宝。</p>'));
   const ec=elemCraftBonus(S.prof);
   openPanel(PROF_ICON[S.prof]+' '+PROF_NAMES[S.prof]+'（'+S.profLevel+'阶）','<p>⭐ 造诣：'+(S.profLevel*100+S.profExp)+' 经验 · 距下一阶还需 '+(100-S.profExp)+' · 判定加成 +'+craftLvBonus()+(ec?' · <span class="tag" style="color:#8fd0a0">灵根加成 +'+Math.round(ec*100)+'%</span>':'')+'</p>'+

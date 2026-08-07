@@ -781,3 +781,10 @@ html.fx-low .talk-bubble,html.fx-low .talk-avatar{animation:none!important}
 }
 html.fx-low .craft-fire{animation:none!important;opacity:.85}
 html.fx-low .loc-img{transition:none!important}
+
+/* ---------- v68 秘境卡 / 副业卡 / 触屏压暗地点图 ---------- */
+.loc-thumb2{width:100%;max-height:120px;object-fit:cover;border-radius:8px;border:1px solid rgba(201,162,75,.25);margin-bottom:2px}
+@media (pointer:coarse),(hover:none){
+  .loc-img{filter:saturate(.8) brightness(.72)}
+}
+html.fx-touch .loc-img{filter:saturate(.8) brightness(.72)}

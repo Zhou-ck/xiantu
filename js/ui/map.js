@@ -148,12 +148,15 @@ function travelTo(id){
 function panelDungeonList(){
   if(!S){toast('尚未踏入仙途');return}
   if(S.realm<2){toast('炼气三层后开启秘境之门');return}
+  const DUNGEON_THUMB={cave:'assets/scenes/dungeon.jpg',ruin:'assets/scenes/warcry.jpg',nest:'assets/scenes/beast.jpg',sword:'assets/scenes/swordtomb.jpg',dream:'assets/scenes/faceless.jpg',ice:'assets/scenes/tide.jpg'};
   const rows=Object.keys(DUNGEONS).map(k=>{
     const d=DUNGEONS[k];
     const done=!!(S.flag.dungeonDone&&S.flag.dungeonDone[k]);
-    return '<div class="item-card"><div class="nm">🏛️ '+esc(d.name)+(done?' <span class="tag" style="color:#8fd0a0">已通关</span>':'')+'</div>'+
-      '<div class="ds">共 '+d.rooms.length+' 重险关，选择决定收获'+(done?'（可再探刷取机缘）':'')+'</div>'+
-      '<div style="margin-top:8px"><button class="small primary" onclick="enterDungeon(\''+k+'\')">进入秘境</button></div></div>';
+    const thumb=DUNGEON_THUMB[k]||'';
+    return qcardHtml({name:d.name,icon:'🏛️',quality:done?2:3,tags:(done?'<span class="tag" style="color:#8fd0a0">已通关</span>':'<span class="tag">秘境</span>'),
+      sub:'共 '+(d.rooms?d.rooms.length:0)+' 重险关 · 选择决定收获'+(done?'（可再探刷取机缘）':''),
+      desc:(thumb?'<img class="loc-img loc-thumb2 ld" src="'+thumb+'" alt="" loading="lazy">':''),
+      foot:'<button class="small primary" onclick="enterDungeon(\''+k+'\')">进入秘境</button>'});
   }).join('');
   openPanel('🏛️ 秘境之门','<p>剑冢、洞府、遗迹、巢穴、残梦、寒渊——秘境之门随时辰轮转，各有因果。</p>'+rows+'<p style="font-size:12px;color:#6f7a94">部分秘境亦会由信物与奇遇开启，此门只是其一。</p>');
 }
