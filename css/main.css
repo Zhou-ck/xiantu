@@ -438,6 +438,8 @@ header .spacer{flex:1}
 .mod-card.locked .mod-imgwrap{filter:grayscale(.8) brightness(.7)}
 .mod-card.locked .mod-tx b{color:#8f9cb8}
 .mod-lock{position:absolute;top:6px;right:6px;z-index:2;font-size:15px;filter:drop-shadow(0 0 4px rgba(0,0,0,.8))}
+.scn-btn{display:inline-flex;align-items:center;gap:4px}
+.scn-thumb{width:30px;height:20px;object-fit:cover;border-radius:4px;border:1px solid rgba(201,162,75,.35)}
 @keyframes modIn{0%{opacity:0;transform:translateY(8px)}100%{opacity:1;transform:none}}
 @media(hover:hover){.mod-card:hover{transform:translateY(-2px);border-color:rgba(232,200,106,.5)}}
 html.fx-low .mod-card{animation:none!important}

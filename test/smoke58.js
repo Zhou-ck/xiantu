@@ -24,7 +24,7 @@ let fails=0;function assert(c,m){if(!c){fails++;console.log('FAIL:',m)}else cons
 // T1 支线数据完整性
 vm.runInContext(`window.__cov=questCoverage();`,ctx);
 const cov=vm.runInContext('window.__cov',ctx);
-assert(cov.sideQuests===10&&cov.sideSteps>=28,'支线 10 条、≥28 步');
+assert(cov.sideQuests===12&&cov.sideSteps>=32,'支线 12 条、≥32 步');
 assert(cov.mainChapters===11&&cov.mainSteps>=36,'主线 11 章（第零至第十章）、≥36 步');
 
 // T2 触发条件未满足 → 不开启

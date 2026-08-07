@@ -183,7 +183,7 @@ function cultMethodSceneHtml(){
   }).join('');
   const scnBtns=CULT_SCENES.map(sc=>{
     const locked=S.realm<sc.need;
-    return '<button class="small'+(scnId===sc.id?' primary':'')+(locked?' locked':'')+'" onclick="setCultScene(\''+sc.id+'\')">'+sc.i+' '+sc.n+(locked?' 🔒':'')+'</button>';
+    return '<button class="small scn-btn'+(scnId===sc.id?' primary':'')+(locked?' locked':'')+'" onclick="setCultScene(\''+sc.id+'\')"><img class="scn-thumb" src="assets/scenes/cult_'+sc.id+'.jpg" loading="lazy" alt="" onerror="this.style.display=\'none\'">'+sc.i+' '+sc.n+(locked?' 🔒':'')+'</button>';
   }).join('');
   const mth=cultMethod(mthId),scn=cultScene(scnId);
   return cultDaoImpHtml()+

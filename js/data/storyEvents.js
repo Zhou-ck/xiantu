@@ -71,6 +71,19 @@ const STORY_EVENTS=[
   {id:'st_danger_10',cat:'danger',weight:2,title:'鬼打墙',t:'你在原地转了三圈，回到同一棵歪脖子树下——是鬼打墙。',opts:[{txt:'🔦 破咒而行',cls:'danger',fx:{fight:{name:'迷障鬼影',atk:7,def:2,hp:35,elem:'dark',style:'guard'},winFx:{merit:2}}},{txt:'🧘 席地静坐等天亮',fx:{hp:-10}}]},
   {id:'st_danger_11',cat:'danger',weight:2,title:'凶兽巢穴',t:'你误入凶兽巢穴，兽吼如雷，腥风扑面。',opts:[{txt:'🐾 迎战巢穴之主',cls:'danger',fx:{fight:{name:'巢穴凶兽',atk:10,def:4,hp:50,elem:'wood',style:'burst'},winFx:{mat:{demonCore:1}}}},{txt:'🏃 夺路而逃',fx:{hp:-15}}]},
   {id:'st_danger_12',cat:'danger',weight:2,title:'落石',t:'山壁上碎石如雨，一路滚落，砸得草木俱断。',opts:[{txt:'🏃 闪避穿行',cls:'danger',fx:{fight:{name:'落石雨',atk:7,def:1,hp:32,elem:'earth',style:'rapid'},winFx:{mat:{iron:1}}}},{txt:'🛡️ 抱头缩于岩后',fx:{hp:-12}}]},
+  /* —— v55 扩充（12 条）—— */
+  {id:'st_v55_1',cat:'calm',weight:2,title:'山雾聚散',t:'行至山腰，浓雾忽至又忽散，雾中隐有樵歌，歌声一起雾便淡了三分。',opts:[{txt:'🎵 循歌而行',cls:'primary',fx:{mood:4,cult:50}},{txt:'🧘 雾中静立，观聚散',fx:{cult:70}}]},
+  {id:'st_v55_2',cat:'calm',weight:2,title:'老茶棚',t:'山道旁一个草棚茶摊，老板是个瞎眼老人，茶却泡得极好。',opts:[{txt:'🫖 付三文钱喝茶',cls:'primary',fx:{merit:1,mood:3}},{txt:'🤫 放下茶钱，悄然离去',fx:{merit:2}}]},
+  {id:'st_v55_3',cat:'calm',weight:2,title:'枯荷听雨',t:'一方枯荷塘，雨打残荷，声声入耳。你忽然想起一句旧诗。',opts:[{txt:'📜 默念全诗',cls:'primary',fx:{insight:1,once:'st_v55_3'}},{txt:'🌧️ 静听一场雨',fx:{mood:5,cult:40}}]},
+  {id:'st_v55_4',cat:'calm',weight:2,title:'星垂平野',t:'夜宿旷野，四野无声，星河低得仿佛伸手可触。',opts:[{txt:'✨ 观星一夜',cls:'primary',fx:{cult:90}},{txt:'🌠 向流星许一个愿',fx:{luck:1,once:'st_v55_4'}}]},
+  {id:'st_v55_5',cat:'herb',weight:2,title:'千年茯苓',t:'老松根下一块茯苓大如人头，药香沉沉，怕有千年火候。',opts:[{txt:'⛏️ 小心掘取',cls:'primary',fx:{mat:{sherb:2}}},{txt:'🙏 留它继续长',fx:{merit:2,mat:{herb:1}}}]},
+  {id:'st_v55_6',cat:'herb',weight:2,title:'药泉',t:'石缝中涌出一泉，泉边草木格外葱茏，泉水带淡淡药香。',opts:[{txt:'🫙 盛满一瓶',cls:'primary',fx:{mat:{herb:2},cult:40}},{txt:'💧 取水浇灌药圃',fx:{merit:1,mat:{herb:1}}}]},
+  {id:'st_v55_7',cat:'herb',weight:2,title:'云母',t:'断崖云气缭绕处，一片云母石晶莹剔透，隐隐有灵光流转。',opts:[{txt:'💎 凿下一片',cls:'primary',fx:{mat:{jade:1}}},{txt:'📿 记下此地，留待有缘',fx:{insight:1,once:'st_v55_7'}}]},
+  {id:'st_v55_8',cat:'rare',weight:2,title:'古碑残文',t:'乱草丛中一方古碑，碑文大半磨灭，仅存八字：「道不可见，见者非道」。',opts:[{txt:'🧘 盘坐悟碑',cls:'primary',fx:{insight:1,once:'st_v55_8'}},{txt:'📝 拓下残文',fx:{cult:60}}]},
+  {id:'st_v55_9',cat:'rare',weight:2,title:'白猿献果',t:'一只白猿从树上跃下，将一枚朱果放在你脚边，叩首而去。',opts:[{txt:'🍒 收下朱果',cls:'primary',fx:{mat:{sherb:1},luck:1}},{txt:'🕊️ 还果，结个善缘',fx:{merit:3}}]},
+  {id:'st_v55_10',cat:'epic',weight:1,title:'灵光垂幕',t:'一道灵光自云隙垂下，如幕如瀑，正落在你身前丈许。',opts:[{txt:'✨ 承接入体',cls:'primary',fx:{root:2}},{txt:'🧘 观想其意',fx:{insight:1,cult:150}}]},
+  {id:'st_v55_11',cat:'danger',weight:2,title:'阴风过岗',t:'荒岗阴风骤起，风中有细碎的嚎哭声，一队黑影自雾中逼近。',opts:[{txt:'⚔️ 拔剑相迎',cls:'danger',fx:{fight:{name:'荒岗阴兵',atk:8,def:3,hp:42,elem:'dark',style:'guard'},winFx:{mat:{demonCore:1}}}},{txt:'🏃 贴地急遁',fx:{hp:-15}}]},
+  {id:'st_v55_12',cat:'danger',weight:2,title:'流沙陷阱',t:'脚下的沙地忽然下陷，流沙裹着碎石向你涌来！',opts:[{txt:'🌀 借力翻滚',cls:'danger',fx:{fight:{name:'流沙漩涡',atk:6,def:1,hp:36,elem:'earth',style:'rapid'},winFx:{stones:80}}},{txt:'🧗 抓住岩缝攀出',fx:{hp:-12}}]},
 ];
 /* v48 赛季主题：风 / 雷 / 火 / 水（每 3 游戏年轮换） */
 const THEMES=[

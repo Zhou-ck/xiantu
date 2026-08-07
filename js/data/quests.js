@@ -334,6 +334,30 @@ const SIDE_QUESTS=[
      ]},
    ],
    reward:{stones:200,title:'卧底'}},
+  {id:'sq_vine',icon:'🌉',title:'幽谷藤桥',area:'valley',summary:'一座将断的藤桥，一段过桥人的承诺。',
+   start:{visits:['valley',2]},
+   steps:[
+     {type:'story',title:'藤桥将断',lines:['幽谷藤桥年久失修，桥身只剩几股老藤。一个背柴的樵夫在桥头踌躇：「过了桥，就是我家。」','你自告奋勇：「我替你过去。」'],opts:[
+       {txt:'🪢 加固藤桥，扶樵夫过桥',cls:'primary',fx:{merit:2}},
+     ]},
+     {type:'kill',param:2,hint:'桥下溪涧有妖兽出没——击败 2 名妖兽，护住这段山路。',go:'map'},
+     {type:'story',title:'灵藤之种',lines:['樵夫千恩万谢，从怀里掏出一枚青翠的藤种：「这是我家祖传的灵藤种，种在洞府，年年可收灵藤。」','你接过种子，仿佛握住了山野的一缕生机。'],opts:[
+       {txt:'🌱 郑重收下',cls:'primary',fx:{mat:{sherb:1},insight:1,once:'sq_vine'}},
+     ]},
+   ],
+   reward:{stones:150}},
+  {id:'sq_crane',icon:'🕊️',title:'灵鹤衔书',area:'cliff',summary:'断魂崖上，一只灵鹤衔来半卷残书。',
+   start:{visits:['cliff',2]},
+   steps:[
+     {type:'story',title:'鹤来',lines:['断魂崖雾气未散，一只丹顶灵鹤落在你肩头，衔着一卷残书，书角焦黑。','鹤鸣一声，像是催促。'],opts:[
+       {txt:'📜 接下残书',cls:'primary',fx:{insight:1}},
+     ]},
+     {type:'collectMat',param:'sherb',need:2,hint:'残书记着一种药引——集齐 2 株灵草，助鹤疗伤。',go:'map'},
+     {type:'story',title:'丹方线索',lines:['你将灵草碾碎喂给灵鹤，它振翅而起，在你头顶盘旋三匝。','残书尾页竟亮出一行小字：「青焰丹，需灵鹤羽为引。」——一条丹方线索，就此入怀。'],opts:[
+       {txt:'🪶 收好丹方线索',cls:'primary',fx:{mat:{jade:1},insight:1,once:'sq_crane'}},
+     ]},
+   ],
+   reward:{stones:300}},
 ];
 /* 主线/支线对账：校验用（章节步骤数 / 支线步骤数） */
 function questCoverage(){
