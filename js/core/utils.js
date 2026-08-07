@@ -63,9 +63,27 @@ function artImg(key,w,h,cls){
 }
 /* ================= v65 卡面化：物品 / 功法统一卡片 ================= */
 const ITEM_ICONS={consumable:'💊',weapon:'⚔️',armor:'🛡️',trinket:'📿',mat:'🌿',gem:'💎',craft:'⚗️',collect:'📜',egg:'🥚',item:'📦'};
+/* v66 物品专属图标：常见物品按名细化，未命中回退到类型/五行图标 */
+const ITEM_EMOJI={
+  '回春丹':'🌿','聚灵丹':'💊','清心丹':'🪷','安神香':'🕯️','回溯符':'⏳','保命符':'🛡️','替身傀儡':'🎎',
+  '破境丹':'⚡','洗髓丹':'🦴','延寿丹':'🕰️','筑基丹':'🔷','锻体丹':'💪','轻身丹':'🌬️','通慧丹':'🧠',
+  '疗伤丹':'🩹','安神丹':'😌','火球符':'🔥','天雷符':'⚡','遁地符':'🌀','排毒丹':'🍃','悟道丹':'🌌',
+  '凝神丹':'🧘','五行丹':'☯️','暴血丹':'🩸','固本丹':'🏛️','聚气散':'🌀','回天丹':'☀️','千年灵乳':'🥛',
+  '悟道茶':'🍵','朱果':'🍒','修行手札':'📖','无字天书':'📜','草药':'🌱','灵草':'🌿','灵参':'🌾','玄参':'🌿',
+  '紫芝':'🍄','铁矿石':'⛏️','妖皮':'🐾','妖丹':'🔮','寒玉':'💎','符纸':'📄','朱砂':'🔴','神秘妖蛋':'🥚',
+  '灵狐幼崽':'🦊','青锋醉剑':'🍶','太初古剑':'🗡️','火灵石':'🔴','金灵石':'🟡','温玉':'🟢','沧海珠':'🔵',
+  '星陨石':'🌠','金创药':'🩹','回灵丹':'💠'
+};
 function itemIcon(it){
+  if(it&&it.name&&ITEM_EMOJI[it.name])return ITEM_EMOJI[it.name];
   if(it&&it.elem&&typeof ELEMS!=='undefined'&&ELEMS[it.elem])return ELEMS[it.elem].i;
   return (it&&ITEM_ICONS[it.type])||'📦';
+}
+/* 功法图标：五行属先用属性图标，无属按品阶 黄/玄/地/天/仙/神 */
+function artIcon(a){
+  if(a&&a.elem&&typeof ELEMS!=='undefined'&&ELEMS[a.elem])return ELEMS[a.elem].i;
+  const g=a&&a.grade?clamp(a.grade,1,6):1;
+  return ['📜','📘','📕','📗','✨','👑'][g-1]||'📜';
 }
 function itemQName(q){
   if(typeof QNAMES==='undefined')return '';

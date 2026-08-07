@@ -13,7 +13,7 @@ vm.runInContext(`{ S=newState('测',BACKGROUNDS[0]); window.__e=S.rootElem; S.ar
 assert(vm.runInContext('!!ELEMS[window.__e]',ctx),'角色拥有五行/变异灵根');
 assert(Math.abs(vm.runInContext('window.__m1/window.__m2',ctx)-1.15)<1e-9,'同属功法修炼效率 ×1.15');
 // 2) 武器相性 + 熟练
-vm.runInContext(`{ S=newState('测',BACKGROUNDS[0]); S.rootElem='fire'; S.weapon={name:'火云剑',bonus:3,elem:'fire'}; window.__w1=weaponAtk(S); weaponGainMastery(S); weaponGainMastery(S); window.__w2=weaponAtk(S); }`,ctx);
+vm.runInContext(`{ S=newState('测',BACKGROUNDS[0]); S.rootElem='fire'; S.armor=null; S.trinket=null; S.weapon={name:'火云剑',bonus:3,elem:'fire'}; window.__w1=weaponAtk(S); weaponGainMastery(S); weaponGainMastery(S); window.__w2=weaponAtk(S); }`,ctx);
 assert(vm.runInContext('window.__w1===4',ctx),'同属法器攻势 +1');
 assert(vm.runInContext('window.__w2===5',ctx),'兵器熟练 +1 攻势');
 // 3) 受伤：属性/气血惩罚 + 丹药与静养治疗

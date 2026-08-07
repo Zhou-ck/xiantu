@@ -331,7 +331,7 @@ function panelRest(){
     const maxLv=Math.min(5,bigStage(S.realm)+1);
     const eff=((a.mult+(lv-1)*0.05)*artGradeMult(a)*(i===0?1:0.5)).toFixed(2);
     const tags='<span class="tag">'+artGradeName(a)+'</span>'+(a.elem?' <span class="tag" style="color:'+elemInfo(a.elem).c+'">'+elemInfo(a.elem).i+' '+elemInfo(a.elem).n+'</span>':' <span class="tag">无属</span>')+' <span class="tag">第'+lv+'重</span>'+(lv>=maxLv?' <span class="tag">圆满</span>':'')+(i===0?' <span class="tag" style="color:#d8b45a">主修</span>':' <span class="tag">辅修×0.5</span>');
-    return qcardHtml({name:a.name,icon:a.elem?elemInfo(a.elem).i:'📖',quality:Math.min(4,artGrade(a)-1),elem:a.elem,showQ:false,tags:tags,sub:'效率 ×'+eff,desc:esc(a.desc),foot:(lv<maxLv?'<button class="small" onclick="cultivateArt('+i+')">参悟 · 30日（'+(100*lv)+'灵石）</button>':'')});
+    return qcardHtml({name:a.name,icon:artIcon(a),quality:Math.min(4,artGrade(a)-1),elem:a.elem,showQ:false,tags:tags,sub:'效率 ×'+eff,desc:esc(a.desc),foot:(lv<maxLv?'<button class="small" onclick="cultivateArt('+i+')">参悟 · 30日（'+(100*lv)+'灵石）</button>':'')});
   }).join('');
   openPanel('🏡 洞府',
     '<p>山中方一日，世上已千年。此处是你的道场：歇息、种药、参悟功法、求问天机。</p>'+

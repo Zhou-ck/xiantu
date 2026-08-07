@@ -831,9 +831,13 @@ function npcDialog(i){
   /* 2Q 世界回响：NPC 态度随境界分三档 */
   const tier=bigStage(S.realm)-bigStage(n.stage||0);
   const greet=tier>=3?'对方见你境界高深，言语间多了几分恭敬：「前辈驾临，有何指教？」':(tier<=-2?'对方上下打量你一眼，语气带着几分居高临下：「新来的？」':'对方拱手一礼，含笑问道：「道友请了。」');
-  openEventModal('💬 与 '+esc(n.name)+'（'+esc(n.role)+' '+pTag+'）','<p>'+artImg(NPC_ART[n.role],64,64,'avatar')+esc(n.desc)+'</p>'+
-    '<p class="sys">'+greet+'</p>'+
-    '<p class="sys">好感：'+n.favor+'（'+npcFavorLabel(n.favor)+'） · 心情：'+(n.mood>=70?'😊 佳':n.mood>=40?'😐 平':'😔 郁')+(S.flag.qixiLeft>0?' · 🌉 七夕在望':'')+'</p>',[
+  talkModal('💬 与 '+esc(n.name),
+    talkHead(n,esc(n.role)+' '+pTag),
+    [
+      {html:'<span style="color:#a99a72">'+esc(n.desc)+'</span>'},
+      {html:esc(greet),typing:true,id:'talkLine0'},
+      {html:'好感 '+n.favor+'（'+npcFavorLabel(n.favor)+'） · 心情：'+(n.mood>=70?'😊 佳':n.mood>=40?'😐 平':'😔 郁')+(S.flag.qixiLeft>0?' · 🌉 七夕在望':''),typing:true,id:'talkLine1'},
+    ],[
     {txt:'💬 闲聊'+cool('talk'),fn:()=>npcChat(i)},
     {txt:'🙏 请教'+cool('ask'),fn:()=>npcAsk(i)},
     {txt:'🎁 赠礼'+cool('gift'),fn:()=>npcGift(i)},

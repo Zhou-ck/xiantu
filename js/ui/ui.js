@@ -146,6 +146,30 @@ function resolveEventModal(i){
   closePanel();
   if(o.fn)o.fn();
 }
+/* v66 聊天式对话演出：人物头 + 对话气泡 + 选项气泡（选项仍走 resolveEventModal） */
+function talkModal(title,head,bubbles,choices){
+  const list=(choices||[]).map((o,i)=>'<button class="small talk-btn'+(o.cls?' '+o.cls:'')+'" onclick="resolveEventModal('+i+')">'+esc(o.txt)+'</button>').join('');
+  window._eventModalOpts=choices||[];
+  const body='<div class="talk-wrap">'+(head||'')+
+    (bubbles||[]).map(b=>{
+      const who=b.who==='me'?'me':'npc';
+      const html=(b.typing&&fxOn()?'':b.html);
+      return '<div class="talk-row '+who+'"><div class="talk-bubble'+(b.typing?' talk-typing':'')+'"'+(b.id?' id="'+b.id+'"':'')+'>'+html+'</div></div>';
+    }).join('')+
+    '<div class="talk-choices">'+list+'</div></div>';
+  openPanel(title,body);
+  if(fxOn()){(bubbles||[]).forEach(b=>{
+    if(b.typing&&b.id&&typeof fxTypewriter==='function'){
+      const el=$(''+b.id);
+      if(el&&el.innerHTML!==undefined){const t=b.html;el.innerHTML='';setTimeout(()=>fxTypewriter(el,t,16),60)}
+    }
+  })}
+}
+function talkHead(n,sub){
+  const src=(n&&n.role&&typeof NPC_ART!=='undefined'&&NPC_ART[n.role])||(n&&n.name&&typeof NPC_ART!=='undefined'&&NPC_ART[n.name])||'';
+  return '<div class="talk-head">'+(src?'<img class="talk-avatar" src="'+src+'" alt="" loading="lazy">':'<span class="talk-avatar">🧙</span>')+
+    '<div class="talk-meta"><b>'+esc(n&&n.name||'')+'</b><small>'+esc(sub||'')+'</small></div></div>';
+}
 function rollBadge(roll,mod,total,dc){
   const crit=total>=30,fumble=total<=5,hit=dc?total>=dc:false;
   let c=crit?'crit':(fumble?'fumble':'');
