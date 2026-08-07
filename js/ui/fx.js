@@ -29,6 +29,13 @@ function fxInit(){
     if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)l='low';
   }catch(e){}
   fxSetLevel(l);
+  /* v63：触屏设备标记 html.fx-touch，让混合设备兜底规则（blur/流光/背景层收敛）强制生效 */
+  try{
+    if(fxMobile()){
+      const r=typeof document!=='undefined'?document.documentElement:null;
+      if(r&&r.classList)r.classList.add('fx-touch');
+    }
+  }catch(e){}
 }
 function fxShake(intensity,duration){
   if(FX.level==='low')return;

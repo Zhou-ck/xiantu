@@ -351,12 +351,12 @@ header .spacer{flex:1}
 @media (pointer:coarse),(hover:none){
   #ink-mist{display:none!important}
   #dust{display:none!important}
-  #sceneLayer{animation:none!important;filter:none!important}
+  #sceneLayer{animation:none!important;filter:none!important;transition:none!important;opacity:.12!important}
   #panel.fx-in #panelBox,#cultivate.fx-in #cultBox,#battle.fx-in #battleBox,#guide.fx-in #guideBox,#breakthrough.fx-in #breakBox{animation:overlayIn .18s ease-out both!important}
 }
 /* 混合输入设备兜底：即使同时匹配 hover:hover，也强制收敛（防 blur/金箔流光复活） */
 html.fx-touch #ink-mist,html.fx-touch #dust{display:none!important}
-html.fx-touch #sceneLayer{animation:none!important;filter:none!important}
+html.fx-touch #sceneLayer{animation:none!important;filter:none!important;transition:none!important;opacity:.12!important}
 html.fx-touch #panel,html.fx-touch #guide,html.fx-touch #battle,html.fx-touch #cultivate{backdrop-filter:none!important}
 html.fx-touch button::after{display:none!important}
 html.fx-touch #panel.fx-in #panelBox,html.fx-touch #cultivate.fx-in #cultBox,html.fx-touch #battle.fx-in #battleBox,html.fx-touch #guide.fx-in #guideBox,html.fx-touch #breakthrough.fx-in #breakBox{animation:overlayIn .18s ease-out both!important}

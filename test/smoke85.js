@@ -23,7 +23,7 @@ let fails=0;function assert(c,m){if(!c){fails++;console.log('FAIL:',m)}else cons
 // T1 静态断言：CSS 触屏收敛规则
 const css=fs.readFileSync(path.join(root,'css','main.css'),'utf8');
 assert(css.indexOf('#ink-mist{display:none!important}')>=0&&css.indexOf('#dust{display:none!important}')>=0,'CSS 触屏段隐藏金色雾/尘常驻层');
-assert(css.indexOf('#sceneLayer{animation:none!important;filter:none!important}')>=0,'CSS 触屏段关闭背景 kenburns/filter');
+assert(css.indexOf('#sceneLayer{animation:none!important;filter:none!important')>=0,'CSS 触屏段关闭背景 kenburns/filter（并收敛过渡/透明）');
 assert(css.indexOf('html.fx-touch #panel')>=0&&css.indexOf('html.fx-touch button::after{display:none!important}')>=0,'CSS 混合设备 fx-touch 兜底（blur/金箔流光）');
 assert(css.indexOf('animation:overlayIn .18s ease-out both!important')>=0,'CSS 触屏弹层仅淡入（≤0.18s）');
 // T2 静态断言：JS 收敛分支
