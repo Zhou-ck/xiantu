@@ -56,6 +56,9 @@ const PET_POOL=[
   {species:'金蚕',names:['小金','丝丝'],talent:'alchemy',base:1,desc:'丹火灵蚕，通晓药性。'},
   {species:'小蛟',names:['小渊','青鳞'],talent:'root',base:1,desc:'蛟龙之属，灵根天成。'},
 ];
+/* v99 灵兽立绘：6 物种全部配图（水墨风，512×512） */
+const PET_ART={灵狐:'assets/portraits/foxPet.jpg',小火鸦:'assets/portraits/pet_crow.jpg',玉兔:'assets/portraits/pet_rabbit.jpg',石猴:'assets/portraits/pet_monkey.jpg',金蚕:'assets/portraits/pet_silkworm.jpg',小蛟:'assets/portraits/pet_jiao.jpg'};
+function petArt(p){return p&&p.species&&PET_ART[p.species]?PET_ART[p.species]:''}
 function rollPet(){
   const p=pick(PET_POOL);
   return {species:p.species,name:pick(p.names),talent:p.talent,bonus:p.base,level:1,exp:0,faint:0,form:1};

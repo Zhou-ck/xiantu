@@ -34,7 +34,7 @@ function panelSocial(){
   const comp=S.companion?'<div class="item-card"><div class="nm">'+artImg(NPC_ART[S.companion.role],44,44,'avatar')+'同行之人：<b>'+esc(S.companion.name)+'</b> <span class="tag">'+esc(S.companion.role)+'</span></div>'+
     '<div class="ds">'+stageName(S.companion.stage)+' · 战斗攻势 +'+companionAtk()+'，探索受其照应。</div>'+
     '<div style="margin-top:8px"><button class="small" onclick="npcCompanion(-1)">拱手作别</button></div></div>':'<p style="color:#6f7a94">🤝 无同行之人。结伴同游，可互相照应。</p>';
-  const petSec=S.pet?'<p>🐾 灵兽：<b>'+esc(S.pet.species+'「'+S.pet.name+'」')+'</b>（'+S.pet.level+'级 · '+S.pet.form+'阶） <button class="small" onclick="petPanel()">查看/喂养</button></p>':'<p style="color:#6f7a94">🐾 尚无灵兽。兽卵可在坊市奇珍拍卖或探索机缘中获得。</p>';
+  const petSec=S.pet?'<p>🐾 灵兽：'+(typeof petArt==='function'&&petArt(S.pet)?'<img class="pet-mini" src="'+petArt(S.pet)+'" alt="" loading="lazy" onerror="this.style.display=\'none\'">':'')+'<b>'+esc(S.pet.species+'「'+S.pet.name+'」')+'</b>（'+S.pet.level+'级 · '+S.pet.form+'阶） <button class="small" onclick="petPanel()">查看/喂养</button></p>':'<p style="color:#6f7a94">🐾 尚无灵兽。兽卵可在坊市奇珍拍卖或探索机缘中获得。</p>';
   const disc=disciplePanel();
   openPanel('🤝 人际',
     '<p>修仙不是独行路，一饮一啄，皆是因果。</p>'+

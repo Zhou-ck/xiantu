@@ -924,12 +924,13 @@ function petPanel(){
   const p=S.pet;
   const lvNeed=petLevelNeed(p);
   const pct=clamp(Math.floor((p.exp||0)/lvNeed*100),0,100);
-  const art=p.species==='灵狐'?ART.foxPet:'';
+  /* v99 灵兽立绘：全部物种配图，进化（form≥2）加金框，加载失败 emoji 兜底 */
+  const art=(typeof petArt==='function')?petArt(p):'';
   const st=petFormStage(p);
   const brDesc=petBranchDesc(p);
   const evoLine=PET_FORMS[p.talent]?(PET_FORMS[p.talent].stages||[]).map((n,i)=>'<span'+(i===Math.min(p.form,PET_FORMS[p.talent].stages.length-1)?' style="color:#e8c86a"':'')+'>'+n+'</span>').join(' → '):'';
   openPanel('🐾 灵兽 · '+esc(p.name),
-    '<div class="pet-card"><div class="pet-img">'+(art?'<img class="pet-portrait" src="'+art+'" alt="" loading="lazy">':'<span class="pet-emoji">🐾</span>')+'</div>'+
+    '<div class="pet-card"><div class="pet-img">'+(art?'<img class="pet-portrait'+(p.form>=2?' pet-gold':'')+'" src="'+art+'" alt="" loading="lazy" onerror="this.style.display=\'none\'"><span class="pet-emoji-fallback">🐾</span>':'<span class="pet-emoji">🐾</span>')+'</div>'+
     '<div class="pet-info"><div class="nm">'+esc(p.name)+' <span class="tag">'+esc(p.species)+'</span> <span class="tag">'+st.n+' · '+p.form+' 阶</span>'+(brDesc?' <span class="tag" style="color:#e8c86a">'+brDesc.split('：')[0]+'</span>':'')+'</div>'+
     '<div class="ds">天赋：'+esc(PET_TALENT_DESC[p.talent]||'')+' · 助战加成：+'+petCombatBonus()+(brDesc?'<br>进化分支：'+brDesc:'')+'</div>'+
     (evoLine?'<div class="pet-evo">'+evoLine+'</div>':'')+

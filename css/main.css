@@ -843,6 +843,11 @@ html.fx-low .bt-realm-up{animation:none!important}
 .pet-card .pet-img{flex:0 0 auto;width:112px;height:112px;border-radius:14px;overflow:hidden;background:linear-gradient(160deg,#252c4a,#171b2e);border:1px solid rgba(201,162,75,.35);display:flex;align-items:center;justify-content:center}
 .pet-card .pet-portrait{width:100%;height:100%;object-fit:cover}
 .pet-card .pet-emoji{font-size:44px;line-height:1}
+/* v99 灵兽立绘：进化金框 + 加载失败 emoji 兜底 */
+.pet-card .pet-portrait.pet-gold{box-shadow:inset 0 0 0 3px rgba(232,200,106,.75);border-radius:12px}
+.pet-emoji-fallback{display:none;font-size:44px;line-height:1}
+.pet-img img[style*="display: none"] + .pet-emoji-fallback{display:block}
+.pet-mini{width:34px;height:34px;border-radius:50%;object-fit:cover;vertical-align:middle;border:1px solid rgba(201,162,75,.4);margin-right:4px}
 .pet-card .pet-info{flex:1;min-width:0}
 .pet-card .pet-exp{font-size:11.5px;color:#a99a72;margin-top:2px}
 .pet-card .pet-status{margin-top:4px;font-size:12.5px}
