@@ -4,8 +4,21 @@
 ====================================================== */
 'use strict';
 /* ================= 帮助 ================= */
+/* v80 修仙志分节折叠卡：h4 段落转为可折叠卡片，内容与关键词全保留 */
+function helpSectionsHtml(raw){
+  const parts=String(raw||'').split(/<h4>/);
+  const out=[];
+  for(let i=0;i<parts.length;i++){
+    const seg=parts[i];
+    if(!seg.trim())continue;
+    const m=seg.match(/^([^<]+)<\/h4>([\s\S]*)$/);
+    if(!m){out.push(seg);continue}
+    out.push('<details class="help-sec" open><summary>'+esc(m[1].trim())+'</summary>'+m[2]+'</details>');
+  }
+  return out.join('');
+}
 function openHelp(){
-  openPanel('📚 修仙志',
+  const body=
     '<h4>🔤 字体大小</h4><div class="row"><button class="small" onclick="setFontSize(\'s\')">小</button><button class="small primary" onclick="setFontSize(\'m\')">中</button><button class="small" onclick="setFontSize(\'l\')">大</button></div>'+
     '<h4>境界</h4><p>炼气九层 → 筑基 → 金丹 → 元婴 → 化神 → 炼虚 → 合体 → 大乘 → 渡劫 → 飞升。筑基起每一大境界分为<b>前期 / 中期 / 后期 / 圆满</b>四重小境：小境之间水磨工夫、修为到了自动晋升；跨大境界则需通过心性判定与天劫，并满足<b>天地门槛</b>（如筑基需筑基丹或完整功法、金丹需妖丹或三场恶战、渡劫需功德达标）。突破面板会列出缺项并给出跳转地点。</p>'+
     '<h4>属性与能力</h4><p>六维（1-20 掷骰）不只是一串数字，每一点都对应实际能力：<b>力量</b>＝攻势与气血；<b>身法</b>＝战斗闪避与探索避险；<b>智慧</b>＝洞察（命中/探索机缘）、副业成功率与悟道之机；<b>魅力</b>＝交谈好感、拜师结缘与宗门接纳；<b>心性</b>＝道心判定与抗心魔；<b>灵根</b>影响修炼速度；气运为隐藏属性，影响机缘。左侧面板「战力构成」可实时查看攻势/闪避/洞察/人望。心魔烙印会压制心性（至多 4 点）。</p>'+
@@ -46,7 +59,8 @@ function openHelp(){
     '<h4>凶险</h4><p>探索中暗藏死亡选项，心魔积累会压制心性。寿元耗尽即身陨。身陨后可转世重生，保留一线灵光。</p>'+
     '<h4>多结局</h4><p>飞升成仙、堕入魔道、宗门之主、散修大能、身陨道消……关键抉择将引向不同终局。每年亦会有妖潮、论道、秘境等大事发生。</p>'+
     '<h4>💾 存档</h4><p>共 3 个存档位，点头部「存档」可存入或读取；游戏过程中的操作会自动存入当前存档位。</p>'+
-    '<p style="font-size:12.5px;color:#6f7a94">提示：点「行囊」查看并使用物品；「人际」可照料灵兽；头部「仙途录」可查看称号、图鉴与生平；手机端点「状态」展开属性面板。</p>');
+    '<p style="font-size:12.5px;color:#6f7a94">提示：点「行囊」查看并使用物品；「人际」可照料灵兽；头部「仙途录」可查看称号、图鉴与生平；手机端点「状态」展开属性面板。</p>';
+  openPanel('📚 修仙志',helpSectionsHtml(body));
 }
 /* ===== 收藏图鉴：物品/敌人/配方 收集册 + 里程碑（仙途录深化） ===== */
 const ATLAS_MILES=[

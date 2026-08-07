@@ -940,3 +940,14 @@ html.fx-low .loot-chip{animation:none!important}
 .tome-cell.atlas-enemy{padding:8px 6px}
 .tome-cell.atlas-enemy .ae-img{width:44px;height:44px;border-radius:50%;object-fit:cover;border:1px solid rgba(201,162,75,.4);margin:0 auto 3px;display:block;box-shadow:0 0 8px rgba(201,162,75,.14)}
 .tome-cell.atlas-enemy .ae-emoji{font-size:24px;display:block;line-height:1.3}
+
+/* ---------- v80 修仙志分节折叠卡 ---------- */
+.help-sec{margin:8px 0;border:1px solid rgba(201,162,75,.2);border-radius:10px;background:linear-gradient(180deg,#1e2338,#191e31);overflow:hidden}
+.help-sec summary{cursor:pointer;padding:9px 12px;color:var(--gold2);font-size:14px;letter-spacing:1px;border-bottom:1px solid rgba(201,162,75,.14);list-style:none;display:flex;align-items:center;gap:6px}
+.help-sec summary::-webkit-details-marker{display:none}
+.help-sec summary::after{content:'▾';margin-left:auto;color:#8f9cb8;transition:transform .18s}
+.help-sec:not([open]) summary::after{transform:rotate(-90deg)}
+.help-sec[open] summary{border-bottom-color:rgba(201,162,75,.24)}
+.help-sec .row{padding:8px 12px 0}
+.help-sec p{margin:0;padding:8px 12px 4px;font-size:13.5px;color:#cfc3a0;line-height:1.9}
+.help-sec .bd-note{padding:0 12px 8px}
