@@ -37,7 +37,8 @@ function fxShake(intensity,duration){
   else if(intensity>=2){if(typeof sfx==='function')sfx('hit')}
   const el=document.getElementById('screen-game')||document.getElementById('app')||document.body;
   if(!el||!el.style)return;
-  const amp=[0,3,7,14][intensity]||3;
+  const amp0=[0,3,7,14][intensity]||3;
+  const amp=fxMobile()?Math.max(1,Math.round(amp0*0.5)):amp0;
   const dur=duration||[0,150,300,520][intensity]||200;
   const t0=Date.now();
   function frame(){
@@ -76,6 +77,7 @@ function fxHitstop(ms){
 function fxPaused(){return _hitstopUntil>Date.now()}
 function fxFlash(color,ms){
   if(FX.level==='low'||typeof document==='undefined')return;
+  if(fxMobile())return; /* v60 手机端不创建整屏闪光层（点击闪黄主因之一，保留浮动文字提示） */
   let el=document.getElementById('fxFlash');
   if(!el){
     el=document.createElement('div');
@@ -110,13 +112,14 @@ function fxBurst(count,color){
   }
   if(typeof sfx==='function')sfx('levelup');
   let n=count||12;
-  if(fxMobile())n=Math.min(n,6); /* 手机端粒子减半，金色不再铺满屏幕 */
+  if(fxMobile())n=Math.min(n,3); /* v60 手机端粒子 ≤3，且用偏暗金避免整屏金色爆发 */
+  const useColor=fxMobile()?'#d8b558':(color||'#ffd76a');
   const cx=(window.innerWidth||document.documentElement.clientWidth||360)/2;
   const cy=(window.innerHeight||document.documentElement.clientHeight||600)/3;
   for(let i=0;i<n;i++){
     const el=document.createElement('div');
     el.className='fx-dot';
-    el.style.background=color||'#ffd76a';
+    el.style.background=useColor;
     const a=Math.random()*Math.PI*2;
     const d=40+Math.random()*90;
     el.style.setProperty('--dx',(Math.cos(a)*d).toFixed(0)+'px');

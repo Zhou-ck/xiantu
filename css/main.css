@@ -347,6 +347,19 @@ header .spacer{flex:1}
   button:hover{transform:none;box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 2px 6px rgba(0,0,0,.35)}
   button.primary:hover{box-shadow:0 0 14px rgba(201,162,75,.25),inset 0 1px 0 rgba(255,255,255,.18)}
 }
+/* v60fix 触屏特效收敛：移除常驻金色雾/尘与背景持续动画，弹层仅淡入，消除整屏合成闪黄 */
+@media (pointer:coarse),(hover:none){
+  #ink-mist{display:none!important}
+  #dust{display:none!important}
+  #sceneLayer{animation:none!important;filter:none!important}
+  #panel.fx-in #panelBox,#cultivate.fx-in #cultBox,#battle.fx-in #battleBox,#guide.fx-in #guideBox,#breakthrough.fx-in #breakBox{animation:overlayIn .18s ease-out both!important}
+}
+/* 混合输入设备兜底：即使同时匹配 hover:hover，也强制收敛（防 blur/金箔流光复活） */
+html.fx-touch #ink-mist,html.fx-touch #dust{display:none!important}
+html.fx-touch #sceneLayer{animation:none!important;filter:none!important}
+html.fx-touch #panel,html.fx-touch #guide,html.fx-touch #battle,html.fx-touch #cultivate{backdrop-filter:none!important}
+html.fx-touch button::after{display:none!important}
+html.fx-touch #panel.fx-in #panelBox,html.fx-touch #cultivate.fx-in #cultBox,html.fx-touch #battle.fx-in #battleBox,html.fx-touch #guide.fx-in #guideBox,html.fx-touch #breakthrough.fx-in #breakBox{animation:overlayIn .18s ease-out both!important}
 #cultBox{width:min(560px,94vw);max-height:92vh;display:flex;flex-direction:column;background:linear-gradient(180deg,#232940,#141724);border:1px solid var(--gold);border-radius:14px;box-shadow:0 0 60px rgba(0,0,0,.8);overflow:hidden}
 #cultHead{padding:11px 16px;text-align:center;color:var(--gold2);letter-spacing:3px;font-size:16px;border-bottom:1px solid #3a3f5c;background:rgba(0,0,0,.22)}
 .cult-partner{display:flex;align-items:center;gap:10px;padding:8px 12px;margin:8px 14px 2px;background:linear-gradient(180deg,#232a47,#1a2036);border:1px solid rgba(201,162,75,.25);border-radius:10px}

@@ -57,6 +57,7 @@ const T={
   /* 灵尘 / 云雾氛围层：仅真实浏览器且非低档时创建 */
   initAmbient(){
     if(!fxOn())return;
+    if(typeof fxMobile==='function'&&fxMobile())return; /* v60 手机端不创建金色雾/尘常驻层 */
     try{
       if(document.getElementById('ink-mist'))return;
       const host=document.body||document.documentElement;

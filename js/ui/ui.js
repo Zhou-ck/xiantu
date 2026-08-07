@@ -116,7 +116,14 @@ function setSceneImg(title){
   let key='';
   if(SCENE_PATHS[title])key=SCENE_PATHS[title];
   else for(const [re,k] of SCENE_IMG)if(re.test(title)){key=k;break}
-  el.style.backgroundImage=key?"url('"+key+"')":'';
+  const apply=()=>{el.style.backgroundImage=key?"url('"+key+"')":''};
+  if(!key){apply();return}
+  /* v60 手机端两段式切图：先预载大图，避免点击后换图与弹层动画同帧合成闪黄 */
+  if(typeof fxMobile==='function'&&fxMobile()&&typeof Image!=='undefined'){
+    const img=new Image();
+    img.onload=()=>{try{apply()}catch(e){}};
+    img.src=key;
+  }else{apply()}
 }
 function toast(t){const e=$('toast');e.textContent=t;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),1600)}
 function openPanel(title,html){$('panelTitle').textContent=title;$('panelBody').innerHTML=html;$('panel').style.display='flex';if(typeof T!=='undefined'&&T.reveal)T.reveal($('panel'));updatePendingUI()}
