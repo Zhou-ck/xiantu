@@ -1,50 +1,61 @@
 /* ======================================================
   仙途 · 分类导航（底部标签页）
-  全部功能按玩法类别组织；未满足条件的功能以 🔒 锁定并提示
+  v53：六大页面 × 双列模块图卡；未满足条件的功能以 🔒 锁定并提示
 ====================================================== */
 'use strict';
 let CUR_TAB='cult';
 const TABS=[
-  {k:'cult',i:'🧘',n:'修炼',d:'闭关 · 突破 · 心魔 · 灵兽',items:[
-    {n:'闭关修炼',i:'🧘',fn:()=>panelCult(),desc:'实时修炼窗口，途中或有异动，可双修'},
-    {n:'突破境界',i:'⚡',fn:()=>tryBreak(),desc:'冲击更高境界，需过心性与天劫（筑基起大境界前有心魔试炼，三战全败留烙印）'},
-    {n:'心魔历练',i:'😈',fn:()=>heartTraining(),ok:()=>S.realm>=9,need:'筑基之后方可直面心魔',desc:'直面心魔，道心精进（判定大失败可致死）'},
-    {n:'静心养神',i:'🪷',fn:()=>settleMind(),desc:'涤尘养道，消磨心魔烙印'},
-    {n:'战技参悟',i:'⚔️',fn:()=>panelBattleArts(),desc:'以战悟道，点化攻势/身法/御体/技能'},
-    {n:'论道台',i:'📖',fn:()=>panelDaolun(),desc:'与道友辩道证心，道韵共鸣更益'},
-    {n:'灵兽',i:'🐾',fn:()=>petPanel(),desc:'喂养、历练、进化灵兽'},
-    {n:'双修',i:'💞',fn:()=>doDualCultivate(),ok:()=>!!S.daoPartner,need:'需先有道侣（人际→培养好感→表白）',desc:'与道侣合气双修'},
+  {k:'cult',i:'🧘',n:'修行',d:'闭关 · 突破 · 心魔 · 灵兽',hero:'assets/pages/cult.jpg',items:[
+    {n:'闭关修炼',i:'🧘',img:'assets/modules/cult_x.png',fn:()=>panelCult(),desc:'实时修炼窗口，途中或有异动，可双修'},
+    {n:'突破境界',i:'⚡',img:'assets/modules/cult_break.png',fn:()=>tryBreak(),desc:'冲击更高境界，需过心性与天劫（筑基起大境界前有心魔试炼，三战全败留烙印）'},
+    {n:'心魔历练',i:'😈',img:'assets/modules/cult_heart.png',fn:()=>heartTraining(),ok:()=>S.realm>=9,need:'筑基之后方可直面心魔',desc:'直面心魔，道心精进（判定大失败可致死）'},
+    {n:'静心养神',i:'🪷',img:'assets/modules/cult_mind.png',fn:()=>settleMind(),desc:'涤尘养道，消磨心魔烙印'},
+    {n:'战技参悟',i:'⚔️',img:'assets/modules/cult_tech.png',fn:()=>panelBattleArts(),desc:'以战悟道，点化攻势/身法/御体/技能'},
+    {n:'论道台',i:'📖',img:'assets/modules/cult_dao.png',fn:()=>panelDaolun(),desc:'与道友辩道证心，道韵共鸣更益'},
+    {n:'灵兽',i:'🐾',img:'assets/modules/cult_pet.png',fn:()=>petPanel(),desc:'喂养、历练、进化灵兽'},
+    {n:'双修',i:'💞',img:'assets/modules/cult_dual.png',fn:()=>doDualCultivate(),ok:()=>!!S.daoPartner,need:'需先有道侣（人际→培养好感→表白）',desc:'与道侣合气双修'},
   ]},
-  {k:'world',i:'🧭',n:'历练',d:'探索 · 试炼 · 奇遇 · 秘境',items:[
-    {n:'主线任务',i:'📖',fn:()=>panelQuests(),desc:'主线指引 · 支线 · 每日修行，一目了然'},
-    {n:'九州舆图',i:'🗺️',fn:()=>panelExplore(),desc:'水墨舆图选点：探索 · 试炼塔 · 守关 · 秘境'},
-    {n:'试炼塔',i:'🏔️',fn:()=>doTower(),ok:()=>S.realm>=2,need:'炼气三层后开启试炼塔',desc:'一层一关，每五层有守塔统领'},
-    {n:'时令',i:'🌸',fn:()=>toast(seasonLabel()+'：'+seasonDesc()),desc:'查看当前季节与吉凶'},
+  {k:'world',i:'🧭',n:'云游',d:'探索 · 试炼 · 奇遇 · 秘境',hero:'assets/pages/world.jpg',items:[
+    {n:'主线任务',i:'📖',img:'assets/modules/world_main.png',fn:()=>panelQuests(),desc:'主线指引 · 支线 · 每日修行，一目了然'},
+    {n:'九州舆图',i:'🗺️',img:'assets/modules/world_map.png',fn:()=>panelExplore(),desc:'水墨舆图选点：探索 · 试炼塔 · 守关 · 秘境'},
+    {n:'试炼塔',i:'🏔️',img:'assets/modules/world_tower.png',fn:()=>doTower(),ok:()=>S.realm>=2,need:'炼气三层后开启试炼塔',desc:'一层一关，每五层有守塔统领'},
+    {n:'守关试炼',i:'⛩️',img:'assets/modules/world_boss.png',fn:()=>bossBattle(),desc:'当前境界守关大妖，击败可得重赏'},
+    {n:'秘境之门',i:'🏛️',img:'assets/modules/world_dungeon.png',fn:()=>panelDungeonList(),ok:()=>S.realm>=2,need:'炼气三层后开启秘境之门',desc:'剑冢/洞府/遗迹/巢穴/残梦副本入口'},
+    {n:'御剑试炼',i:'🗡️',img:'assets/modules/world_sword.png',fn:()=>swordTrial(),ok:()=>S.realm>=2,need:'炼气三层后开启御剑试炼',desc:'三段时机判定，赏修为与战意（30 日一回）'},
+    {n:'时令',i:'🌸',img:'assets/modules/world_season.png',fn:()=>toast(seasonLabel()+'：'+seasonDesc()),desc:'查看当前季节与吉凶'},
   ]},
-  {k:'sect',i:'🏯',n:'宗门',d:'拜入 · 任务 · 晋升 · 宝库',items:[
-    {n:'宗门（拜入/事务）',i:'🏯',fn:()=>panelSect(),desc:'无宗门时可择派拜入，入宗后接任务晋升'},
-    {n:'宗门大比',i:'⚔️',fn:()=>bigCompetition(),ok:()=>!!S.sect&&S.bigCd<=0,need:()=>S&&S.bigCd>0?'大比尚需 '+S.bigCd+' 日':'需先拜入宗门',desc:'三年一赛，扬名立万'},
-    {n:'领取月俸',i:'💰',fn:()=>sectSalary(),ok:()=>!!S.sect,need:'需先拜入宗门',desc:'按职位领取灵石与贡献'},
+  {k:'sect',i:'🏯',n:'宗门',d:'拜入 · 任务 · 晋升 · 宝库',hero:'assets/pages/sect.jpg',items:[
+    {n:'宗门事务',i:'🏯',img:'assets/modules/sect_home.png',fn:()=>panelSect(),desc:'无宗门时可择派拜入，入宗后接任务晋升'},
+    {n:'宗门大比',i:'⚔️',img:'assets/modules/sect_big.png',fn:()=>bigCompetition(),ok:()=>!!S.sect&&S.bigCd<=0,need:()=>S&&S.bigCd>0?'大比尚需 '+S.bigCd+' 日':'需先拜入宗门',desc:'三年一赛，扬名立万'},
+    {n:'领取月俸',i:'💰',img:'assets/modules/sect_pay.png',fn:()=>sectSalary(),ok:()=>!!S.sect,need:'需先拜入宗门',desc:'按职位领取灵石与贡献'},
   ]},
-  {k:'social',i:'👥',n:'人际',d:'道侣 · 师尊 · 好友',items:[
-    {n:'人际往来',i:'👥',fn:()=>panelSocial(),desc:'交谈、请教、赠礼、切磋、结伴'},
-    {n:'茶会/诗会',i:'🍵',fn:()=>panelTea(),desc:'一年一度雅集，品茶斗诗，交游证道'},
-    {n:'结伴云游',i:'🧭',fn:()=>panelTravel(),desc:'与相熟之人结伴出行，沿途事件链'},
-    {n:'道侣',i:'💞',fn:()=>panelPartner(),ok:()=>!!S.daoPartner,need:'需先有道侣（人际→培养好感→表白）',desc:'聊天、约会、同游、相处与双修'},
-    {n:'师尊',i:'🎓',fn:()=>panelMaster(),ok:()=>!!S.master,need:'需先拜师（宗门长老或江湖高人）',desc:'请安、请教、传功与出师'},
+  {k:'social',i:'👥',n:'尘缘',d:'道侣 · 师尊 · 好友 · 家族',hero:'assets/pages/social.jpg',items:[
+    {n:'人际往来',i:'👥',img:'assets/modules/social_people.png',fn:()=>panelSocial(),desc:'交谈、请教、赠礼、切磋、结伴'},
+    {n:'茶会/诗会',i:'🍵',img:'assets/modules/social_tea.png',fn:()=>panelTea(),desc:'一年一度雅集，品茶斗诗，交游证道'},
+    {n:'结伴云游',i:'🧭',img:'assets/modules/social_travel.png',fn:()=>panelTravel(),desc:'与相熟之人结伴出行，沿途事件链'},
+    {n:'道侣',i:'💞',img:'assets/modules/social_dual.png',fn:()=>panelPartner(),ok:()=>!!S.daoPartner,need:'需先有道侣（人际→培养好感→表白）',desc:'聊天、约会、同游、相处与双修'},
+    {n:'师尊',i:'🎓',img:'assets/modules/social_master.png',fn:()=>panelMaster(),ok:()=>!!S.master,need:'需先拜师（宗门长老或江湖高人）',desc:'请安、请教、传功与出师'},
+    {n:'家族',i:'👨‍👩‍👧',img:'assets/modules/social_family.png',fn:()=>panelFamily(),desc:'子嗣培养、血脉与转生传承'},
   ]},
-  {k:'more',i:'☰',n:'更多',d:'坊市 · 副业 · 洞府 · 行囊',items:[
-    {n:'坊市',i:'🏮',fn:()=>panelMarket(),desc:'买卖丹药法器，奇珍拍卖'},
-    {n:'行囊',i:'🎒',fn:()=>panelInventory(),desc:'查看并使用物品、装备'},
-    {n:'装备工坊',i:'⚒️',fn:()=>panelEquipWorkshop(),desc:'修理、洗练词条、镶嵌宝石、套装淬炼'},
-    {n:'副业',i:'⚒️',fn:()=>panelCraft(),desc:'炼丹、炼器、制符、布阵'},
-    {n:'洞府',i:'🏡',fn:()=>panelRest(),desc:'灵田、参悟、静养、天机签'},
-    {n:'家族',i:'👨‍👩‍👧',fn:()=>panelFamily(),desc:'子嗣培养、血脉与转生传承'},
-    {n:'角色档案',i:'🗂️',fn:()=>openCharPanel(),desc:'角色面板：六维、灵根、战力构成与状态一览'},
-    {n:'设置',i:'⚙️',fn:()=>panelSettings(),desc:'特效、微操、音效、AI 接入'},
-    {n:'检查更新',i:'🔄',fn:()=>checkGameUpdate(),desc:'检测并应用最新版本'},
+  {k:'biz',i:'🏮',n:'百业',d:'坊市 · 副业 · 装备 · 洞府',hero:'assets/pages/biz.jpg',items:[
+    {n:'坊市',i:'🏮',img:'assets/modules/biz_market.png',fn:()=>panelMarket(),desc:'买卖丹药法器，奇珍拍卖'},
+    {n:'副业',i:'⚗️',img:'assets/modules/biz_craft.png',fn:()=>panelCraft(),desc:'炼丹、炼器、制符、布阵'},
+    {n:'装备工坊',i:'⚒️',img:'assets/modules/biz_equip.png',fn:()=>panelEquipWorkshop(),desc:'修理、洗练词条、镶嵌宝石、套装淬炼'},
+    {n:'行囊',i:'🎒',img:'assets/modules/biz_bag.png',fn:()=>panelInventory(),desc:'查看并使用物品、装备'},
+    {n:'洞府',i:'🏡',img:'assets/modules/biz_home.png',fn:()=>panelRest(),desc:'灵田、参悟、静养、天机签'},
+  ]},
+  {k:'me',i:'☰',n:'我',d:'角色 · 图鉴 · 生涯 · 设置',hero:'assets/pages/me.jpg',items:[
+    {n:'角色档案',i:'🗂️',img:'assets/modules/me_char.png',fn:()=>openCharPanel(),desc:'六维、灵根、战力构成与状态一览'},
+    {n:'仙途录',i:'📜',img:'assets/modules/me_tome.png',fn:()=>openTome(),desc:'称号墙、关系图谱、天下大势与生涯'},
+    {n:'收藏图鉴',i:'📖',img:'assets/modules/me_atlas.png',fn:()=>collectionAtlas(),desc:'物品/敌人/配方/丹经收集册'},
+    {n:'生涯统计',i:'📊',img:'assets/modules/me_career.png',fn:()=>careerWall(),desc:'十八系统计数总览'},
+    {n:'存档',i:'💾',img:'assets/modules/me_save.png',fn:()=>panelSave(),desc:'三档位、导出导入与分享码'},
+    {n:'设置',i:'⚙️',img:'assets/modules/me_setting.png',fn:()=>panelSettings(),desc:'特效、微操、音效、AI 接入'},
+    {n:'检查更新',i:'🔄',img:'assets/modules/me_update.png',fn:()=>checkGameUpdate(),desc:'检测并应用最新版本'},
   ]},
 ];
+const PAGE_KEYS=['cult','world','sect','social','biz','me'];
+function pageOf(k){return TABS.find(x=>x.k===k)}
 function tabStatusCult(){
   if(!S)return '';
   const nxt=S.realm+1;
@@ -84,25 +95,30 @@ function goalCards(){
 }
 function tabHome(k){
   if(PENDING>0){toast('⚠️ 眼前之事未了，请先做出选择');return}
-  const t=TABS.find(x=>x.k===k);
+  const t=pageOf(k);
   if(!t)return;
   CUR_TAB=k;
   closePanel();
+  const heroImg=t.hero?'<img class="page-hero-img" src="'+t.hero+'" loading="lazy" alt="" onerror="this.style.display=\'none\'">':'';
+  const hero='<div class="page-hero">'+heroImg+'<div class="page-hero-tx"><span class="page-hero-ico">'+t.i+'</span><b>'+esc(t.n)+'</b><small>'+esc(t.d)+'</small></div></div>';
   const lead=(k==='cult'?tabStatusCult():'')+'<p style="font-size:13px;color:#a99a72;margin:8px 0 10px">'+t.d+'</p>';
   const items=t.items.map((it,i)=>{
     const ok=it.ok===undefined||it.ok();
     const needTxt=typeof it.need==='function'?it.need():it.need;
-    return '<button class="tab-act'+(ok?'':' locked')+'" onclick="tabGo(\''+k+'\','+i+')">'+
-      '<span class="tab-act-ico">'+(ok?it.i:'🔒')+'</span>'+
-      '<span class="tab-act-tx"><b>'+esc(it.n)+'</b><small>'+esc(ok?it.desc:('🔒 '+(needTxt||'条件未满足')))+'</small></span></button>';
+    const imgHtml=it.img?'<img class="mod-img" src="'+it.img+'" loading="lazy" alt="" onerror="this.classList.add(\'gone\');this.nextElementSibling.classList.remove(\'gone\')">':'';
+    return '<button class="mod-card'+(ok?'':' locked')+'" onclick="tabGo(\''+k+'\','+i+')">'+
+      '<span class="mod-imgwrap">'+(imgHtml||'')+'<i class="mod-emoji">'+(ok?it.i:'🔒')+'</i></span>'+
+      '<span class="mod-tx"><b>'+esc(it.n)+'</b><small>'+esc(ok?it.desc:('🔒 '+(needTxt||'条件未满足')))+'</small></span>'+
+      (!ok?'<span class="mod-lock">🔒</span>':'')+
+      '</button>';
   }).join('');
-  openPanel(t.i+' '+t.n,lead+items+
+  openPanel(t.i+' '+t.n,hero+lead+'<div class="mod-grid">'+items+'</div>'+
     '<p style="font-size:12px;color:#6f7a94;margin-top:10px">🔒 表示尚未满足条件，达成后自动解锁。</p>');
   const bar=$('tabbar');
   if(bar){for(const b of bar.querySelectorAll('button'))b.classList.toggle('on',b.dataset.tab===k);}
 }
 function tabGo(k,i){
-  const t=TABS.find(x=>x.k===k);
+  const t=pageOf(k);
   if(!t)return;
   const it=t.items[i];
   if(!it)return;

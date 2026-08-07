@@ -229,7 +229,7 @@ function renderAll(){
   save();
 }
 function renderActions(){
-  const tabs=[['cult','🧘','修炼'],['world','🧭','历练'],['sect','🏯','宗门'],['social','👥','人际'],['more','☰','更多']];
+  const tabs=[['cult','🧘','修行'],['world','🧭','云游'],['sect','🏯','宗门'],['social','👥','尘缘'],['biz','🏮','百业'],['me','☰','我']];
   const cur=CUR_TAB||'cult';
   $('tabbar').innerHTML=tabs.map(([k,i,t])=>
     '<button class="tab-btn'+(k===cur?' on':'')+'" data-tab="'+k+'" onclick="tabHome(\''+k+'\')">'+
@@ -240,7 +240,7 @@ function renderActions(){
 function act(k){
   if(PENDING>0){toast('⚠️ 眼前之事未了，请先做出选择');return}
   closePanel();
-  if(k==='cult'||k==='world'||k==='sect'||k==='social'||k==='more'){tabHome(k);}
+  if(k==='cult'||k==='world'||k==='sect'||k==='social'||k==='biz'||k==='me'){tabHome(k);}
   else if(k==='cult2')panelCult();
   else if(k==='explore')panelExplore();
   else if(k==='market')panelMarket();

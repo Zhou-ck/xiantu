@@ -48,7 +48,7 @@ function scenario(name,code){
   }
 }
 /* 1) 各标签页与面板入口 */
-scenario('tabHome 全页签','{ S=newState("测",BACKGROUNDS[0]); PENDING=0; tabHome("cult"); tabHome("world"); tabHome("sect"); tabHome("social"); tabHome("more"); openTome(); daoPathPage(); titleWall(); panelMarket(); panelRest(); panelCraft(); panelDaily(); panelSave(); panelSettings(); loopShop(); panelInventory(); }');
+scenario('tabHome 全页签','{ S=newState("测",BACKGROUNDS[0]); PENDING=0; tabHome("cult"); tabHome("world"); tabHome("sect"); tabHome("social"); tabHome("biz"); tabHome("me"); openTome(); daoPathPage(); titleWall(); panelMarket(); panelRest(); panelCraft(); panelDaily(); panelSave(); panelSettings(); loopShop(); panelInventory(); }');
 /* 2) 修炼/托管/静心/心魔历练 */
 scenario('修炼托管与静心','{ S=newState("测",BACKGROUNDS[0]); S.realm=9; S.attrs.wil=40; S.stones=1000; PENDING=0; doCultivate(30,"quiet",{auto:false,noEvents:true}); var n=0; while(_cult&&!_cult.done&&n<300){_cultTick();n++} settleMind(); heartTraining(); readBooks(); doRest(); }');
 /* 3) 突破全链路：小境界 + 金丹大境界（含心魔试炼） */
