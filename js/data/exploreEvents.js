@@ -120,8 +120,10 @@ function runRegionEvent(ev){
   if(!S||!ev)return;
   S.flag.regionEvents=S.flag.regionEvents||{};
   S.flag.regionEvents[ev.id]=(S.flag.regionEvents[ev.id]||0)+1;
-  log('<p class="scene">📍 〖 '+esc(ev.title)+' 〗</p>');
-  log('<p>'+esc(ev.t)+'</p>');
+  log('<p class="scene story-stage">📍 〖 '+esc(ev.title)+' 〗</p>');
+  const cast=storyCastBar(pickCastNames(ev.title+' '+ev.t));
+  if(cast)log(cast);
+  log('<p class="story-line">'+storyLineHtml(ev.t)+'</p>');
   logChoices(ev.opts.map((o,i)=>({
     txt:o.txt,cls:o.cls||'',
     fn:()=>{

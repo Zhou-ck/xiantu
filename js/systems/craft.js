@@ -261,7 +261,10 @@ function craftResolve(r,i,mini){
         log('<p class="good">异象之缘：气运 +1。</p>');
       }
     }
-    log('<p class="good">'+PROF_NAMES[S.prof]+'成功！'+(r.eff==='maze'?'你已布下迷踪阵，探索时凶险大减。':r.eff==='matrix'?'聚灵阵成，洞府灵气浓郁，修炼效率提升！':r.eff==='teleport'?'传送阵成，从此可瞬行千里！':'')+'</p>');
+    const qColor={极品:'#ffd75e',上品:'#d8a8e8',中品:'#8fb8d8',下品:'#8fc08f'}[qTier]||'#8fc08f';
+    const crNote=r.eff==='maze'?'你已布下迷踪阵，探索时凶险大减。':r.eff==='matrix'?'聚灵阵成，洞府灵气浓郁，修炼效率提升！':r.eff==='teleport'?'传送阵成，从此可瞬行千里！':'';
+    log('<div class="craft-result" style="--qc:'+qColor+'"><span class="cr-ico">'+PROF_ICON[S.prof]+'</span><div class="cr-tx"><b>'+PROF_NAMES[S.prof]+'成功 · '+qTier+'</b><small>'+esc(r.name)+(crNote?'：'+crNote:'')+'</small></div></div>');
+    try{if(typeof fxFloatText==='function')fxFloatText(qTier+' · '+r.name,qColor,true);if(typeof fxBurst==='function')fxBurst(6,qColor)}catch(e){}
     /* v55 丹火入道：炼丹成功小概率引天地灵气入体 */
     if(S.prof==='alchemy'&&chance(0.08)){
       const g=Math.floor((8+S.root/6)*cultMult(S));
