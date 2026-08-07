@@ -46,7 +46,7 @@ assert(pc.indexOf('装备强化')>=0,'副业面板保留强化区');
 
 // T4 版本同步
 const sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
-assert(vm.runInContext('GAME_VERSION',ctx)==='88','版本号 v88');
+assert(vm.runInContext('GAME_VERSION',ctx)==='89','版本号 v89');
 assert(sw.indexOf('xiantu2-v'+vm.runInContext('GAME_VERSION',ctx))>=0,'SW 缓存名与版本号同步');
 
 console.log(fails===0?'smoke94: ALL PASS':'smoke94 FAILS: '+fails);

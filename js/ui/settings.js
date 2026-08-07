@@ -45,6 +45,7 @@ function panelSettings(){
 function flashDiag(){
   const rows=[];
   const chk=(name,ok,detail)=>rows.push('<div class="diag-row '+(ok?'ok':'no')+'"><span class="diag-mark">'+(ok?'✅':'❌')+'</span><b>'+name+'</b><small>'+detail+'</small></div>');
+  try{chk('游戏版本',true,'v'+(typeof GAME_VERSION==='string'?GAME_VERSION:'?'))}catch(e){chk('游戏版本',true,'?')}
   try{
     const r=document.documentElement;
     chk('触屏收敛标记 html.fx-touch',!!(r&&r.classList&&r.classList.contains('fx-touch')),'class 中'+(r&&r.classList&&r.classList.contains('fx-touch')?'有':'无')+' fx-touch');

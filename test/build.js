@@ -3,7 +3,7 @@ const fs=require('fs'),path=require('path');
 const root=path.join(__dirname,'..');
 const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
 const order=[];
-const re=/<script src="([^"]+\.js)"><\/script>/g;
+const re=/<script src="([^"]+?\.js)(?:\?[^"]*)?"><\/script>/g;
 let m;
 while((m=re.exec(html)))order.push(m[1]);
 if(!order.length){console.error('no scripts found');process.exit(1)}

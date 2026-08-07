@@ -42,7 +42,7 @@ assert(errs2.n===cnt&&errs2.errs===0,'坏数据恢复后 DATA.events 数量不�
 // ---- T5 index.html 脚本顺序：events.js / schema.js 须在 content.js 之前
 const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
 const order=[];
-const re=/<script src="([^"]+\.js)"><\/script>/g;
+const re=/<script src="([^"]+?\.js)(?:\?[^"]*)?"><\/script>/g;
 let m;
 while((m=re.exec(html)))order.push(m[1]);
 const iEvents=order.indexOf('js/data/events.js');
